@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks BE 存储引擎深度解析：从 Tablet 到列式存储的物理实现 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="数据在 BE 上如何安家？——StarRocks 底层存储机制全揭秘
+
+一、BE 在 StarRocks 中的角色：不止是“存储器”
+在之前的文章中，我们深入探讨了 FE（Frontend）作为“大脑”的元数据管理与查询调度职责。那么，作为..." />
+    <meta name="keywords" content="大数据,StarRocks" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-be-%E5%9C%A8-starrocks-%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%E4%B8%8D%E6%AD%A2%E6%98%AF%E5%AD%98%E5%82%A8%E5%99%A8">一、BE 在 StarRocks 中的角色：不止是“存储器”</a></li>
+<li><a href="#%E4%BA%8C-tabletbe-%E4%B8%8A%E6%9C%80%E5%B0%8F%E7%9A%84%E7%89%A9%E7%90%86%E5%AD%98%E5%82%A8%E5%8D%95%E5%85%83">二、Tablet：BE 上最小的物理存储单元</a>
+<ul>
+<li><a href="#21-%E4%BB%80%E4%B9%88%E6%98%AF-tablet">2.1 什么是 Tablet？</a></li>
+<li><a href="#22-tablet-%E7%9A%84%E7%89%A9%E7%90%86%E5%88%86%E5%B8%83">2.2 Tablet 的物理分布</a></li>
+<li><a href="#23-tablet-%E7%9A%84%E8%AE%BE%E8%AE%A1%E6%84%8F%E4%B9%89">2.3 Tablet 的设计意义</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8be-%E6%95%B0%E6%8D%AE%E7%BB%84%E7%BB%87%E7%9A%84%E6%A0%B8%E5%BF%83%E5%93%B2%E5%AD%A6">三、列式存储：BE 数据组织的核心哲学</a>
+<ul>
+<li><a href="#31-%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E5%9F%BA%E6%9C%AC%E5%8E%9F%E7%90%86">3.1 列式存储的基本原理</a></li>
+<li><a href="#32-%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8-vs-%E8%A1%8C%E5%BC%8F%E5%AD%98%E5%82%A8">3.2 列式存储 vs 行式存储</a></li>
+<li><a href="#33-starrocks-%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8%E7%9A%84%E5%AE%9E%E7%8E%B0%E7%BB%86%E8%8A%82">3.3 StarRocks 列式存储的实现细节</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-%E7%B4%A2%E5%BC%95%E4%BD%93%E7%B3%BB%E8%AE%A9%E5%88%97%E5%BC%8F%E5%AD%98%E5%82%A8%E5%BF%AB%E4%B8%8A%E5%8A%A0%E5%BF%AB">四、索引体系：让列式存储“快上加快”</a>
+<ul>
+<li><a href="#41-%E5%89%8D%E7%BC%80%E7%B4%A2%E5%BC%95prefix-index">4.1 前缀索引（Prefix Index）</a></li>
+<li><a href="#42-%E5%88%97%E7%BA%A7%E7%B4%A2%E5%BC%95">4.2 列级索引</a></li>
+<li><a href="#43-%E4%B8%BB%E9%94%AE%E7%B4%A2%E5%BC%95primary-key-index">4.3 主键索引（Primary Key Index）</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-be-%E4%B8%8A%E7%9A%84%E5%86%99%E5%85%A5%E8%B7%AF%E5%BE%84%E6%95%B0%E6%8D%AE%E5%A6%82%E4%BD%95%E8%90%BD%E7%9B%98">五、BE 上的写入路径：数据如何落盘？</a>
+<ul>
+<li><a href="#51-%E5%86%99%E5%85%A5%E6%B5%81%E7%A8%8B%E6%A6%82%E8%BF%B0">5.1 写入流程概述</a></li>
+<li><a href="#52-compaction-%E6%9C%BA%E5%88%B6">5.2 Compaction 机制</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E5%AD%98%E7%AE%97%E4%B8%80%E4%BD%93-vs-%E5%AD%98%E7%AE%97%E5%88%86%E7%A6%BBbe-%E7%9A%84%E4%B8%A4%E7%A7%8D%E5%BD%A2%E6%80%81">六、存算一体 vs 存算分离：BE 的两种形态</a></li>
+<li><a href="#%E4%B8%83-be-%E5%AD%98%E5%82%A8%E9%85%8D%E7%BD%AE%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">七、BE 存储配置最佳实践</a>
+<ul>
+<li><a href="#71-%E5%AD%98%E5%82%A8%E8%B7%AF%E5%BE%84%E9%85%8D%E7%BD%AE">7.1 存储路径配置</a></li>
+<li><a href="#72-%E5%86%85%E5%AD%98%E9%85%8D%E7%BD%AE">7.2 内存配置</a></li>
+<li><a href="#73-%E5%89%AF%E6%9C%AC%E9%85%8D%E7%BD%AE">7.3 副本配置</a></li>
+<li><a href="#74-tablet-%E6%95%B0%E9%87%8F%E8%A7%84%E5%88%92">7.4 Tablet 数量规划</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AB-%E6%80%BB%E7%BB%93">八、总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks BE 存储引擎深度解析：从 Tablet 到列式存储的物理实现</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-17 23:48
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                24 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/nmY7/StarRocks-BE.jpg" alt="StarRocks BE 存储引擎深度解析：从 Tablet 到列式存储的物理实现">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>数据在 BE 上如何安家？——StarRocks 底层存储机制全揭秘</p>
+<!-- more -->
+<h3 id="一-be-在-starrocks-中的角色不止是存储器">一、BE 在 StarRocks 中的角色：不止是“存储器”</h3>
+<p>在之前的文章中，我们深入探讨了 FE（Frontend）作为“大脑”的元数据管理与查询调度职责。那么，作为“四肢”的 <strong>BE（Backend）</strong> 节点，究竟是如何承担数据存储与 SQL 执行双重使命的？</p>
+<p>BE 是 StarRocks 的<strong>后端节点</strong>，核心职责有二：</p>
+<ol>
+<li><strong>数据存储</strong>：负责将导入的数据按列式格式写入磁盘，并生成相关索引</li>
+<li><strong>SQL 执行</strong>：执行 FE 分发下来的查询 Fragment，利用本地数据实现“计算向数据移动”</li>
+</ol>
+<p>BE 节点之间完全对等，FE 按照既定规则将数据分配到各个 BE 节点。这种设计使得 StarRocks 能够实现<strong>水平无限扩展</strong>——增加 BE 节点数量，系统的存储容量和计算能力可近线性增长。</p>
+<p>在生产环境中，BE 节点的硬件配置直接影响集群性能。建议每个 BE 节点配置 <strong>≥ 16 核 CPU、≥ 64GB 内存</strong>，并使用 <strong>SSD 磁盘</strong>以最大化 I/O 性能。对于大规模集群，网络带宽建议 ≥ 10Gbps，以保证 Shuffle 过程的吞吐。</p>
+<h3 id="二-tabletbe-上最小的物理存储单元">二、Tablet：BE 上最小的物理存储单元</h3>
+<h4 id="21-什么是-tablet">2.1 什么是 Tablet？</h4>
+<p><strong>Tablet</strong> 是 StarRocks 中<strong>最小的物理存储单元</strong>，也是数据复制、负载均衡、故障恢复的基本粒度。</p>
+<p>StarRocks 采用<strong>分区（Partition）+ 分桶（Bucket）</strong> 的两级数据划分机制：</p>
+<ul>
+<li><strong>分区</strong>：将表数据按某个维度（通常是时间）进行逻辑划分，便于数据管理和裁剪</li>
+<li><strong>分桶</strong>：在每个分区内部，按指定的分桶键进行哈希分桶，将数据进一步切分为多个 Tablet</li>
+</ul>
+<p>一张表的 Tablet 总数 = 分区数 × 分桶数 × 副本数。例如，一张按天分区（保留 30 天）、分桶数为 10、副本数为 3 的表，总 Tablet 数量为 30 × 10 × 3 = 900 个。</p>
+<h4 id="22-tablet-的物理分布">2.2 Tablet 的物理分布</h4>
+<p>每个 Tablet 会以<strong>多副本（Replica）</strong> 的形式存储在不同的 BE 节点上，默认副本数为 3。StarRocks 会自动管理每个 Tablet 副本的分布，确保：</p>
+<ul>
+<li>同一 Tablet 的多个副本分布在不同 BE 节点上，避免单点故障</li>
+<li>数据在集群内尽量均匀分布，避免数据倾斜</li>
+</ul>
+<p>当 BE 节点规模发生变化（扩容或缩容）时，StarRocks 可以<strong>无需停止服务，直接完成节点的增减</strong>。节点变化会触发 Tablet 的自动迁移——新增节点时，部分 Tablet 会在后台自动均衡到新节点；节点下线时，其上的 Tablet 会自动迁移到其他节点，保证副本数不变。</p>
+<h4 id="23-tablet-的设计意义">2.3 Tablet 的设计意义</h4>
+<p>Tablet 作为基础物理单元，在 StarRocks 中承担着多重角色：</p>
+<ul>
+<li><strong>实现并行计算</strong>：查询引擎可以并行扫描多个 Tablet，每个 Tablet 由一个独立的执行单元处理</li>
+<li><strong>作为数据管理的基本单位</strong>：Compaction、负载均衡等操作都以 Tablet 为粒度</li>
+<li><strong>支持系统水平扩展</strong>：扩容时通过 Tablet 级别的调度迁移数据</li>
+<li><strong>保障高可用</strong>：多副本机制确保单节点故障不影响数据完整性</li>
+</ul>
+<h3 id="三-列式存储be-数据组织的核心哲学">三、列式存储：BE 数据组织的核心哲学</h3>
+<h4 id="31-列式存储的基本原理">3.1 列式存储的基本原理</h4>
+<p>StarRocks 的表数据<strong>按列存储</strong>。在物理层面，一列数据会经过分块、编码、压缩等操作后持久化到磁盘；在逻辑层面，一列数据可以看作由相同类型元素构成的一个数组。</p>
+<p>这种设计的巧妙之处在于：<strong>一行数据的所有列值，在各列的数组中拥有相同的数组下标</strong>。这个下标是隐式的，不需要物理存储，从而节省了大量空间。</p>
+<h4 id="32-列式存储-vs-行式存储">3.2 列式存储 vs 行式存储</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">行式存储</th>
+<th style="text-align:left">列式存储</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>数据组织</strong></td>
+<td style="text-align:left">按行连续存储</td>
+<td style="text-align:left">按列独立存储</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>压缩效率</strong></td>
+<td style="text-align:left">较低，数据类型混合</td>
+<td style="text-align:left">高，同列数据类型一致</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>查询性能</strong></td>
+<td style="text-align:left">适合点查（SELECT *）</td>
+<td style="text-align:left">适合分析查询（只读几列）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>I/O 开销</strong></td>
+<td style="text-align:left">需读取整行</td>
+<td style="text-align:left">只读取涉及的列</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>适用场景</strong></td>
+<td style="text-align:left">OLTP 事务处理</td>
+<td style="text-align:left">OLAP 分析查询</td>
+</tr>
+</tbody>
+</table>
+<p>在分析型查询（如聚合、过滤）中，列式存储可以直接跳过无关列的数据，大幅减少 I/O 开销。</p>
+<h4 id="33-starrocks-列式存储的实现细节">3.3 StarRocks 列式存储的实现细节</h4>
+<p>StarRocks 采用的是<strong>显式列式存储</strong>方式——数据在物理存储上完全按列组织，每一列的数据独立存储在文件或块中。这种方式能够充分发挥列式存储的优势，尤其在大规模数据集和复杂查询场景下表现优异。</p>
+<p><strong>存储格式</strong>：StarRocks 的数据以列式格式存储，兼容 Parquet、CarbonData 等开放格式，支持高效的随机读取和压缩。</p>
+<p><strong>压缩算法</strong>：StarRocks 支持多种压缩算法，能根据列数据特性自动选择最优方式：</p>
+<ul>
+<li><strong>LZ4 / ZSTD</strong>：通用压缩算法，平衡压缩比与速度</li>
+<li><strong>前缀编码（Prefix Encoding）</strong> ：适用于整数列，记录连续值的变化</li>
+<li><strong>行程编码（RLE）</strong> ：适用于具有相同值的连续数据</li>
+<li><strong>字典编码（Dictionary Encoding）</strong> ：适用于字符串列，将值映射为索引</li>
+</ul>
+<p>这些压缩技术能将数据体积压缩 3-8 倍，显著降低存储成本和 I/O 开销。</p>
+<h3 id="四-索引体系让列式存储快上加快">四、索引体系：让列式存储“快上加快”</h3>
+<p>仅有列式存储还不够——在海量数据中快速定位目标行，需要高效的索引支持。StarRocks 在 BE 上构建了多层次的索引体系。</p>
+<h4 id="41-前缀索引prefix-index">4.1 前缀索引（Prefix Index）</h4>
+<p>StarRocks 会自动为建表时指定的排序键（Sort Key）创建前缀索引。表中所有的行按照排序键做多重排序，排序后的位置就是该行的行号。</p>
+<p>前缀索引是一种稀疏索引，每 1024 行数据构成一个逻辑数据块，索引记录的是每个数据块中排序键的最小值。查询时，系统通过二分查找快速定位目标行所在的数据块起始位置，从而在 Scan 阶段大面积减少无关数据扫描。</p>
+<p><strong>设计建议</strong>：前缀索引的长度限制为 36 字节，超过部分会被截断。因此应将<strong>经常作为查询条件、区分度高的列</strong>放在排序键的前面。</p>
+<h4 id="42-列级索引">4.2 列级索引</h4>
+<p>除了前缀索引，StarRocks 还支持多种列级索引，进一步提升查询效率：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">索引类型</th>
+<th style="text-align:left">原理</th>
+<th style="text-align:left">适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Bloom Filter</strong></td>
+<td style="text-align:left">概率性判断元素是否存在</td>
+<td style="text-align:left">高基数列的等值查询（如 user_id）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Bitmap 索引</strong></td>
+<td style="text-align:left">用位图表示列值分布</td>
+<td style="text-align:left">低基数列的过滤（如 gender、status）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Zone Map</strong></td>
+<td style="text-align:left">记录数据块中列的 min/max</td>
+<td style="text-align:left">范围查询的快速跳过</td>
+</tr>
+</tbody>
+</table>
+<p>这些索引协同工作，使得 StarRocks 能够在 PB 级数据上实现秒级查询响应。</p>
+<h4 id="43-主键索引primary-key-index">4.3 主键索引（Primary Key Index）</h4>
+<p>对于主键模型（Primary Key Model），StarRocks 还支持<strong>持久化主键索引</strong>。通过 <code>enable_persistent_index = true</code> 配置，可将主键索引持久化到磁盘，避免全内存索引带来的内存膨胀问题，支撑百亿级主键的高频更新场景。</p>
+<h3 id="五-be-上的写入路径数据如何落盘">五、BE 上的写入路径：数据如何落盘？</h3>
+<p>StarRocks 的写入路径经过精心设计，在保证数据可靠性的同时实现高吞吐。</p>
+<h4 id="51-写入流程概述">5.1 写入流程概述</h4>
+<p>当数据导入时（无论是 Stream Load、Routine Load 还是 Broker Load），流程如下：</p>
+<ol>
+<li><strong>FE 选定 Coordinator BE</strong>：FE 选择一个 BE 节点作为协调者，负责接收数据并分发</li>
+<li><strong>数据分片与分发</strong>：Coordinator BE 根据分桶规则，将数据拆分并发送到对应 Tablet 副本所在的 BE 节点</li>
+<li><strong>内存写入</strong>：每个 BE 节点先将数据写入 <strong>MemTable（内存缓冲区）</strong></li>
+<li><strong>持久化</strong>：MemTable 写满或达到时间阈值后，Flush 为 <strong>Segment 文件</strong>写入磁盘</li>
+<li><strong>后台 Compaction</strong>：BE 后台定期将多个小 Segment 文件合并为大文件，减少文件数量、提升查询效率</li>
+</ol>
+<h4 id="52-compaction-机制">5.2 Compaction 机制</h4>
+<p>Compaction 是 BE 存储引擎的关键后台任务。随着数据不断写入，磁盘上会产生大量小文件，影响查询性能。Compaction 负责将这些小文件合并：</p>
+<ul>
+<li><strong>Cumulative Compaction</strong>：将多个小文件合并为中等大小的文件</li>
+<li><strong>Base Compaction</strong>：将中等大小的文件进一步合并为大文件</li>
+</ul>
+<p>合理的 Compaction 策略能显著提升查询性能，但也会消耗一定的 CPU 和 I/O 资源。建议通过 <code>max_compaction_task_num_per_be</code> 等参数控制 Compaction 并发度，避免在写入高峰期挤占查询资源。</p>
+<h3 id="六-存算一体-vs-存算分离be-的两种形态">六、存算一体 vs 存算分离：BE 的两种形态</h3>
+<p>StarRocks 支持两种架构模式，BE 在这两种模式下的形态有所不同：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">存算一体架构</th>
+<th style="text-align:left">存算分离架构</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>数据存储位置</strong></td>
+<td style="text-align:left">BE 本地磁盘</td>
+<td style="text-align:left">对象存储（S3/OSS/HDFS）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>计算节点</strong></td>
+<td style="text-align:left">BE（计算 + 存储）</td>
+<td style="text-align:left">CN（纯计算节点，取代 BE）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>数据本地性</strong></td>
+<td style="text-align:left">强，计算向数据移动</td>
+<td style="text-align:left">弱，数据需从远端读取</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>扩展方式</strong></td>
+<td style="text-align:left">计算存储耦合扩展</td>
+<td style="text-align:left">计算存储独立扩展</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>存储成本</strong></td>
+<td style="text-align:left">较高（本地 SSD）</td>
+<td style="text-align:left">低 70-80%（对象存储）</td>
+</tr>
+</tbody>
+</table>
+<p><strong>存算一体</strong>适合追求极致查询性能的场景——数据存储在本地，计算直接在数据所在节点执行，无网络传输开销。</p>
+<p><strong>存算分离</strong>适合数据量大、追求成本优化的场景——数据存储到低成本对象存储，计算节点根据业务负载灵活扩缩容。当缓存命中时，查询性能与存算一体架构相当。</p>
+<h3 id="七-be-存储配置最佳实践">七、BE 存储配置最佳实践</h3>
+<p>要让 BE 的存储引擎发挥最佳性能，以下几点配置建议值得关注：</p>
+<h4 id="71-存储路径配置">7.1 存储路径配置</h4>
+<ul>
+<li>每个 BE 节点可配置多个存储路径（<code>storage_root_path</code>），分布在不同物理磁盘上，提升 I/O 吞吐</li>
+<li>建议使用 <strong>NVMe SSD</strong>，避免机械盘成为 I/O 瓶颈</li>
+<li>多个存储路径之间以分号分隔，如：<code>/data1/starrocks;/data2/starrocks</code></li>
+</ul>
+<h4 id="72-内存配置">7.2 内存配置</h4>
+<ul>
+<li>BE 节点的 <code>mem_limit</code> 建议设置为物理内存的 <strong>60%~70%</strong>，预留空间给操作系统</li>
+<li>对于写入密集型场景，可适当调大 MemTable 内存限制</li>
+<li>开启 <code>enable_memtable_spill</code>，在内存不足时自动溢写磁盘，避免 OOM</li>
+</ul>
+<h4 id="73-副本配置">7.3 副本配置</h4>
+<ul>
+<li>生产环境必须设置 <code>replication_num = 3</code>，确保数据高可用</li>
+<li>BE 节点数量最好为副本数的整数倍（如副本数为 3 时，BE 数量应为 3、6、9），便于副本均衡分布</li>
+</ul>
+<h4 id="74-tablet-数量规划">7.4 Tablet 数量规划</h4>
+<ul>
+<li>每个 BE 节点承载的 Tablet 数量建议在 <strong>10-20 个</strong>左右</li>
+<li>分桶数 = BE 节点数 × 2~4 倍，避免过少导致并行度不足，或过多导致元数据膨胀</li>
+<li>单个 Tablet 的压缩后大小建议控制在 <strong>500MB-1GB</strong></li>
+</ul>
+<h3 id="八-总结">八、总结</h3>
+<p>StarRocks BE 的存储引擎，是高性能数据分析的物理基石。它的设计哲学可以概括为：</p>
+<ol>
+<li><strong>分而治之</strong>：通过分区 + 分桶将大表切分为无数个 Tablet，实现并行处理</li>
+<li><strong>按列组织</strong>：采用列式存储，只读取查询需要的列，大幅减少 I/O</li>
+<li><strong>高效压缩</strong>：多种压缩算法将数据体积压缩 3-8 倍，降低存储成本</li>
+<li><strong>多层索引</strong>：前缀索引 + Bloom Filter + Bitmap + Zone Map，快速跳过无关数据</li>
+<li><strong>多副本保障</strong>：默认三副本机制，确保数据高可用和故障自愈</li>
+<li><strong>弹性伸缩</strong>：Tablet 自动迁移，节点增减无需停服</li>
+</ol>
+<p>理解 BE 的存储原理，不仅能帮你更好地进行表设计（分区、分桶、排序键的选择），也能让你在遇到性能问题时，知道从哪个环节入手排查——是 Tablet 分布不均导致的数据倾斜？是 Compaction 不及时导致的小文件过多？还是索引设计不合理导致的扫描范围过大？</p>
+<p>如果说 FE 是 StarRocks 的“智慧大脑”，那么 BE 就是承载一切的“强健体魄”——它以精妙的存储设计，支撑起了 PB 级数据的高性能分析。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-DataSave/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-biao-mo-xing-shen-du-jie-xi-ming-xi-ju-he-geng-xin-yu-zhu-jian-de-xuan-ze-zhi-dao/">
+                  <h3 class="post-title">
+                    StarRocks 表模型深度解析：明细、聚合、更新与主键的选择之道
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

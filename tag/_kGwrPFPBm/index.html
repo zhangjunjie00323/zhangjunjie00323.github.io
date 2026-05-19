@@ -1,0 +1,1137 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>大数据 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="数据科学成长之路">
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <h2 class="current-tag">标签: 大数据</h2>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="0">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/">
+                  <h2 class="post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-05-16 21:59
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    46 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>本文是 <strong>StarRocks 存算一体 shared-nothing 模式</strong> 的手动部署方案。该模式下 <strong>BE 同时负责数据存储和 SQL 计算</strong>，数据落在 BE 本地磁盘，不使用 CN，不配置对象存储或 HDFS 作为共享数据层。如果实际要部署存算分离模式，应使用 FE + CN + 远程存储的方案。</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="100">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-DataSave/">
+                  <h2 class="post-title">StarRocks 数据存储说明</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-05-14 21:20
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    58 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/starrocks-DataSave/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>本文用<strong>同一份业务数据</strong>贯穿说明：在 StarRocks 中从 <strong>Table → Partition → Tablet → Rowset → Segment</strong> 各层级分别存什么、怎么组织，并配有<strong>可对照的数字与行级示例</strong>，便于建立直观印象。</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/starrocks-DataSave/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="200">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                  <h2 class="post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-05-13 23:32
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    80 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="300">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/">
+                  <h2 class="post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-21 19:59
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    34 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>StarRocks Catalog 深度解析：统一内外部数据的“元数据中枢”</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="400">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-fe-yuan-shu-ju-chi-jiu-hua-jie-mi-editlog-yu-checkpoint-ji-zhi-shen-du-jie-xi/">
+                  <h2 class="post-title">StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-21 19:56
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    21 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/starrocks-fe-yuan-shu-ju-chi-jiu-hua-jie-mi-editlog-yu-checkpoint-ji-zhi-shen-du-jie-xi/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>EditLog + Checkpoint：StarRocks FE 如何实现元数据的“永不丢失”与“秒级恢复”</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/starrocks-fe-yuan-shu-ju-chi-jiu-hua-jie-mi-editlog-yu-checkpoint-ji-zhi-shen-du-jie-xi/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/1jPg/StarRocks-EditLog-Checkpoint.jpg" alt="StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="0">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/sql-zhi-xing-qian-gao-zhe-me-duo-fen-xi-starrocks-bu-pa-man-ma/">
+                  <h2 class="post-title">SQL 执行前搞这么多分析，StarRocks 不怕慢吗？</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-18 21:09
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    13 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/sql-zhi-xing-qian-gao-zhe-me-duo-fen-xi-starrocks-bu-pa-man-ma/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>如果你刚接触 StarRocks 这类 MPP 分析型数据库，可能会有一个很自然的疑问：“一条 SQL 提交后，要先做语法解析、语义分析、RBO 规则重写、CBO 成本优化……这么多步骤都是实时执行的，难道不会拖慢查询速度吗？为什么不能提前做掉一部分？”</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/sql-zhi-xing-qian-gao-zhe-me-duo-fen-xi-starrocks-bu-pa-man-ma/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://zhangjunjie00323.github.io/post-images/sql-zhi-xing-qian-gao-zhe-me-duo-fen-xi-starrocks-bu-pa-man-ma.png" alt="SQL 执行前搞这么多分析，StarRocks 不怕慢吗？" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="100">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/cong-sql-dao-zhi-xing-ji-hua-starrocks-fe-jie-dian-de-jia-gou-she-ji-yu-he-xin-zhi-ze/">
+                  <h2 class="post-title">从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-17 23:55
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    27 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/cong-sql-dao-zhi-xing-ji-hua-starrocks-fe-jie-dian-de-jia-gou-she-ji-yu-he-xin-zhi-ze/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>FE：StarRocks 的“智慧大脑”——元数据管理、查询优化与高可用机制详解。</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/cong-sql-dao-zhi-xing-ji-hua-starrocks-fe-jie-dian-de-jia-gou-she-ji-yu-he-xin-zhi-ze/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/R3gy/StarRocks-FE.jpg" alt="从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="200">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-be-cun-chu-yin-qing-shen-du-jie-xi-cong-tablet-dao-lie-shi-cun-chu-de-wu-li-shi-xian/">
+                  <h2 class="post-title">StarRocks BE 存储引擎深度解析：从 Tablet 到列式存储的物理实现</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-17 23:48
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    24 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/starrocks-be-cun-chu-yin-qing-shen-du-jie-xi-cong-tablet-dao-lie-shi-cun-chu-de-wu-li-shi-xian/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>数据在 BE 上如何安家？——StarRocks 底层存储机制全揭秘</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/starrocks-be-cun-chu-yin-qing-shen-du-jie-xi-cong-tablet-dao-lie-shi-cun-chu-de-wu-li-shi-xian/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/nmY7/StarRocks-BE.jpg" alt="StarRocks BE 存储引擎深度解析：从 Tablet 到列式存储的物理实现" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="300">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-biao-mo-xing-shen-du-jie-xi-ming-xi-ju-he-geng-xin-yu-zhu-jian-de-xuan-ze-zhi-dao/">
+                  <h2 class="post-title">StarRocks 表模型深度解析：明细、聚合、更新与主键的选择之道</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-17 23:10
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    27 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/starrocks-biao-mo-xing-shen-du-jie-xi-ming-xi-ju-he-geng-xin-yu-zhu-jian-de-xuan-ze-zhi-dao/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>从日志分析到实时更新：一文读懂 StarRocks 四种表模型的适用场景</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/starrocks-biao-mo-xing-shen-du-jie-xi-ming-xi-ju-he-geng-xin-yu-zhu-jian-de-xuan-ze-zhi-dao/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/6Eal/StorRocks.jpg" alt="StarRocks 表模型深度解析：明细、聚合、更新与主键的选择之道" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+            <article class="post-item" data-aos="fade-up" data-aos-delay="400">
+              <div class="left">
+                <a href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-dong-mai-starrocks-flink-cdc-shi-shi-tong-bu-lian-lu-shen-du-jie-xi/">
+                  <h2 class="post-title">打通数据动脉：StarRocks + Flink CDC 实时同步链路深度解析</h2>
+                </a>
+                <div class="post-date">
+                  <span class="meta-item meta-date">
+                    <i class="fa fa-calendar-o"></i>
+                    2026-04-17 21:52
+                  </span>
+                  <span class="meta-item meta-read-time">
+                    <i class="fa fa-clock-o"></i>
+                    29 min read
+                  </span>
+                  <span class="meta-item meta-read-count">
+                    <i class="fa fa-user-o"></i>
+                    <span class="js-post-pv" data-url="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-dong-mai-starrocks-flink-cdc-shi-shi-tong-bu-lian-lu-shen-du-jie-xi/"></span> 人阅读
+                  </span>
+                </div>
+                <div class="post-abstract">
+                  <p>StarRocks 数据摄入指南：CDC 实时同步的原理、架构与最佳实践</p>
+
+                </div>
+                
+                  <div class="tag-container">
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                        # 大数据
+                      </a>
+                    
+                      <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                        # StarRocks
+                      </a>
+                    
+                  </div>
+                
+              </div>
+              
+                <a class="right" href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-dong-mai-starrocks-flink-cdc-shi-shi-tong-bu-lian-lu-shen-du-jie-xi/">
+                  <div class="feature-container">
+                    <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/1Ecr/StarRocks-Flink-CDC.jpg" alt="打通数据动脉：StarRocks + Flink CDC 实时同步链路深度解析" loading="lazy">
+                  </div>
+                </a>
+              
+            </article>
+          
+
+          <div class="pagination-container">
+  
+  
+    <a href="https://zhangjunjie00323.github.io/tag/_kGwrPFPBm/page/2" class="next">下一页 <i class="fa fa-angle-right"></i></a>
+  
+</div>
+
+        </div>
+
+        <footer class="dynamic-quote">
+          <div class="quote-container">
+            <span class="quote-icon">✦</span>
+            <span class="quote-text" id="typing-text"></span>
+            <span class="quote-cursor">|</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

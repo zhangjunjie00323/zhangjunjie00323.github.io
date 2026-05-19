@@ -1,0 +1,1608 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>协方差（Covariance）：衡量两个变量如何一起变化 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="协方差到底是什么：看懂两个变量如何一起变化
+引言：方差看自己，协方差看彼此
+在前面学习方差时，我们关心的是：
+
+一个变量自身波动得有多厉害？
+
+比如一个班级的成绩是否稳定，一个基金的收益是否波动，一个生产线的产品尺寸是否一致。
+但现实中，我..." />
+    <meta name="keywords" content="数学之美" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E5%BC%95%E8%A8%80%E6%96%B9%E5%B7%AE%E7%9C%8B%E8%87%AA%E5%B7%B1%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9C%8B%E5%BD%BC%E6%AD%A4">引言：方差看自己，协方差看彼此</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E9%83%A8%E5%88%86%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9A%84%E7%9B%B4%E8%A7%89">第一部分：协方差的直觉</a>
+<ul>
+<li><a href="#1-%E4%BB%80%E4%B9%88%E6%98%AF%E5%8D%8F%E6%96%B9%E5%B7%AE">1. 什么是协方差？</a></li>
+<li><a href="#2-%E4%B8%89%E7%A7%8D%E5%85%B3%E7%B3%BB%E6%AD%A3-%E8%B4%9F-%E6%8E%A5%E8%BF%91-0">2. 三种关系：正、负、接近 0</a>
+<ul>
+<li><a href="#21-%E6%AD%A3%E5%8D%8F%E6%96%B9%E5%B7%AE">2.1 正协方差</a></li>
+<li><a href="#22-%E8%B4%9F%E5%8D%8F%E6%96%B9%E5%B7%AE">2.2 负协方差</a></li>
+<li><a href="#23-%E5%8D%8F%E6%96%B9%E5%B7%AE%E6%8E%A5%E8%BF%91-0">2.3 协方差接近 0</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E9%83%A8%E5%88%86%E5%8D%8F%E6%96%B9%E5%B7%AE%E5%85%AC%E5%BC%8F">第二部分：协方差公式</a>
+<ul>
+<li><a href="#3-%E4%BB%8E%E6%96%B9%E5%B7%AE%E5%85%AC%E5%BC%8F%E5%88%B0%E5%8D%8F%E6%96%B9%E5%B7%AE%E5%85%AC%E5%BC%8F">3. 从方差公式到协方差公式</a></li>
+<li><a href="#4-%E6%80%BB%E4%BD%93%E5%8D%8F%E6%96%B9%E5%B7%AE">4. 总体协方差</a></li>
+<li><a href="#5-%E6%A0%B7%E6%9C%AC%E5%8D%8F%E6%96%B9%E5%B7%AE">5. 样本协方差</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E9%83%A8%E5%88%86%E4%B8%80%E6%AD%A5%E6%AD%A5%E8%AE%A1%E7%AE%97%E5%8D%8F%E6%96%B9%E5%B7%AE">第三部分：一步步计算协方差</a>
+<ul>
+<li><a href="#6-%E4%BE%8B%E5%AD%90%E5%AD%A6%E4%B9%A0%E6%97%B6%E9%97%B4%E5%92%8C%E8%80%83%E8%AF%95%E6%88%90%E7%BB%A9">6. 例子：学习时间和考试成绩</a>
+<ul>
+<li><a href="#61-%E8%AE%A1%E7%AE%97%E5%9D%87%E5%80%BC">6.1 计算均值</a></li>
+<li><a href="#62-%E8%AE%A1%E7%AE%97%E5%81%8F%E5%B7%AE">6.2 计算偏差</a></li>
+<li><a href="#63-%E5%81%8F%E5%B7%AE%E7%9B%B8%E4%B9%98">6.3 偏差相乘</a></li>
+<li><a href="#64-%E8%AE%A1%E7%AE%97%E6%80%BB%E4%BD%93%E5%8D%8F%E6%96%B9%E5%B7%AE">6.4 计算总体协方差</a></li>
+<li><a href="#65-%E8%AE%A1%E7%AE%97%E6%A0%B7%E6%9C%AC%E5%8D%8F%E6%96%B9%E5%B7%AE">6.5 计算样本协方差</a></li>
+</ul>
+</li>
+<li><a href="#7-%E5%8F%8D%E5%90%91%E5%8F%98%E5%8C%96%E7%9A%84%E4%BE%8B%E5%AD%90">7. 反向变化的例子</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E9%83%A8%E5%88%86%E5%A6%82%E4%BD%95%E8%A7%A3%E9%87%8A%E5%8D%8F%E6%96%B9%E5%B7%AE">第四部分：如何解释协方差？</a>
+<ul>
+<li><a href="#8-%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9A%84%E7%AC%A6%E5%8F%B7%E6%AF%94%E5%A4%A7%E5%B0%8F%E6%9B%B4%E9%87%8D%E8%A6%81">8. 协方差的符号比大小更重要</a></li>
+<li><a href="#9-%E5%8D%8F%E6%96%B9%E5%B7%AE%E4%B8%BA%E4%BB%80%E4%B9%88%E9%9A%BE%E8%A7%A3%E9%87%8A">9. 协方差为什么难解释？</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E9%83%A8%E5%88%86%E5%8D%8F%E6%96%B9%E5%B7%AE%E5%92%8C%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0">第五部分：协方差和相关系数</a>
+<ul>
+<li><a href="#10-%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0%E6%98%AF%E6%A0%87%E5%87%86%E5%8C%96%E5%90%8E%E7%9A%84%E5%8D%8F%E6%96%B9%E5%B7%AE">10. 相关系数是标准化后的协方差</a></li>
+<li><a href="#11-%E5%8D%8F%E6%96%B9%E5%B7%AE%E5%92%8C%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0%E7%9A%84%E5%8C%BA%E5%88%AB">11. 协方差和相关系数的区别</a></li>
+<li><a href="#12-%E7%9B%B8%E5%85%B3%E4%B8%8D%E7%AD%89%E4%BA%8E%E5%9B%A0%E6%9E%9C">12. 相关不等于因果</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E9%83%A8%E5%88%86%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5">第六部分：协方差矩阵</a>
+<ul>
+<li><a href="#13-%E4%BB%8E%E4%B8%A4%E4%B8%AA%E5%8F%98%E9%87%8F%E5%88%B0%E5%A4%9A%E4%B8%AA%E5%8F%98%E9%87%8F">13. 从两个变量到多个变量</a></li>
+<li><a href="#14-%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7">14. 协方差矩阵长什么样？</a></li>
+<li><a href="#15-%E5%8D%8F%E6%96%B9%E5%B7%AE%E7%9F%A9%E9%98%B5%E6%9C%89%E4%BB%80%E4%B9%88%E7%94%A8">15. 协方差矩阵有什么用？</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%83%E9%83%A8%E5%88%86%E5%8D%8F%E6%96%B9%E5%B7%AE%E5%9C%A8%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%AD%E7%9A%84%E6%84%8F%E4%B9%89">第七部分：协方差在机器学习中的意义</a>
+<ul>
+<li><a href="#16-%E7%89%B9%E5%BE%81%E5%85%B3%E7%B3%BB%E5%88%86%E6%9E%90">16. 特征关系分析</a></li>
+<li><a href="#17-pca-%E9%99%8D%E7%BB%B4">17. PCA 降维</a></li>
+<li><a href="#18-%E9%87%91%E8%9E%8D%E9%A3%8E%E9%99%A9%E5%BB%BA%E6%A8%A1">18. 金融风险建模</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AB%E9%83%A8%E5%88%86%E7%94%A8%E4%BB%A3%E7%A0%81%E8%AE%A1%E7%AE%97%E5%8D%8F%E6%96%B9%E5%B7%AE">第八部分：用代码计算协方差</a>
+<ul>
+<li><a href="#19-python-%E6%89%8B%E5%86%99%E5%8D%8F%E6%96%B9%E5%B7%AE">19. Python 手写协方差</a></li>
+<li><a href="#20-numpy-%E8%AE%A1%E7%AE%97%E5%8D%8F%E6%96%B9%E5%B7%AE">20. NumPy 计算协方差</a></li>
+<li><a href="#21-pandas-%E8%AE%A1%E7%AE%97%E5%8D%8F%E6%96%B9%E5%B7%AE%E5%92%8C%E7%9B%B8%E5%85%B3%E7%B3%BB%E6%95%B0">21. Pandas 计算协方差和相关系数</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B9%9D%E9%83%A8%E5%88%86%E5%B8%B8%E8%A7%81%E8%AF%AF%E5%8C%BA">第九部分：常见误区</a>
+<ul>
+<li><a href="#22-%E8%AF%AF%E5%8C%BA%E4%B8%80%E5%8D%8F%E6%96%B9%E5%B7%AE%E4%B8%BA-0-%E5%B0%B1%E4%B8%80%E5%AE%9A%E6%B2%A1%E6%9C%89%E5%85%B3%E7%B3%BB">22. 误区一：协方差为 0 就一定没有关系</a></li>
+<li><a href="#23-%E8%AF%AF%E5%8C%BA%E4%BA%8C%E5%8D%8F%E6%96%B9%E5%B7%AE%E8%B6%8A%E5%A4%A7%E5%85%B3%E7%B3%BB%E4%B8%80%E5%AE%9A%E8%B6%8A%E5%BC%BA">23. 误区二：协方差越大，关系一定越强</a></li>
+<li><a href="#24-%E8%AF%AF%E5%8C%BA%E4%B8%89%E5%8D%8F%E6%96%B9%E5%B7%AE%E8%83%BD%E8%AF%81%E6%98%8E%E5%9B%A0%E6%9E%9C">24. 误区三：协方差能证明因果</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%8D%81%E9%83%A8%E5%88%86%E6%A0%B8%E5%BF%83%E6%80%BB%E7%BB%93">第十部分：核心总结</a>
+<ul>
+<li><a href="#25-%E4%B8%80%E5%8F%A5%E8%AF%9D%E8%AE%B0%E4%BD%8F%E5%8D%8F%E6%96%B9%E5%B7%AE">25. 一句话记住协方差</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">协方差（Covariance）：衡量两个变量如何一起变化</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-05-17 14:24
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                33 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/17/0jvA/090592f.png" alt="协方差（Covariance）：衡量两个变量如何一起变化">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>协方差到底是什么：看懂两个变量如何一起变化</p>
+<h2 id="引言方差看自己协方差看彼此">引言：方差看自己，协方差看彼此</h2>
+<p>在前面学习方差时，我们关心的是：</p>
+<blockquote>
+<p>一个变量自身波动得有多厉害？</p>
+</blockquote>
+<p>比如一个班级的成绩是否稳定，一个基金的收益是否波动，一个生产线的产品尺寸是否一致。</p>
+<p>但现实中，我们经常不只关心一个变量，而是关心两个变量之间有没有关系。</p>
+<p>例如：</p>
+<ul>
+<li>学习时间越长，考试成绩是否越高？</li>
+<li>广告投入越多，销售额是否越高？</li>
+<li>气温升高，冰淇淋销量是否增加？</li>
+<li>房屋面积越大，房价是否越高？</li>
+<li>股票 A 上涨时，股票 B 是否也容易上涨？</li>
+</ul>
+<p>这些问题都不是在问单个变量的波动，而是在问：</p>
+<blockquote>
+<p>两个变量是否会一起变化？</p>
+</blockquote>
+<p>这就是协方差要解决的问题。</p>
+<p>一句话理解：</p>
+<blockquote>
+<p><strong>方差衡量一个变量自己的波动，协方差衡量两个变量共同变化的方向。</strong></p>
+</blockquote>
+<hr>
+<h1 id="第一部分协方差的直觉">第一部分：协方差的直觉</h1>
+<hr>
+<h2 id="1-什么是协方差">1. 什么是协方差？</h2>
+<p>协方差的英文是 <strong>Covariance</strong>。</p>
+<p>拆开看：</p>
+<ul>
+<li><code>co</code> 表示共同。</li>
+<li><code>variance</code> 表示方差、波动。</li>
+</ul>
+<p>所以协方差可以理解为：</p>
+<blockquote>
+<p>两个变量共同波动的程度。</p>
+</blockquote>
+<p>更具体一点：</p>
+<blockquote>
+<p>当 X 高于自己的平均值时，Y 是否也倾向于高于自己的平均值？当 X 低于自己的平均值时，Y 是否也倾向于低于自己的平均值？</p>
+</blockquote>
+<p>如果答案是“是”，协方差通常为正。</p>
+<p>如果答案是“相反”，协方差通常为负。</p>
+<p>如果两者没有明显同步关系，协方差接近 0。</p>
+<hr>
+<h2 id="2-三种关系正-负-接近-0">2. 三种关系：正、负、接近 0</h2>
+<h3 id="21-正协方差">2.1 正协方差</h3>
+<p>如果 X 增大时，Y 也倾向于增大；X 减小时，Y 也倾向于减小，那么协方差为正。</p>
+<p>例如：</p>
+<pre><code class="language-text">学习时间越长，考试成绩越高
+房屋面积越大，房屋价格越高
+广告投入越多，销售额越高
+</code></pre>
+<p>这类关系的特点是：</p>
+<blockquote>
+<p>两个变量同向变化。</p>
+</blockquote>
+<hr>
+<h3 id="22-负协方差">2.2 负协方差</h3>
+<p>如果 X 增大时，Y 倾向于减小；X 减小时，Y 倾向于增大，那么协方差为负。</p>
+<p>例如：</p>
+<pre><code class="language-text">商品价格越高，购买数量可能越少
+运动时间越长，体脂率可能越低
+距离市中心越远，房价可能越低
+</code></pre>
+<p>这类关系的特点是：</p>
+<blockquote>
+<p>两个变量反向变化。</p>
+</blockquote>
+<hr>
+<h3 id="23-协方差接近-0">2.3 协方差接近 0</h3>
+<p>如果 X 和 Y 没有明显的线性同步关系，协方差接近 0。</p>
+<p>例如：</p>
+<pre><code class="language-text">鞋码和数学成绩
+手机电量和今天午饭吃什么
+身份证尾号和收入水平
+</code></pre>
+<p>这类关系的特点是：</p>
+<blockquote>
+<p>两个变量没有明显的线性共同变化趋势。</p>
+</blockquote>
+<p>注意：协方差接近 0 不一定表示两个变量完全没有关系，只能说明它们没有明显的线性共同变化关系。</p>
+<hr>
+<h1 id="第二部分协方差公式">第二部分：协方差公式</h1>
+<hr>
+<h2 id="3-从方差公式到协方差公式">3. 从方差公式到协方差公式</h2>
+<p>方差的公式是：</p>
+<pre><code class="language-text">Var(X) = E[(X - E(X))²]
+</code></pre>
+<p>它衡量的是 X 自己围绕均值的波动。</p>
+<p>如果把平方展开成“自己乘自己”：</p>
+<pre><code class="language-text">Var(X) = E[(X - E(X))(X - E(X))]
+</code></pre>
+<p>这时我们把其中一个 X 换成 Y，就得到协方差：</p>
+<pre><code class="language-text">Cov(X, Y) = E[(X - E(X))(Y - E(Y))]
+</code></pre>
+<p>这就是协方差的核心公式。</p>
+<p>它的意思是：</p>
+<blockquote>
+<p>看 X 相对均值的偏差，与 Y 相对均值的偏差，是否经常同号或异号。</p>
+</blockquote>
+<p>如果两个偏差经常同号，乘积为正，协方差为正。</p>
+<p>如果两个偏差经常异号，乘积为负，协方差为负。</p>
+<hr>
+<h2 id="4-总体协方差">4. 总体协方差</h2>
+<p>如果我们掌握了全部数据，使用总体协方差：</p>
+<pre><code class="language-text">Cov(X, Y) = Σ[(xᵢ - μₓ)(yᵢ - μᵧ)] / n
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>xᵢ</code> 是 X 的第 i 个观测值。</li>
+<li><code>yᵢ</code> 是 Y 的第 i 个观测值。</li>
+<li><code>μₓ</code> 是 X 的总体均值。</li>
+<li><code>μᵧ</code> 是 Y 的总体均值。</li>
+<li><code>n</code> 是数据数量。</li>
+</ul>
+<hr>
+<h2 id="5-样本协方差">5. 样本协方差</h2>
+<p>如果我们只有样本数据，用样本协方差：</p>
+<pre><code class="language-text">Cov(X, Y) = Σ[(xᵢ - x̄)(yᵢ - ȳ)] / (n - 1)
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>x̄</code> 是 X 的样本均值。</li>
+<li><code>ȳ</code> 是 Y 的样本均值。</li>
+<li><code>n - 1</code> 是自由度修正。</li>
+</ul>
+<p>和样本方差一样，样本协方差通常除以 <code>n - 1</code>，用于修正样本估计总体时的偏差。</p>
+<hr>
+<h1 id="第三部分一步步计算协方差">第三部分：一步步计算协方差</h1>
+<hr>
+<h2 id="6-例子学习时间和考试成绩">6. 例子：学习时间和考试成绩</h2>
+<p>假设我们记录了 5 个学生的学习时间和考试成绩：</p>
+<table>
+<thead>
+<tr>
+<th>学生</th>
+<th>学习时间 X（小时）</th>
+<th>考试成绩 Y（分）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>1</td>
+<td>50</td>
+</tr>
+<tr>
+<td>B</td>
+<td>2</td>
+<td>60</td>
+</tr>
+<tr>
+<td>C</td>
+<td>3</td>
+<td>70</td>
+</tr>
+<tr>
+<td>D</td>
+<td>4</td>
+<td>80</td>
+</tr>
+<tr>
+<td>E</td>
+<td>5</td>
+<td>90</td>
+</tr>
+</tbody>
+</table>
+<h3 id="61-计算均值">6.1 计算均值</h3>
+<p>学习时间均值：</p>
+<pre><code class="language-text">x̄ = (1 + 2 + 3 + 4 + 5) / 5 = 3
+</code></pre>
+<p>成绩均值：</p>
+<pre><code class="language-text">ȳ = (50 + 60 + 70 + 80 + 90) / 5 = 70
+</code></pre>
+<h3 id="62-计算偏差">6.2 计算偏差</h3>
+<table>
+<thead>
+<tr>
+<th>学生</th>
+<th>xᵢ - x̄</th>
+<th>yᵢ - ȳ</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>-2</td>
+<td>-20</td>
+</tr>
+<tr>
+<td>B</td>
+<td>-1</td>
+<td>-10</td>
+</tr>
+<tr>
+<td>C</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>D</td>
+<td>1</td>
+<td>10</td>
+</tr>
+<tr>
+<td>E</td>
+<td>2</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<h3 id="63-偏差相乘">6.3 偏差相乘</h3>
+<table>
+<thead>
+<tr>
+<th>学生</th>
+<th>(xᵢ - x̄)(yᵢ - ȳ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>40</td>
+</tr>
+<tr>
+<td>B</td>
+<td>10</td>
+</tr>
+<tr>
+<td>C</td>
+<td>0</td>
+</tr>
+<tr>
+<td>D</td>
+<td>10</td>
+</tr>
+<tr>
+<td>E</td>
+<td>40</td>
+</tr>
+</tbody>
+</table>
+<p>偏差乘积之和：</p>
+<pre><code class="language-text">40 + 10 + 0 + 10 + 40 = 100
+</code></pre>
+<h3 id="64-计算总体协方差">6.4 计算总体协方差</h3>
+<p>如果这 5 个学生就是全部对象：</p>
+<pre><code class="language-text">Cov(X, Y) = 100 / 5 = 20
+</code></pre>
+<p>协方差为正，说明学习时间和考试成绩同向变化。</p>
+<h3 id="65-计算样本协方差">6.5 计算样本协方差</h3>
+<p>如果这 5 个学生只是从更大群体里抽取的样本：</p>
+<pre><code class="language-text">Cov(X, Y) = 100 / (5 - 1) = 25
+</code></pre>
+<hr>
+<h2 id="7-反向变化的例子">7. 反向变化的例子</h2>
+<p>假设商品价格和销量如下：</p>
+<table>
+<thead>
+<tr>
+<th>商品</th>
+<th>价格 X</th>
+<th>销量 Y</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>10</td>
+<td>100</td>
+</tr>
+<tr>
+<td>B</td>
+<td>20</td>
+<td>80</td>
+</tr>
+<tr>
+<td>C</td>
+<td>30</td>
+<td>60</td>
+</tr>
+<tr>
+<td>D</td>
+<td>40</td>
+<td>40</td>
+</tr>
+<tr>
+<td>E</td>
+<td>50</td>
+<td>20</td>
+</tr>
+</tbody>
+</table>
+<p>价格越高，销量越低。</p>
+<p>这时：</p>
+<ul>
+<li>价格高于均值时，销量低于均值。</li>
+<li>价格低于均值时，销量高于均值。</li>
+</ul>
+<p>两个偏差经常异号，偏差乘积多为负，所以协方差为负。</p>
+<hr>
+<h1 id="第四部分如何解释协方差">第四部分：如何解释协方差？</h1>
+<hr>
+<h2 id="8-协方差的符号比大小更重要">8. 协方差的符号比大小更重要</h2>
+<p>协方差最直观的信息是符号：</p>
+<table>
+<thead>
+<tr>
+<th>协方差</th>
+<th>含义</th>
+<th>关系</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>大于 0</td>
+<td>两个变量同向变化</td>
+<td>X 高于均值时，Y 也倾向于高于均值</td>
+</tr>
+<tr>
+<td>小于 0</td>
+<td>两个变量反向变化</td>
+<td>X 高于均值时，Y 倾向于低于均值</td>
+</tr>
+<tr>
+<td>接近 0</td>
+<td>没有明显线性共同变化</td>
+<td>不代表完全无关系</td>
+</tr>
+</tbody>
+</table>
+<p>但是协方差的数值大小不太好直接解释。</p>
+<p>原因是：</p>
+<blockquote>
+<p>协方差受变量单位影响。</p>
+</blockquote>
+<p>例如：</p>
+<ul>
+<li>身高用“米”表示，协方差可能很小。</li>
+<li>身高用“厘米”表示，协方差会变大很多。</li>
+</ul>
+<p>这导致协方差不能直接用来比较不同变量对之间的相关强弱。</p>
+<p>所以，协方差更适合判断方向，而不是直接判断强度。</p>
+<hr>
+<h2 id="9-协方差为什么难解释">9. 协方差为什么难解释？</h2>
+<p>假设我们研究身高和体重：</p>
+<pre><code class="language-text">身高单位：厘米
+体重单位：千克
+</code></pre>
+<p>协方差的单位就是：</p>
+<pre><code class="language-text">厘米 × 千克
+</code></pre>
+<p>这个单位很奇怪。</p>
+<p>如果把身高从厘米改成米，协方差数值会缩小 100 倍。</p>
+<p>但两个变量之间的关系并没有变。</p>
+<p>这说明：</p>
+<blockquote>
+<p>协方差的绝对值依赖量纲，不适合单独拿来解释相关强度。</p>
+</blockquote>
+<p>为了解决这个问题，统计学引入了相关系数。</p>
+<hr>
+<h1 id="第五部分协方差和相关系数">第五部分：协方差和相关系数</h1>
+<hr>
+<h2 id="10-相关系数是标准化后的协方差">10. 相关系数是标准化后的协方差</h2>
+<p>皮尔逊相关系数的公式是：</p>
+<pre><code class="language-text">r = Cov(X, Y) / (σₓ σᵧ)
+</code></pre>
+<p>其中：</p>
+<ul>
+<li><code>Cov(X, Y)</code> 是 X 和 Y 的协方差。</li>
+<li><code>σₓ</code> 是 X 的标准差。</li>
+<li><code>σᵧ</code> 是 Y 的标准差。</li>
+</ul>
+<p>这相当于把协方差除以两个变量各自的波动尺度。</p>
+<p>结果是：</p>
+<pre><code class="language-text">-1 ≤ r ≤ 1
+</code></pre>
+<p>相关系数的解释就清楚很多：</p>
+<table>
+<thead>
+<tr>
+<th>r 的范围</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>接近 1</td>
+<td>强正线性相关</td>
+</tr>
+<tr>
+<td>接近 -1</td>
+<td>强负线性相关</td>
+</tr>
+<tr>
+<td>接近 0</td>
+<td>弱线性相关或无线性相关</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11-协方差和相关系数的区别">11. 协方差和相关系数的区别</h2>
+<table>
+<thead>
+<tr>
+<th>指标</th>
+<th>是否受单位影响</th>
+<th>取值范围</th>
+<th>主要用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>协方差</td>
+<td>受单位影响</td>
+<td>无固定范围</td>
+<td>判断共同变化方向</td>
+</tr>
+<tr>
+<td>相关系数</td>
+<td>不受单位影响</td>
+<td><code>[-1, 1]</code></td>
+<td>判断线性关系方向和强度</td>
+</tr>
+</tbody>
+</table>
+<p>简单理解：</p>
+<ul>
+<li>协方差告诉你两个变量是同向还是反向变化。</li>
+<li>相关系数告诉你这种线性关系有多强。</li>
+</ul>
+<p>所以实际分析中，经常先讲协方差的思想，再使用相关系数做解释。</p>
+<hr>
+<h2 id="12-相关不等于因果">12. 相关不等于因果</h2>
+<p>无论是协方差还是相关系数，都只能描述变量之间的统计关系。</p>
+<p>它们不能直接证明因果。</p>
+<p>例如：</p>
+<pre><code class="language-text">冰淇淋销量和溺水人数可能正相关
+</code></pre>
+<p>但不能说“吃冰淇淋导致溺水”。</p>
+<p>更合理的解释是：</p>
+<blockquote>
+<p>夏天气温升高，冰淇淋销量增加，同时游泳人数增加，溺水风险也增加。</p>
+</blockquote>
+<p>这里真正的共同因素可能是气温。</p>
+<p>所以看到协方差或相关系数时，一定要记住：</p>
+<blockquote>
+<p>相关关系是线索，不是结论。</p>
+</blockquote>
+<hr>
+<h1 id="第六部分协方差矩阵">第六部分：协方差矩阵</h1>
+<hr>
+<h2 id="13-从两个变量到多个变量">13. 从两个变量到多个变量</h2>
+<p>如果只有两个变量，我们只需要一个协方差：</p>
+<pre><code class="language-text">Cov(X, Y)
+</code></pre>
+<p>但在机器学习中，我们经常有很多特征：</p>
+<pre><code class="language-text">身高、体重、年龄、收入、消费金额、点击次数、停留时长...
+</code></pre>
+<p>这时我们希望同时知道：</p>
+<ul>
+<li>每个变量自己的方差。</li>
+<li>每两个变量之间的协方差。</li>
+</ul>
+<p>于是就有了协方差矩阵。</p>
+<hr>
+<h2 id="14-协方差矩阵长什么样">14. 协方差矩阵长什么样？</h2>
+<p>假设有三个变量 <code>X₁</code>、<code>X₂</code>、<code>X₃</code>，协方差矩阵是：</p>
+<pre><code class="language-text">        X₁          X₂          X₃
+X₁  Var(X₁)   Cov(X₁,X₂)  Cov(X₁,X₃)
+X₂  Cov(X₂,X₁) Var(X₂)    Cov(X₂,X₃)
+X₃  Cov(X₃,X₁) Cov(X₃,X₂) Var(X₃)
+</code></pre>
+<p>它有两个重要特点：</p>
+<ol>
+<li>对角线是每个变量自己的方差。</li>
+<li>非对角线是不同变量之间的协方差。</li>
+</ol>
+<p>因为：</p>
+<pre><code class="language-text">Cov(X, Y) = Cov(Y, X)
+</code></pre>
+<p>所以协方差矩阵是对称矩阵。</p>
+<hr>
+<h2 id="15-协方差矩阵有什么用">15. 协方差矩阵有什么用？</h2>
+<p>协方差矩阵是很多机器学习和数据分析方法的基础。</p>
+<p>典型应用包括：</p>
+<ul>
+<li><strong>PCA 主成分分析</strong>：寻找数据方差最大的方向，用于降维和压缩。</li>
+<li><strong>多元高斯分布</strong>：描述多个变量之间的联合分布。</li>
+<li><strong>金融资产组合</strong>：分析不同资产收益率之间的共同波动。</li>
+<li><strong>特征冗余分析</strong>：判断多个特征是否携带重复信息。</li>
+<li><strong>异常检测</strong>：识别不符合整体协方差结构的数据点。</li>
+</ul>
+<p>尤其是 PCA，它和协方差关系非常紧密。</p>
+<p>PCA 要找的是：</p>
+<blockquote>
+<p>数据在哪些方向上变化最大？</p>
+</blockquote>
+<p>而“变化最大”这个问题，正是通过协方差矩阵来表达的。</p>
+<hr>
+<h1 id="第七部分协方差在机器学习中的意义">第七部分：协方差在机器学习中的意义</h1>
+<hr>
+<h2 id="16-特征关系分析">16. 特征关系分析</h2>
+<p>机器学习建模前，我们常常要分析特征之间的关系。</p>
+<p>如果两个特征高度相关，说明它们可能携带相似信息。</p>
+<p>例如预测房价时：</p>
+<pre><code class="language-text">房屋面积
+卧室数量
+客厅面积
+总价
+</code></pre>
+<p>房屋面积和客厅面积可能高度相关。</p>
+<p>如果特征之间高度冗余，可能会影响模型解释性，也可能带来多重共线性问题。</p>
+<p>协方差和相关系数可以帮助我们识别这些关系。</p>
+<hr>
+<h2 id="17-pca-降维">17. PCA 降维</h2>
+<p>PCA 的基本思想是：</p>
+<blockquote>
+<p>找到数据变化最大的方向，把数据投影到这些方向上。</p>
+</blockquote>
+<p>这些方向来自协方差矩阵的特征向量。</p>
+<p>协方差矩阵告诉我们数据在不同方向上的联合变化情况。</p>
+<p>特征值告诉我们某个方向上保留了多少方差信息。</p>
+<p>所以 PCA 本质上是在做：</p>
+<blockquote>
+<p>用尽可能少的维度，保留尽可能多的数据波动信息。</p>
+</blockquote>
+<hr>
+<h2 id="18-金融风险建模">18. 金融风险建模</h2>
+<p>在投资组合中，我们不仅关心每个资产自己的波动，还关心资产之间是否一起涨跌。</p>
+<p>如果两个资产协方差很高：</p>
+<blockquote>
+<p>它们可能经常一起涨、一起跌。</p>
+</blockquote>
+<p>如果两个资产协方差较低或为负：</p>
+<blockquote>
+<p>它们可能有一定分散风险的作用。</p>
+</blockquote>
+<p>所以资产组合优化中，协方差矩阵是非常核心的输入。</p>
+<hr>
+<h1 id="第八部分用代码计算协方差">第八部分：用代码计算协方差</h1>
+<hr>
+<h2 id="19-python-手写协方差">19. Python 手写协方差</h2>
+<pre><code class="language-python">x = [1, 2, 3, 4, 5]
+y = [50, 60, 70, 80, 90]
+
+x_mean = sum(x) / len(x)
+y_mean = sum(y) / len(y)
+
+cov_population = sum(
+    (xi - x_mean) * (yi - y_mean)
+    for xi, yi in zip(x, y)
+) / len(x)
+
+cov_sample = sum(
+    (xi - x_mean) * (yi - y_mean)
+    for xi, yi in zip(x, y)
+) / (len(x) - 1)
+
+print(cov_population)  # 20.0
+print(cov_sample)      # 25.0
+</code></pre>
+<hr>
+<h2 id="20-numpy-计算协方差">20. NumPy 计算协方差</h2>
+<pre><code class="language-python">import numpy as np
+
+x = np.array([1, 2, 3, 4, 5])
+y = np.array([50, 60, 70, 80, 90])
+
+print(np.cov(x, y))
+</code></pre>
+<p>输出的协方差矩阵大致是：</p>
+<pre><code class="language-text">[[  2.5  25. ]
+ [ 25.  250. ]]
+</code></pre>
+<p>含义是：</p>
+<ul>
+<li><code>2.5</code> 是 X 的样本方差。</li>
+<li><code>250</code> 是 Y 的样本方差。</li>
+<li><code>25</code> 是 X 和 Y 的样本协方差。</li>
+</ul>
+<p>NumPy 的 <code>np.cov</code> 默认计算样本协方差，也就是分母使用 <code>n - 1</code>。</p>
+<hr>
+<h2 id="21-pandas-计算协方差和相关系数">21. Pandas 计算协方差和相关系数</h2>
+<pre><code class="language-python">import pandas as pd
+
+df = pd.DataFrame({
+    &quot;study_hours&quot;: [1, 2, 3, 4, 5],
+    &quot;score&quot;: [50, 60, 70, 80, 90]
+})
+
+print(df.cov())
+print(df.corr())
+</code></pre>
+<p><code>df.cov()</code> 计算协方差矩阵。</p>
+<p><code>df.corr()</code> 计算相关系数矩阵。</p>
+<p>实际数据分析中，通常会同时看这两个结果：</p>
+<ul>
+<li>协方差用于理解共同波动。</li>
+<li>相关系数用于比较关系强弱。</li>
+</ul>
+<hr>
+<h1 id="第九部分常见误区">第九部分：常见误区</h1>
+<hr>
+<h2 id="22-误区一协方差为-0-就一定没有关系">22. 误区一：协方差为 0 就一定没有关系</h2>
+<p>不一定。</p>
+<p>协方差主要衡量的是线性共同变化。</p>
+<p>如果两个变量之间存在非线性关系，协方差可能仍然接近 0。</p>
+<p>比如：</p>
+<pre><code class="language-text">Y = X²
+</code></pre>
+<p>当 X 在正负对称区间取值时，X 和 Y 的协方差可能接近 0，但它们显然存在关系。</p>
+<p>所以协方差为 0，只能说明：</p>
+<blockquote>
+<p>没有明显线性共同变化，不代表没有任何关系。</p>
+</blockquote>
+<hr>
+<h2 id="23-误区二协方差越大关系一定越强">23. 误区二：协方差越大，关系一定越强</h2>
+<p>不一定。</p>
+<p>协方差受单位影响。</p>
+<p>如果把身高单位从米改成厘米，协方差数值会放大 100 倍。</p>
+<p>但变量之间的关系并没有变强。</p>
+<p>所以比较关系强弱时，更适合使用相关系数。</p>
+<hr>
+<h2 id="24-误区三协方差能证明因果">24. 误区三：协方差能证明因果</h2>
+<p>不能。</p>
+<p>协方差只能说明两个变量是否有共同变化趋势，不能证明谁导致了谁。</p>
+<p>比如广告投入和销售额正协方差，可能是广告提高了销售，也可能是旺季时企业同时增加广告预算和销售自然增长。</p>
+<p>要证明因果，需要实验设计、随机对照、因果推断等更严格的方法。</p>
+<hr>
+<h1 id="第十部分核心总结">第十部分：核心总结</h1>
+<hr>
+<h2 id="25-一句话记住协方差">25. 一句话记住协方差</h2>
+<blockquote>
+<p>协方差衡量两个变量是否倾向于一起变化。</p>
+</blockquote>
+<p>几个关键结论：</p>
+<ol>
+<li>方差衡量一个变量自己的波动。</li>
+<li>协方差衡量两个变量共同变化的方向。</li>
+<li>协方差大于 0，表示两个变量同向变化。</li>
+<li>协方差小于 0，表示两个变量反向变化。</li>
+<li>协方差接近 0，表示没有明显线性共同变化。</li>
+<li>协方差受单位影响，因此数值大小不容易直接解释。</li>
+<li>相关系数是标准化后的协方差，更适合比较线性关系强弱。</li>
+<li>协方差矩阵是 PCA、金融风险建模、多元统计分析的重要基础。</li>
+</ol>
+<p>如果方差回答的是：</p>
+<blockquote>
+<p>一个变量自己波动得有多厉害？</p>
+</blockquote>
+<p>那么协方差回答的是：</p>
+<blockquote>
+<p>两个变量是不是在一起波动？</p>
+</blockquote>
+<p>学会协方差，就等于从“看单个变量”进入了“看变量关系”的世界。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%95%B0%E5%AD%A6%E4%B9%8B%E7%BE%8E" class="tag js-tag-link" data-tag-name="数学之美">
+                    数学之美
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Standard Deviation/">
+                      <div class="related-left">
+                        <div class="related-post-title">标准差（Standard Deviation）：把数据波动变得可读的统计尺度</div>
+                        <div class="related-meta">2026-05-17</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/17/h0Mn/176fe15.png" alt="标准差（Standard Deviation）：把数据波动变得可读的统计尺度" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Variance/">
+                      <div class="related-left">
+                        <div class="related-post-title">方差（Variance）：衡量数据波动的核心尺度</div>
+                        <div class="related-meta">2026-05-17</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/6Bht/c0c4742.png" alt="方差（Variance）：衡量数据波动的核心尺度" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Discrete Mathematics/">
+                      <div class="related-left">
+                        <div class="related-post-title">离散（Discrete Mathematics）之美：离散数学通识读本</div>
+                        <div class="related-meta">2026-05-17</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/y5eD/1b82937.png" alt="离散（Discrete Mathematics）之美：离散数学通识读本" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/shu-ju-liu-zhong-de-shen-zhi-yu-yan-wei-shi-me-ni-de-aiyou-xi-he-wei-lai-du-you-xian-xing-dai-shu-bian-yi/">
+                      <div class="related-left">
+                        <div class="related-post-title">数据流中的神之语言：为什么你的AI、游戏和未来都由线性代数编译</div>
+                        <div class="related-meta">2026-04-22</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/24/kAc9/1.jpg" alt="数据流中的神之语言：为什么你的AI、游戏和未来都由线性代数编译" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/Standard Deviation/">
+                  <h3 class="post-title">
+                    标准差（Standard Deviation）：把数据波动变得可读的统计尺度
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

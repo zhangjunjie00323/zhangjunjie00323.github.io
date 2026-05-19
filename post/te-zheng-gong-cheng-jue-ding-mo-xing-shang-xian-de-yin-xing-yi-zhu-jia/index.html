@@ -1,0 +1,1201 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>特征工程：决定模型上限的隐形艺术家 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="机器学习特征工程完全指南：数据是原石，特征工程是雕琢
+
+引言：数据与算法的真正桥梁
+在机器学习领域流传着一句经典名言：
+
+“数据和特征决定了机器学习的上限，而模型和算法只是逼近这个上限。”
+
+这意味着，无论你使用多么先进的深度学习模型，如果..." />
+    <meta name="keywords" content="机器学习" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%BC%95%E8%A8%80%E6%95%B0%E6%8D%AE%E4%B8%8E%E7%AE%97%E6%B3%95%E7%9A%84%E7%9C%9F%E6%AD%A3%E6%A1%A5%E6%A2%81">引言：数据与算法的真正桥梁</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0%E6%95%B0%E6%8D%AE%E6%B8%85%E6%B4%97%E4%B8%8E%E9%A2%84%E5%A4%84%E7%90%86%E5%9C%B0%E5%9F%BA%E5%BF%85%E9%A1%BB%E7%89%A2%E5%9B%BA">第一章：数据清洗与预处理——地基必须牢固</a>
+<ul>
+<li><a href="#11-%E7%BC%BA%E5%A4%B1%E5%80%BC%E5%A4%84%E7%90%86">1.1 缺失值处理</a></li>
+<li><a href="#12-%E5%BC%82%E5%B8%B8%E5%80%BC%E5%A4%84%E7%90%86">1.2 异常值处理</a></li>
+<li><a href="#13-%E6%95%B0%E6%8D%AE%E6%A0%87%E5%87%86%E5%8C%96%E4%B8%8E%E5%BD%92%E4%B8%80%E5%8C%96">1.3 数据标准化与归一化</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E7%89%B9%E5%BE%81%E5%8F%98%E6%8D%A2%E8%AE%A9%E6%95%B0%E6%8D%AE%E9%80%82%E9%85%8D%E6%A8%A1%E5%9E%8B">第二章：特征变换——让数据适配模型</a>
+<ul>
+<li><a href="#21-%E9%9D%9E%E7%BA%BF%E6%80%A7%E5%8F%98%E6%8D%A2">2.1 非线性变换</a></li>
+<li><a href="#22-%E7%A6%BB%E6%95%A3%E5%8C%96%E5%88%86%E7%AE%B1">2.2 离散化（分箱）</a></li>
+<li><a href="#23-%E7%B1%BB%E5%88%AB%E7%89%B9%E5%BE%81%E7%BC%96%E7%A0%81">2.3 类别特征编码</a></li>
+<li><a href="#24-%E6%96%87%E6%9C%AC%E7%89%B9%E5%BE%81%E6%8F%90%E5%8F%96">2.4 文本特征提取</a></li>
+<li><a href="#25-%E6%97%B6%E9%97%B4%E6%97%A5%E6%9C%9F%E7%89%B9%E5%BE%81">2.5 时间/日期特征</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0%E7%89%B9%E5%BE%81%E6%9E%84%E5%BB%BA%E5%88%9B%E9%80%A0%E6%96%B0%E7%89%B9%E5%BE%81%E7%9A%84%E8%89%BA%E6%9C%AF">第三章：特征构建——创造新特征的艺术</a>
+<ul>
+<li><a href="#31-%E7%BB%84%E5%90%88%E7%89%B9%E5%BE%81%E4%B8%8E%E4%BA%A4%E4%BA%92%E7%89%B9%E5%BE%81">3.1 组合特征与交互特征</a></li>
+<li><a href="#32-%E7%BB%9F%E8%AE%A1%E7%89%B9%E5%BE%81">3.2 统计特征</a></li>
+<li><a href="#33-%E4%B8%9A%E5%8A%A1%E9%A2%86%E5%9F%9F%E7%9F%A5%E8%AF%86%E7%89%B9%E5%BE%81">3.3 业务领域知识特征</a></li>
+<li><a href="#34-%E7%9B%AE%E6%A0%87%E7%BC%96%E7%A0%81%E4%B8%8E%E9%99%8D%E7%BB%B4%E4%BD%9C%E4%B8%BA%E7%89%B9%E5%BE%81">3.4 目标编码与降维作为特征</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E6%8F%90%E7%82%BC%E7%89%B9%E5%BE%81%E4%B8%AD%E7%9A%84%E7%B2%BE%E5%8D%8E">第四章：特征选择——提炼特征中的精华</a>
+<ul>
+<li><a href="#41-%E8%BF%87%E6%BB%A4%E6%B3%95">4.1 过滤法</a></li>
+<li><a href="#42-%E5%8C%85%E8%A3%85%E6%B3%95">4.2 包装法</a></li>
+<li><a href="#43-%E5%B5%8C%E5%85%A5%E6%B3%95">4.3 嵌入法</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E5%B7%A5%E4%BD%9C%E6%B5%81%E4%B8%8E%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">第五章：特征工程工作流与最佳实践</a>
+<ul>
+<li><a href="#51-%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E4%B8%8D%E6%98%AF%E4%B8%80%E6%AC%A1%E6%80%A7%E7%9A%84">5.1 特征工程不是一次性的</a></li>
+<li><a href="#52-%E9%98%B2%E6%AD%A2%E6%95%B0%E6%8D%AE%E6%B3%84%E9%9C%B2">5.2 防止数据泄露</a></li>
+<li><a href="#53-%E8%87%AA%E5%8A%A8%E5%8C%96%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B">5.3 自动化特征工程</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E6%80%BB%E7%BB%93%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E7%9A%84%E8%87%B3%E9%AB%98%E5%BF%83%E6%B3%95">第六章：总结：特征工程的至高心法</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">特征工程：决定模型上限的隐形艺术家</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-28 21:04
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                58 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/y3Bz/ad8f8c8.jpg" alt="特征工程：决定模型上限的隐形艺术家">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>机器学习特征工程完全指南：数据是原石，特征工程是雕琢</p>
+<!-- more -->
+<h4 id="引言数据与算法的真正桥梁">引言：数据与算法的真正桥梁</h4>
+<p>在机器学习领域流传着一句经典名言：</p>
+<blockquote>
+<p><strong>“数据和特征决定了机器学习的上限，而模型和算法只是逼近这个上限。”</strong></p>
+</blockquote>
+<p>这意味着，无论你使用多么先进的深度学习模型，如果输入的特征质量低下，模型的性能都将受到根本性的限制。特征工程（Feature Engineering）就是将原始数据转化为能够更好表达问题本质的特征的过程，它是机器学习工作流中最耗时、最考验经验，但也最可能带来性能飞跃的环节。</p>
+<p>本文将全面梳理特征工程的四大核心模块：<strong>数据清洗与预处理、特征变换、特征构建、特征选择</strong>，并提供大量可立即使用的 Python 代码片段。</p>
+<h3 id="第一章数据清洗与预处理地基必须牢固">第一章：数据清洗与预处理——地基必须牢固</h3>
+<h4 id="11-缺失值处理">1.1 缺失值处理</h4>
+<p>现实数据几乎不可能完美无缺。缺失值的处理直接影响模型效果。</p>
+<p><strong>方法一：删除</strong></p>
+<ul>
+<li>删除缺失比例过高的特征（例如缺失超过 50%）。</li>
+<li>删除包含缺失值的样本（当数据量巨大且缺失比例极低时）。</li>
+</ul>
+<p><strong>方法二：填充</strong></p>
+<ul>
+<li><strong>数值特征</strong>：用均值、中位数、众数填充，或用模型预测缺失值（如 KNN 插补）。</li>
+<li><strong>类别特征</strong>：用众数填充，或将缺失视为一个新的类别（如“未知”）。</li>
+</ul>
+<p><strong>方法三：使用能够处理缺失值的模型</strong></p>
+<ul>
+<li>如 XGBoost、LightGBM 可以自动处理缺失值。</li>
+</ul>
+<pre><code class="language-python">import pandas as pd
+import numpy as np
+from sklearn.impute import SimpleImputer
+
+# 均值填充数值特征
+num_imputer = SimpleImputer(strategy='mean')
+df[['age', 'salary']] = num_imputer.fit_transform(df[['age', 'salary']])
+
+# 众数填充分类特征
+cat_imputer = SimpleImputer(strategy='most_frequent')
+df[['city']] = cat_imputer.fit_transform(df[['city']])
+</code></pre>
+<h4 id="12-异常值处理">1.2 异常值处理</h4>
+<p>异常值可能严重干扰模型，尤其是基于距离或梯度的模型（如线性回归、K-Means）。</p>
+<p><strong>检测方法</strong>：</p>
+<ul>
+<li><strong>箱线图法</strong>：值小于 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>Q</mi><mn>1</mn></msub><mo>−</mo><mn>1.5</mn><mo>×</mo><mi>I</mi><mi>Q</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">Q_1 - 1.5 \times IQR</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">1</span><span class="mord">.</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault">Q</span><span class="mord mathdefault" style="margin-right:0.00773em;">R</span></span></span></span> 或大于 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><msub><mi>Q</mi><mn>3</mn></msub><mo>+</mo><mn>1.5</mn><mo>×</mo><mi>I</mi><mi>Q</mi><mi>R</mi></mrow><annotation encoding="application/x-tex">Q_3 + 1.5 \times IQR</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord"><span class="mord mathdefault">Q</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.30110799999999993em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">3</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.72777em;vertical-align:-0.08333em;"></span><span class="mord">1</span><span class="mord">.</span><span class="mord">5</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">×</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.8777699999999999em;vertical-align:-0.19444em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">I</span><span class="mord mathdefault">Q</span><span class="mord mathdefault" style="margin-right:0.00773em;">R</span></span></span></span> 视为异常。</li>
+<li><strong>Z-Score 法</strong>：当 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">∣</mi><mi>Z</mi><mi mathvariant="normal">∣</mi><mo>&gt;</mo><mn>3</mn></mrow><annotation encoding="application/x-tex">|Z| &gt; 3</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">∣</span><span class="mord mathdefault" style="margin-right:0.07153em;">Z</span><span class="mord">∣</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">3</span></span></span></span> 时通常视为异常（假设正态分布）。</li>
+<li><strong>Isolation Forest</strong>：无监督算法专门检测异常点。</li>
+</ul>
+<p><strong>处理策略</strong>：</p>
+<ul>
+<li><strong>截断</strong>：将异常值替换为边界值（如第1百分位和第99百分位）。</li>
+<li><strong>分箱</strong>：将连续值离散化为区间，减轻异常值影响。</li>
+<li><strong>保留</strong>：如果异常值代表真实极端事件（如欺诈、灾害），则需要保留。</li>
+</ul>
+<pre><code class="language-python"># 截断异常值
+q1 = df['price'].quantile(0.01)
+q99 = df['price'].quantile(0.99)
+df['price'] = df['price'].clip(lower=q1, upper=q99)
+</code></pre>
+<h4 id="13-数据标准化与归一化">1.3 数据标准化与归一化</h4>
+<p>许多机器学习模型假设特征在相似的尺度上。尺度差异大的特征会导致梯度下降收敛缓慢，也会让基于距离的模型（KNN、SVM）被大尺度特征主导。</p>
+<ul>
+<li><strong>标准化（Standardization）</strong>：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mo mathvariant="normal">′</mo></msup><mo>=</mo><mfrac><mrow><mi>x</mi><mo>−</mo><mi>μ</mi></mrow><mi>σ</mi></mfrac></mrow><annotation encoding="application/x-tex">x&#x27; = \frac{x - \mu}{\sigma}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.751892em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.199439em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.854439em;"><span style="top:-2.6550000000000002em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.03588em;">σ</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.446108em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="mbin mtight">−</span><span class="mord mathdefault mtight">μ</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>，使特征均值为 0，标准差为 1。适用于假设数据服从正态分布的模型（如线性回归、逻辑回归、LDA）。</li>
+<li><strong>归一化（Min-Max Scaling）</strong>：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><msup><mi>x</mi><mo mathvariant="normal">′</mo></msup><mo>=</mo><mfrac><mrow><mi>x</mi><mo>−</mo><msub><mi>x</mi><mrow><mi>m</mi><mi>i</mi><mi>n</mi></mrow></msub></mrow><mrow><msub><mi>x</mi><mrow><mi>m</mi><mi>a</mi><mi>x</mi></mrow></msub><mo>−</mo><msub><mi>x</mi><mrow><mi>m</mi><mi>i</mi><mi>n</mi></mrow></msub></mrow></mfrac></mrow><annotation encoding="application/x-tex">x&#x27; = \frac{x - x_{min}}{x_{max} - x_{min}}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.751892em;vertical-align:0em;"></span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.751892em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">′</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1.263531em;vertical-align:-0.44509999999999994em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8184309999999999em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.16454285714285719em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">m</span><span class="mord mathdefault mtight">a</span><span class="mord mathdefault mtight">x</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span><span class="mbin mtight">−</span><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3280857142857143em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">m</span><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.4101em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="mbin mtight">−</span><span class="mord mtight"><span class="mord mathdefault mtight">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.3280857142857143em;"><span style="top:-2.357em;margin-left:0em;margin-right:0.07142857142857144em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">m</span><span class="mord mathdefault mtight">i</span><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.143em;"><span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.44509999999999994em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>，缩放到 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>[</mo><mn>0</mn><mo separator="true">,</mo><mn>1</mn><mo>]</mo></mrow><annotation encoding="application/x-tex">[0, 1]</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mopen">[</span><span class="mord">0</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">1</span><span class="mclose">]</span></span></span></span> 区间。适用于需要固定范围输入的模型（如神经网络使用 Sigmoid 激活时）。</li>
+</ul>
+<pre><code class="language-python">from sklearn.preprocessing import StandardScaler, MinMaxScaler
+
+scaler = StandardScaler()
+X_scaled = scaler.fit_transform(X)
+</code></pre>
+<h3 id="第二章特征变换让数据适配模型">第二章：特征变换——让数据适配模型</h3>
+<h4 id="21-非线性变换">2.1 非线性变换</h4>
+<p>许多模型假设特征与目标之间存在线性关系，但现实往往并非如此。通过非线性变换可以“拉伸”或“压缩”数据分布，使其更符合模型假设。</p>
+<p><strong>常用变换</strong>：</p>
+<ul>
+<li><strong>对数变换</strong> <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>log</mi><mo>⁡</mo><mo>(</mo><mi>x</mi><mo>+</mo><mn>1</mn><mo>)</mo></mrow><annotation encoding="application/x-tex">\log(x+1)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">lo<span style="margin-right:0.01389em;">g</span></span><span class="mopen">(</span><span class="mord mathdefault">x</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord">1</span><span class="mclose">)</span></span></span></span>：适用于右偏严重的正值数据（如收入、金额），能减小极值的影响并使其接近正态分布。</li>
+<li><strong>平方根变换</strong>：效果与对数变换类似，但对 0 值更友好。</li>
+<li><strong>Box-Cox 变换</strong>：一种广义的幂变换，能自动调整参数以最大化正态性，仅适用于正数。</li>
+<li><strong>Yeo-Johnson 变换</strong>：Box-Cox 的扩展，支持零和负数。</li>
+</ul>
+<pre><code class="language-python">from sklearn.preprocessing import PowerTransformer
+
+# Box-Cox 变换（需数据为正）
+pt_boxcox = PowerTransformer(method='box-cox')
+X_boxcox = pt_boxcox.fit_transform(X_positive)
+
+# Yeo-Johnson 变换（支持任意实数）
+pt_yeo = PowerTransformer(method='yeo-johnson')
+X_yeo = pt_yeo.fit_transform(X)
+</code></pre>
+<h4 id="22-离散化分箱">2.2 离散化（分箱）</h4>
+<p>将连续特征转换为离散的“箱子”，可以提高模型的非线性表达能力，同时增加稳健性，减少异常值干扰。</p>
+<ul>
+<li><strong>等宽分箱</strong>：将取值范围均匀划分。</li>
+<li><strong>等频分箱</strong>：使每个箱包含大致相同数量的样本。</li>
+<li><strong>基于决策树的分箱</strong>：利用目标变量的信息有监督地进行最优分箱。</li>
+</ul>
+<pre><code class="language-python">from sklearn.preprocessing import KBinsDiscretizer
+
+# 等频分箱，分为 5 个箱子，输出为整数编码
+est = KBinsDiscretizer(n_bins=5, encode='ordinal', strategy='quantile')
+X_binned = est.fit_transform(X)
+</code></pre>
+<h4 id="23-类别特征编码">2.3 类别特征编码</h4>
+<p>模型一般要求输入是数值，因此必须将类别特征转化为数值。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">编码方法</th>
+<th style="text-align:left">原理</th>
+<th style="text-align:left">适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>One-Hot 编码</strong></td>
+<td style="text-align:left">每个类别生成一个新 0/1 特征</td>
+<td style="text-align:left">类别数较少（&lt;10），无顺序关系</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>标签编码</strong></td>
+<td style="text-align:left">将类别映射为整数</td>
+<td style="text-align:left">有序类别（如：低、中、高）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>频数编码</strong></td>
+<td style="text-align:left">用类别出现频数/频率替代</td>
+<td style="text-align:left">高基数特征（&gt;100 个类别）</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>目标编码</strong></td>
+<td style="text-align:left">用目标变量的均值（或其他统计量）替代</td>
+<td style="text-align:left">高基数特征且有监督学习任务</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>嵌入编码</strong></td>
+<td style="text-align:left">用神经网络将高维稀疏类别映射到低维稠密向量</td>
+<td style="text-align:left">深度学习模型，超高基数</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-python">import pandas as pd
+from sklearn.preprocessing import OneHotEncoder, LabelEncoder
+
+# One-Hot 编码（常用）
+ohe = OneHotEncoder(sparse_output=False, handle_unknown='ignore')
+X_ohe = ohe.fit_transform(df[['city']])
+
+# 频数编码
+freq_map = df['city'].value_counts().to_dict()
+df['city_freq'] = df['city'].map(freq_map)
+</code></pre>
+<h4 id="24-文本特征提取">2.4 文本特征提取</h4>
+<ul>
+<li><strong>词袋模型和 TF-IDF</strong>：将文本转化为词频或加权词频向量。</li>
+<li><strong>预训练词嵌入</strong>：Word2Vec、GloVe、BERT 等。</li>
+<li><strong>文本统计特征</strong>：字符数、单词数、平均词长、大写字母比例、标点频率等。</li>
+</ul>
+<h4 id="25-时间日期特征">2.5 时间/日期特征</h4>
+<p>从时间戳中可以提取出丰富的周期性特征：</p>
+<ul>
+<li>年、月、日、时、分、秒</li>
+<li>星期几（1-7）、是否周末、是否节假日</li>
+<li>季度、月份所属的季节</li>
+<li>距某一关键日期的天数</li>
+</ul>
+<pre><code class="language-python">df['date'] = pd.to_datetime(df['date'])
+df['year'] = df['date'].dt.year
+df['month'] = df['date'].dt.month
+df['day_of_week'] = df['date'].dt.dayofweek
+df['is_weekend'] = (df['day_of_week'] &gt;= 5).astype(int)
+</code></pre>
+<h3 id="第三章特征构建创造新特征的艺术">第三章：特征构建——创造新特征的艺术</h3>
+<h4 id="31-组合特征与交互特征">3.1 组合特征与交互特征</h4>
+<p>两个特征组合在一起可能产生远大于单独相加的信息量。</p>
+<ul>
+<li><strong>加、减、乘、除</strong>：例如 <code>人均消费 = 总消费 / 人数</code>。</li>
+<li><strong>多项式特征</strong>：生成特征之间的二次或更高次交互项。</li>
+<li><strong>特征交叉</strong>：将两个或多个类别特征拼接成一个新特征，例如将“城市”和“产品类别”组合成“城市_产品”。</li>
+</ul>
+<pre><code class="language-python">from sklearn.preprocessing import PolynomialFeatures
+
+# 生成最高 2 次的交互特征
+poly = PolynomialFeatures(degree=2, interaction_only=False, include_bias=False)
+X_poly = poly.fit_transform(X[['height', 'width']])
+</code></pre>
+<h4 id="32-统计特征">3.2 统计特征</h4>
+<p>在表格型数据竞赛中，统计特征是最有力的武器之一。可以从多个相关数据源（如历史记录、分组聚合）中计算统计量。</p>
+<ul>
+<li><strong>分组聚合</strong>：对用户按时间窗口计算平均值、最大值、总和、标准差等。</li>
+<li><strong>计数特征</strong>：某个事件发生的次数。</li>
+<li><strong>比率特征</strong>：两个统计量相除。</li>
+</ul>
+<pre><code class="language-python"># 按用户分组，计算消费金额的均值和总和
+user_stats = df.groupby('user_id').agg(
+    mean_spending=('amount', 'mean'),
+    total_spending=('amount', 'sum'),
+    purchase_count=('amount', 'count')
+).reset_index()
+</code></pre>
+<h4 id="33-业务领域知识特征">3.3 业务领域知识特征</h4>
+<p>这是机器学习中最难以自动化，也最具价值的部分。深入理解业务，能创造出决定性的“黄金特征”。</p>
+<ul>
+<li><strong>金融风控</strong>：收入与负债比率、近期交易频率激增度。</li>
+<li><strong>零售</strong>：复购率、客户生命周期长度、促销敏感度。</li>
+<li><strong>交通</strong>：早晚高峰时段标识、相邻路段速度差。</li>
+</ul>
+<h4 id="34-目标编码与降维作为特征">3.4 目标编码与降维作为特征</h4>
+<ul>
+<li><strong>目标编码</strong>：如前所述，对分类变量用目标均值编码（需配合平滑和交叉验证防止过拟合）。</li>
+<li><strong>PCA / t-SNE / UMAP</strong>：对原始特征进行降维后得到的新特征，可作为模型输入。</li>
+<li><strong>聚类标签</strong>：先用 K-Means 等算法对数据进行聚类，将聚类标签作为新特征。</li>
+<li><strong>模型集成特征</strong>：用另一个模型（如 GBDT）输出决策树叶子节点的 one-hot 编码作为特征。</li>
+</ul>
+<h3 id="第四章特征选择提炼特征中的精华">第四章：特征选择——提炼特征中的精华</h3>
+<h4 id="41-过滤法">4.1 过滤法</h4>
+<p>独立于模型，通过统计指标快速筛选特征。</p>
+<ul>
+<li><strong>方差阈值法</strong>：剔除方差极低（几乎为常数）的特征。</li>
+<li><strong>相关系数法</strong>：保留与目标变量相关性高的特征，剔除特征间高度相关的冗余特征。</li>
+<li><strong>卡方检验（分类任务）</strong>：衡量分类特征与目标之间的独立性。</li>
+<li><strong>互信息法</strong>：衡量特征与目标之间的非线性依赖关系。</li>
+</ul>
+<pre><code class="language-python">from sklearn.feature_selection import VarianceThreshold, SelectKBest, mutual_info_regression
+
+# 删除方差低于 0.01 的特征
+selector = VarianceThreshold(threshold=0.01)
+X_var = selector.fit_transform(X)
+
+# 选择与目标互信息最高的 10 个特征
+selector_mi = SelectKBest(mutual_info_regression, k=10)
+X_mi = selector_mi.fit_transform(X, y)
+</code></pre>
+<h4 id="42-包装法">4.2 包装法</h4>
+<p>使用目标模型来评估特征子集，通过搜索得到最优组合。</p>
+<ul>
+<li><strong>递归特征消除（RFE）</strong>：用模型反复训练，每次删除最不重要的特征，直到剩余指定数量。</li>
+<li><strong>前向搜索/后向搜索</strong>：逐个添加或删除特征，根据模型性能变化决定取舍。</li>
+</ul>
+<pre><code class="language-python">from sklearn.feature_selection import RFE
+from sklearn.linear_model import LogisticRegression
+
+# 使用逻辑回归作为基模型，选择最佳 10 个特征
+rfe = RFE(estimator=LogisticRegression(), n_features_to_select=10)
+X_rfe = rfe.fit_transform(X, y)
+</code></pre>
+<h4 id="43-嵌入法">4.3 嵌入法</h4>
+<p>模型在训练过程中自动完成特征选择。</p>
+<ul>
+<li><strong>L1 正则化（Lasso）</strong>：将不重要特征的系数压缩为零。</li>
+<li><strong>树模型的重要性</strong>：随机森林、XGBoost 等可输出特征被分裂的累计增益或次数，直观反映特征重要性。</li>
+<li><strong>Permutation Importance（排列重要性）</strong>：打乱某特征的值，观察模型性能下降程度，以此评估重要性。</li>
+</ul>
+<pre><code class="language-python">from sklearn.linear_model import LassoCV
+
+# Lasso 自动特征选择
+lasso = LassoCV(cv=5, random_state=42)
+lasso.fit(X, y)
+selected_features = X.columns[lasso.coef_ != 0]
+</code></pre>
+<h3 id="第五章特征工程工作流与最佳实践">第五章：特征工程工作流与最佳实践</h3>
+<h4 id="51-特征工程不是一次性的">5.1 特征工程不是一次性的</h4>
+<ul>
+<li><strong>持续迭代</strong>：新特征可能从业务反馈、数据变化中不断涌现。</li>
+<li><strong>特征存储</strong>：建立 Feature Store（如 Feast）来统一管理特征定义和计算，避免线上线下不一致。</li>
+</ul>
+<h4 id="52-防止数据泄露">5.2 防止数据泄露</h4>
+<p>特征工程中最高发的事故就是<strong>数据泄露</strong>：在构建特征时无意识地使用了未来的信息、或在训练之前对整个数据集进行了标准化。</p>
+<ul>
+<li><strong>标准化/归一化</strong>：必须先划分训练/测试集，仅用训练集数据拟合 <code>Scaler</code>，再分别转换。</li>
+<li><strong>目标编码</strong>：必须在交叉验证折内计算目标均值，不能全局计算。</li>
+<li><strong>分组聚合</strong>：使用 <code>groupby</code> 时，必须确保聚合所用的切片不包含测试集样本。</li>
+</ul>
+<h4 id="53-自动化特征工程">5.3 自动化特征工程</h4>
+<ul>
+<li><strong>FeatureTools</strong>：能自动进行深度特征综合（Deep Feature Synthesis），组合基本特征生成复杂特征。</li>
+<li><strong>AutoML 框架</strong>：如 <a href="https://h2o.ai/">H2O.ai</a>、AutoGluon 等内置了自动特征工程和特征选择。</li>
+</ul>
+<h3 id="第六章总结特征工程的至高心法">第六章：总结：特征工程的至高心法</h3>
+<ol>
+<li><strong>懂业务</strong>：最好的特征往往来自于对场景的深刻理解。</li>
+<li><strong>多尝试</strong>：特征工程不存在万能公式，需要大量实验来验证有效性。</li>
+<li><strong>防泄漏</strong>：任何不经意的信息泄露都可能导致模型上线失效。</li>
+<li><strong>可解释</strong>：生成的特征最好有明确的业务含义，方便日后的诊断和维护。</li>
+<li><strong>先简单后复杂</strong>：从基础的聚合、比率特征开始，逐步尝试复杂的嵌入或模型集成特征。</li>
+</ol>
+<p>特征工程是机器学习中最有“人味”的部分，它决定了数据的表达方式，也决定了模型能看到的世界。把数据锤炼成特征，你就是那道连接现实世界与算法世界的桥梁。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                    机器学习
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUPRC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUPRC 只盯着正样本看——这不是傲慢，是诚实</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/5wwG/AUPRC.png" alt="AUPRC 只盯着正样本看——这不是傲慢，是诚实" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUROC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUROC：从 ROC 曲线到概率解释的完全指南</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/9Wok/AUROC.png" alt="AUROC：从 ROC 曲线到概率解释的完全指南" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Ridge-Regression/">
+                      <div class="related-left">
+                        <div class="related-post-title">岭回归：宁可有偏，不可失控</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/sAl6/c76b2a6.png" alt="岭回归：宁可有偏，不可失控" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/StarRocks_TrainingSet_Testing Set/">
+                      <div class="related-left">
+                        <div class="related-post-title">训练集、验证集与测试集：机器学习中最基础的“行规”</div>
+                        <div class="related-meta">2026-04-28</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/28/1cmS/9a2ff50.jpg" alt="训练集、验证集与测试集：机器学习中最基础的“行规”" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/hou-tian-zhi-ben-du-dong-ni-de-pi-wei-jiu-deng-yu-du-dong-jian-kang/">
+                  <h3 class="post-title">
+                    后天之本：读懂你的脾胃，就等于读懂健康
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

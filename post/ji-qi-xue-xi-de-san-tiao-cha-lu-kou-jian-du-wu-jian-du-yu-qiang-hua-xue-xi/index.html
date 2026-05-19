@@ -1,0 +1,1199 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>机器学习的三条岔路口：监督、无监督与强化学习 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="从“有答案”到“没答案”：机器学习三大范式详解
+
+第一章：分类的总纲——三种基本学习方式
+机器学习最经典、最核心的分类，是根据训练数据是否带有标签来划分的。
+这里有一个关键概念必须先讲清楚：什么是标签（Label）？
+
+标签 = 标准答案。..." />
+    <meta name="keywords" content="机器学习" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0%E5%88%86%E7%B1%BB%E7%9A%84%E6%80%BB%E7%BA%B2%E4%B8%89%E7%A7%8D%E5%9F%BA%E6%9C%AC%E5%AD%A6%E4%B9%A0%E6%96%B9%E5%BC%8F">第一章：分类的总纲——三种基本学习方式</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E6%9C%80%E4%B8%BB%E6%B5%81-%E6%9C%80%E6%88%90%E7%86%9F%E7%9A%84%E4%B8%80%E6%B4%BE">第二章：监督学习——最主流、最成熟的一派</a>
+<ul>
+<li><a href="#21-%E5%AE%9A%E4%B9%89%E4%B8%8E%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91">2.1 定义与核心逻辑</a></li>
+<li><a href="#22-%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%A4%E5%A4%A7%E5%88%86%E6%94%AF%E5%9B%9E%E5%BD%92%E4%B8%8E%E5%88%86%E7%B1%BB">2.2 监督学习的两大分支：回归与分类</a></li>
+<li><a href="#23-%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%BC%98%E7%82%B9%E4%B8%8E%E5%B1%80%E9%99%90">2.3 监督学习的优点与局限</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E5%8F%91%E7%8E%B0%E9%9A%90%E8%97%8F%E7%BB%93%E6%9E%84%E7%9A%84%E6%8E%A2%E9%99%A9%E5%AE%B6">第三章：无监督学习——发现隐藏结构的探险家</a>
+<ul>
+<li><a href="#31-%E5%AE%9A%E4%B9%89%E4%B8%8E%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91">3.1 定义与核心逻辑</a></li>
+<li><a href="#32-%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%B8%89%E5%A4%A7%E7%BB%8F%E5%85%B8%E4%BB%BB%E5%8A%A1">3.2 无监督学习的三大经典任务</a></li>
+<li><a href="#33-%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%BC%98%E7%82%B9%E4%B8%8E%E5%B1%80%E9%99%90">3.3 无监督学习的优点与局限</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E5%9C%A8%E5%A5%96%E6%83%A9%E4%B8%AD%E6%88%90%E9%95%BF%E7%9A%84%E7%AD%96%E7%95%A5%E5%A4%A7%E5%B8%88">第四章：强化学习——在奖惩中成长的策略大师</a>
+<ul>
+<li><a href="#41-%E5%AE%9A%E4%B9%89%E4%B8%8E%E6%A0%B8%E5%BF%83%E9%80%BB%E8%BE%91">4.1 定义与核心逻辑</a></li>
+<li><a href="#42-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%9A%84%E7%8B%AC%E7%89%B9%E4%B9%8B%E5%A4%84">4.2 强化学习的独特之处</a></li>
+<li><a href="#43-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%9A%84%E5%85%B8%E5%9E%8B%E5%BA%94%E7%94%A8">4.3 强化学习的典型应用</a></li>
+<li><a href="#44-%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%9A%84%E4%BC%98%E7%82%B9%E4%B8%8E%E5%B1%80%E9%99%90">4.4 强化学习的优点与局限</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E5%88%86%E7%B1%BB%E7%9A%84%E5%BB%B6%E4%BC%B8%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E4%B8%8E%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0">第五章：分类的延伸——半监督学习与自监督学习</a>
+<ul>
+<li><a href="#51-%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E5%B0%91%E9%87%8F%E6%A0%87%E7%AD%BE-%E6%B5%B7%E9%87%8F%E6%97%A0%E6%A0%87%E7%AD%BE%E6%95%B0%E6%8D%AE">5.1 半监督学习：少量标签 + 海量无标签数据</a></li>
+<li><a href="#52-%E8%87%AA%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E4%BB%8E%E6%95%B0%E6%8D%AE%E5%86%85%E9%83%A8%E5%88%B6%E9%80%A0%E4%BC%AA%E6%A0%87%E7%AD%BE">5.2 自监督学习：从数据内部制造“伪标签”</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E4%B8%80%E5%BC%A0%E5%9B%BE%E6%80%BB%E7%BB%93%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E5%88%86%E7%B1%BB%E5%85%A8%E6%99%AF%E5%9B%BE">第六章：一张图总结——机器学习分类全景图</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%83%E7%AB%A0%E5%A6%82%E4%BD%95%E5%88%A4%E6%96%AD%E4%B8%80%E4%B8%AA%E4%BB%BB%E5%8A%A1%E5%B1%9E%E4%BA%8E%E5%93%AA%E4%B8%80%E7%B1%BB">第七章：如何判断一个任务属于哪一类？</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">机器学习的三条岔路口：监督、无监督与强化学习</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-11 18:46
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                28 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/crU4/132cb44.jpg" alt="机器学习的三条岔路口：监督、无监督与强化学习">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><strong>从“有答案”到“没答案”：机器学习三大范式详解</strong></p>
+<!-- more -->
+<h3 id="第一章分类的总纲三种基本学习方式">第一章：分类的总纲——三种基本学习方式</h3>
+<p>机器学习最经典、最核心的分类，是根据<strong>训练数据是否带有标签</strong>来划分的。</p>
+<p>这里有一个关键概念必须先讲清楚：<strong>什么是标签（Label）？</strong></p>
+<blockquote>
+<p><strong>标签 = 标准答案。</strong><br>
+比如一张照片，你告诉电脑“这是猫”，“猫”就是标签。<br>
+比如一封邮件，你告诉电脑“这是垃圾邮件”，“垃圾邮件”就是标签。</p>
+</blockquote>
+<p>根据<strong>有没有标签</strong>、<strong>怎么使用标签</strong>，机器学习分裂为三大主流门派。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">门派</th>
+<th style="text-align:left">标签情况</th>
+<th style="text-align:left">一句话核心</th>
+<th style="text-align:left">典型任务</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>监督学习</strong></td>
+<td style="text-align:left">有标签，且每一个样本都有</td>
+<td style="text-align:left">照着标准答案学习</td>
+<td style="text-align:left">分类、回归</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>无监督学习</strong></td>
+<td style="text-align:left">完全没有标签</td>
+<td style="text-align:left">无师自通，自己找结构</td>
+<td style="text-align:left">聚类、降维、异常检测</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>强化学习</strong></td>
+<td style="text-align:left">没有直接标签，只有延迟的奖励/惩罚</td>
+<td style="text-align:left">在试错中学会最优策略</td>
+<td style="text-align:left">游戏AI、机器人控制、自动驾驶决策</td>
+</tr>
+</tbody>
+</table>
+<p>下面，我们逐一深入拆解。</p>
+<hr>
+<h3 id="第二章监督学习最主流-最成熟的一派">第二章：监督学习——最主流、最成熟的一派</h3>
+<h4 id="21-定义与核心逻辑">2.1 定义与核心逻辑</h4>
+<p><strong>监督学习（Supervised Learning）</strong> 是机器学习中应用最广泛、商业价值最直接的一类。</p>
+<p>它的学习过程，和<strong>学生做练习题</strong>一模一样：</p>
+<ol>
+<li><strong>输入</strong>：题目（数据特征 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>X</mi></mrow><annotation encoding="application/x-tex">X</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.07847em;">X</span></span></span></span>）</li>
+<li><strong>对照</strong>：标准答案（标签 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>Y</mi></mrow><annotation encoding="application/x-tex">Y</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.22222em;">Y</span></span></span></span>）</li>
+<li><strong>学习</strong>：找出题目和答案之间的映射规律 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>Y</mi><mo>=</mo><mi>f</mi><mo>(</mo><mi>X</mi><mo>)</mo></mrow><annotation encoding="application/x-tex">Y = f(X)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.22222em;">Y</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.07847em;">X</span><span class="mclose">)</span></span></span></span></li>
+<li><strong>考试</strong>：给新题目，预测答案</li>
+</ol>
+<p><strong>关键点</strong>：监督学习必须依赖<strong>带标签的历史数据</strong>。没有标签，寸步难行。</p>
+<h4 id="22-监督学习的两大分支回归与分类">2.2 监督学习的两大分支：回归与分类</h4>
+<p>监督学习内部，根据预测目标的不同，又分为两个子类：</p>
+<p><strong>分支一：回归（Regression）——预测一个连续的数值</strong></p>
+<ul>
+<li><strong>问法</strong>：明天几点会下雨？这房子值多少钱？视频播放量会到多少？</li>
+<li><strong>输出</strong>：一个具体的数字，比如 98.6 万、37.2 摄氏度。</li>
+<li><strong>生活实例</strong>：
+<ul>
+<li>根据历史销售数据，预测下个月库存需求。</li>
+<li>根据房屋面积、地段、楼龄，估算房价。</li>
+</ul>
+</li>
+<li><strong>代表算法</strong>：线性回归、决策树回归、支持向量回归（SVR）、神经网络回归。</li>
+</ul>
+<p><strong>分支二：分类（Classification）——判断属于哪一个类别</strong></p>
+<ul>
+<li><strong>问法</strong>：这张照片是猫还是狗？这封邮件是不是垃圾邮件？这个肿瘤是良性还是恶性？</li>
+<li><strong>输出</strong>：一个离散的类别标签，比如“猫”、“垃圾邮件”、“恶性”。</li>
+<li><strong>分类的细分</strong>：
+<ul>
+<li><strong>二分类</strong>：结果是“是/否”，比如“通过/不通过”。</li>
+<li><strong>多分类</strong>：结果是多个选项之一，比如识别手写数字 0-9，识别图片中的物体是“猫、狗、鸟、车”中的哪一种。</li>
+</ul>
+</li>
+<li><strong>代表算法</strong>：逻辑回归、决策树、随机森林、支持向量机（SVM）、神经网络。</li>
+</ul>
+<h4 id="23-监督学习的优点与局限">2.3 监督学习的优点与局限</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">优点</th>
+<th style="text-align:left">局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">目标明确，模型效果容易评估（直接对答案）。</td>
+<td style="text-align:left">获取高质量标签<strong>成本极高</strong>。标注100万张图片需要大量人力。</td>
+</tr>
+<tr>
+<td style="text-align:left">技术成熟，落地案例丰富。</td>
+<td style="text-align:left">只能学习<strong>已知的规律</strong>，无法发现数据中隐藏的全新模式。</td>
+</tr>
+<tr>
+<td style="text-align:left">模型可解释性相对较好（尤其是树模型）。</td>
+<td style="text-align:left">对标签噪声敏感——如果标准答案标错了，模型就会学歪。</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第三章无监督学习发现隐藏结构的探险家">第三章：无监督学习——发现隐藏结构的探险家</h3>
+<h4 id="31-定义与核心逻辑">3.1 定义与核心逻辑</h4>
+<p><strong>无监督学习（Unsupervised Learning）</strong> 面对的是一个<strong>没有标准答案</strong>的世界。</p>
+<p>想象你被扔进一个巨大的图书馆，所有书都没有书名、没有分类标签，甚至没有封面。你要怎么整理这些书？</p>
+<ul>
+<li>你可能会把<strong>厚度相似</strong>的放一起。</li>
+<li>或者把<strong>封皮颜色相近</strong>的放一起。</li>
+<li>或者翻开发现<strong>内容用词风格相似</strong>的放一起。</li>
+</ul>
+<p><strong>无监督学习做的事，就是这个。</strong></p>
+<p>它不试图回答“这是什么”，而是试图回答“<strong>这些东西之间有什么关系？</strong>”</p>
+<h4 id="32-无监督学习的三大经典任务">3.2 无监督学习的三大经典任务</h4>
+<p><strong>任务一：聚类——自动分组</strong></p>
+<ul>
+<li><strong>目标</strong>：把数据样本分成若干个群组，使得<strong>组内相似度高，组间差异大</strong>。</li>
+<li><strong>应用场景</strong>：
+<ul>
+<li><strong>用户分群</strong>：电商平台根据浏览、购买行为，把用户自动分成“价格敏感型”、“品牌忠诚型”、“冲动消费型”，然后分别推送不同的优惠券。</li>
+<li><strong>图像分割</strong>：把一张CT扫描图中属于“肿瘤组织”的像素聚成一类。</li>
+<li><strong>文档主题聚类</strong>：把新闻自动归类为“体育”、“财经”、“娱乐”。</li>
+</ul>
+</li>
+<li><strong>代表算法</strong>：K-Means、层次聚类、DBSCAN、高斯混合模型。</li>
+</ul>
+<p><strong>任务二：降维——数据压缩与可视化</strong></p>
+<ul>
+<li><strong>目标</strong>：在尽量保留原始信息的前提下，把高维数据（比如有1000个特征）压缩到低维（比如2维或3维）。</li>
+<li><strong>为什么要降维</strong>：
+<ol>
+<li><strong>计算加速</strong>：特征越少，模型训练越快。</li>
+<li><strong>去除噪声</strong>：冗余特征可能干扰模型判断。</li>
+<li><strong>可视化</strong>：人类只能看懂2维或3维的图。把高维数据降到2维，就能画成散点图，用肉眼观察数据的分布结构。</li>
+</ol>
+</li>
+<li><strong>代表算法</strong>：主成分分析（PCA）、t-SNE、UMAP、自编码器。</li>
+</ul>
+<p><strong>任务三：异常检测——找出不合群的异类</strong></p>
+<ul>
+<li><strong>目标</strong>：从大量正常样本中，识别出极少数异常的、可疑的样本。</li>
+<li><strong>应用场景</strong>：
+<ul>
+<li><strong>金融风控</strong>：从几百万笔交易中找出那几笔疑似信用卡盗刷的交易。</li>
+<li><strong>工业质检</strong>：从流水线产品图片中找出有裂纹、瑕疵的不良品。</li>
+<li><strong>网络入侵检测</strong>：从海量网络请求中识别出黑客的攻击行为。</li>
+</ul>
+</li>
+<li><strong>核心逻辑</strong>：无监督学习先学会“什么是正常的模式”，任何显著偏离正常模式的行为，都标记为异常。</li>
+<li><strong>代表算法</strong>：孤立森林、单类支持向量机、基于聚类的异常检测。</li>
+</ul>
+<h4 id="33-无监督学习的优点与局限">3.3 无监督学习的优点与局限</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">优点</th>
+<th style="text-align:left">局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>不需要标签</strong>，数据获取成本极低。</td>
+<td style="text-align:left">结果<strong>难以评估</strong>——没有标准答案，你怎么知道聚成3类一定比聚成5类好？</td>
+</tr>
+<tr>
+<td style="text-align:left">能够发现人类未曾察觉的<strong>隐藏模式</strong>。</td>
+<td style="text-align:left">算法效果高度依赖<strong>特征工程</strong>和<strong>距离度量</strong>的定义。</td>
+</tr>
+<tr>
+<td style="text-align:left">常作为监督学习的<strong>前置步骤</strong>（先聚类，再人工打标签，省钱）。</td>
+<td style="text-align:left">对数据的尺度、噪声非常敏感。</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第四章强化学习在奖惩中成长的策略大师">第四章：强化学习——在奖惩中成长的策略大师</h3>
+<h4 id="41-定义与核心逻辑">4.1 定义与核心逻辑</h4>
+<p><strong>强化学习（Reinforcement Learning）</strong> 的哲学和前两者截然不同。</p>
+<p>它既不是照着答案学（监督学习），也不是自己闷头分类（无监督学习）。<br>
+它是在<strong>与环境交互</strong>的过程中，通过<strong>试错</strong>来学习<strong>最优策略</strong>。</p>
+<p>强化学习的核心要素：</p>
+<ul>
+<li><strong>智能体</strong>：做决策的主体，比如一只狗、一个下棋程序、一辆自动驾驶汽车。</li>
+<li><strong>环境</strong>：智能体所处的世界，比如棋盘、马路。</li>
+<li><strong>动作</strong>：智能体可以采取的行为，比如“向左走”、“吃掉对方的马”。</li>
+<li><strong>奖励</strong>：环境对动作的即时反馈。做对了给正分（吃到食物），做错了给负分（撞墙）。</li>
+<li><strong>目标</strong>：不是追求单步奖励最大，而是追求<strong>长期累积奖励最大</strong>。</li>
+</ul>
+<h4 id="42-强化学习的独特之处">4.2 强化学习的独特之处</h4>
+<p><strong>延迟奖励</strong>：这是强化学习和监督学习最本质的区别。</p>
+<ul>
+<li>下围棋时，你落下一颗子（动作），当时并不知道这步棋好不好。可能要等到100手之后，赢了（+1奖励）或输了（-1奖励），你才知道当初那一步的价值。</li>
+<li>强化学习必须学会<strong>信用分配</strong>：把最后的输赢，合理地归因到前面每一步决策上。</li>
+</ul>
+<p><strong>探索与利用的平衡</strong>：</p>
+<ul>
+<li><strong>探索</strong>：去尝试一些没走过的路，也许能发现更好的策略（但也可能踩坑）。</li>
+<li><strong>利用</strong>：按已知的最好方法走，稳扎稳打（但可能错过更优解）。</li>
+<li>强化学习算法需要在这两者之间找到最佳平衡点。</li>
+</ul>
+<h4 id="43-强化学习的典型应用">4.3 强化学习的典型应用</h4>
+<ul>
+<li><strong>游戏AI</strong>：AlphaGo、AlphaStar（星际争霸）、OpenAI Five（Dota 2）。</li>
+<li><strong>机器人控制</strong>：让机械臂自己学会抓取不规则物体、让四足机器人学会上楼梯。</li>
+<li><strong>自动驾驶</strong>：在模拟器中学习何时加速、何时变道、何时避让。</li>
+<li><strong>推荐系统</strong>：根据用户实时的点击、停留、反馈，动态调整推荐策略，最大化用户长期留存。</li>
+</ul>
+<h4 id="44-强化学习的优点与局限">4.4 强化学习的优点与局限</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">优点</th>
+<th style="text-align:left">局限</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">能解决<strong>序列决策问题</strong>，这是监督/无监督做不到的。</td>
+<td style="text-align:left"><strong>训练极其不稳定</strong>，收敛困难，对超参数极度敏感。</td>
+</tr>
+<tr>
+<td style="text-align:left">理论上能超越人类水平（AlphaGo）。</td>
+<td style="text-align:left"><strong>样本效率极低</strong>：AlphaGo需要自我对弈几千万盘棋。在现实世界（比如机器人）训练成本过高，通常依赖模拟器。</td>
+</tr>
+<tr>
+<td style="text-align:left">不需要完美标签，只需要设计<strong>奖励函数</strong>。</td>
+<td style="text-align:left">奖励函数设计是<strong>艺术活</strong>：设计不好，AI会钻空子（比如让扫地机器人学会把垃圾藏到地毯下面，因为摄像头看不见就不扣分了）。</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第五章分类的延伸半监督学习与自监督学习">第五章：分类的延伸——半监督学习与自监督学习</h3>
+<p>除了三大主流门派，近年来还有两个重要的分支值得了解，它们是监督和无监督的<strong>混合形态</strong>。</p>
+<h4 id="51-半监督学习少量标签-海量无标签数据">5.1 半监督学习：少量标签 + 海量无标签数据</h4>
+<ul>
+<li><strong>痛点</strong>：标签太贵，无标签数据白捡都行。</li>
+<li><strong>思路</strong>：先用少量有标签数据训练一个“初级模型”，然后用它去给大量无标签数据打上“伪标签”，再把这些伪标签数据加入训练集，迭代优化。</li>
+<li><strong>应用</strong>：医学影像分析（医生标注几张片子非常贵，但医院里躺着几百万张没标注的片子）。</li>
+</ul>
+<h4 id="52-自监督学习从数据内部制造伪标签">5.2 自监督学习：从数据内部制造“伪标签”</h4>
+<ul>
+<li><strong>核心思想</strong>：不依赖人工标注，而是让数据自己给自己出题。</li>
+<li><strong>经典案例——BERT与GPT的训练</strong>：
+<ul>
+<li>拿出一句话：“今天天气真______”。</li>
+<li>盖住最后一个词，让模型去猜。</li>
+<li>因为原文就是“今天天气真好”，所以标准答案已经有了。这就自动产生了无数“填空题”作为训练数据。</li>
+</ul>
+</li>
+<li><strong>意义</strong>：这是当前<strong>大语言模型</strong>（ChatGPT、文心一言等）能够成功的基石。它让模型在海量无标注文本上完成了“通识教育”，之后再用少量标注数据做“专业微调”。</li>
+</ul>
+<hr>
+<h3 id="第六章一张图总结机器学习分类全景图">第六章：一张图总结——机器学习分类全景图</h3>
+<p>为了让你一目了然，这里用文字构建一张分类树状图（脑补或用作配图参考）：</p>
+<pre><code class="language-text">机器学习（按学习方式分类）
+│
+├── 监督学习 (有标签)
+│   ├── 回归 (预测连续值)
+│   └── 分类 (预测离散类别)
+│
+├── 无监督学习 (无标签)
+│   ├── 聚类 (自动分组)
+│   ├── 降维 (压缩特征)
+│   └── 异常检测 (找异类)
+│
+├── 强化学习 (有奖励/惩罚信号，延迟反馈)
+│   └── 序列决策优化
+│
+├── 半监督学习 (少量标签 + 大量无标签)
+│
+└── 自监督学习 (数据内部生成伪标签)
+</code></pre>
+<hr>
+<h3 id="第七章如何判断一个任务属于哪一类">第七章：如何判断一个任务属于哪一类？</h3>
+<p>给新手一个实用的“灵魂三问”判断法：</p>
+<ol>
+<li><strong>有没有现成的、明确的“正确答案”标签？</strong>
+<ul>
+<li>有 → 跳转到问题2。</li>
+<li>没有 → 跳转到问题3。</li>
+</ul>
+</li>
+<li><strong>这个“答案”是具体数字，还是类别名称？</strong>
+<ul>
+<li>具体数字 → <strong>监督学习·回归</strong>。</li>
+<li>类别名称 → <strong>监督学习·分类</strong>。</li>
+</ul>
+</li>
+<li><strong>你的目标是给数据分组/压缩/找异常，还是要做一个会动态决策的AI？</strong>
+<ul>
+<li>分组/压缩/找异常 → <strong>无监督学习</strong>。</li>
+<li>动态决策、与环境互动、追求长期回报 → <strong>强化学习</strong>。</li>
+</ul>
+</li>
+</ol>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                    机器学习
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUPRC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUPRC 只盯着正样本看——这不是傲慢，是诚实</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/5wwG/AUPRC.png" alt="AUPRC 只盯着正样本看——这不是傲慢，是诚实" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUROC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUROC：从 ROC 曲线到概率解释的完全指南</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/9Wok/AUROC.png" alt="AUROC：从 ROC 曲线到概率解释的完全指南" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Ridge-Regression/">
+                      <div class="related-left">
+                        <div class="related-post-title">岭回归：宁可有偏，不可失控</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/sAl6/c76b2a6.png" alt="岭回归：宁可有偏，不可失控" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/StarRocks_TrainingSet_Testing Set/">
+                      <div class="related-left">
+                        <div class="related-post-title">训练集、验证集与测试集：机器学习中最基础的“行规”</div>
+                        <div class="related-meta">2026-04-28</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/28/1cmS/9a2ff50.jpg" alt="训练集、验证集与测试集：机器学习中最基础的“行规”" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/bie-bei-xia-pao-gei-pu-tong-ren-de-ji-qi-xue-xi-di-yi-ke-yuan-lai-ta-jiu-shi-cai-gui-lu/">
+                  <h3 class="post-title">
+                    别被吓跑！给普通人的机器学习第一课：原来它就是“猜规律”
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

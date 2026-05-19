@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>SQL 执行前搞这么多分析，StarRocks 不怕慢吗？ | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="如果你刚接触 StarRocks 这类 MPP 分析型数据库，可能会有一个很自然的疑问：“一条 SQL 提交后，要先做语法解析、语义分析、RBO 规则重写、CBO 成本优化……这么多步骤都是实时执行的，难道不会拖慢查询速度吗？为什么不能提前..." />
+    <meta name="keywords" content="大数据,StarRocks" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E5%AE%9E%E6%97%B6%E4%BC%98%E5%8C%96%E7%94%A8%E6%AF%AB%E7%A7%92%E7%BA%A7%E6%80%9D%E8%80%83%E6%8D%A2%E7%A7%92%E7%BA%A7%E8%A1%8C%E5%8A%A8">一、实时优化：用毫秒级“思考”换秒级“行动”</a></li>
+<li><a href="#%E4%BA%8C-%E4%B8%8D%E6%AD%A2%E4%BA%8E%E6%80%9D%E8%80%83%E4%B8%89%E5%A4%A7%E6%9C%BA%E5%88%B6%E8%AE%A9%E4%BC%98%E5%8C%96%E5%99%A8%E8%B6%8A%E7%94%A8%E8%B6%8A%E5%BF%AB">二、不止于“思考”：三大机制让优化器越用越快</a>
+<ul>
+<li><a href="#21-%E8%AE%A1%E5%88%92%E7%BC%93%E5%AD%98%E4%B8%BA%E9%87%8D%E5%A4%8D%E6%9F%A5%E8%AF%A2%E6%8A%84%E8%BF%91%E8%B7%AF">2.1 计划缓存：为重复查询“抄近路”</a></li>
+<li><a href="#22-%E6%9F%A5%E8%AF%A2%E5%8F%8D%E9%A6%88%E8%AE%A9-cbo-%E8%87%AA%E6%88%91%E5%AD%A6%E4%B9%A0">2.2 查询反馈：让 CBO “自我学习”</a></li>
+<li><a href="#23-%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE%E4%B8%BA%E5%A4%8D%E6%9D%82%E6%9F%A5%E8%AF%A2%E9%A2%84%E5%85%88%E7%AE%97%E5%A5%BD">2.3 物化视图：为复杂查询“预先算好”</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E4%B8%80%E4%B8%AA%E7%94%9F%E5%8A%A8%E7%9A%84%E7%B1%BB%E6%AF%94%E5%AF%BC%E8%88%AA%E8%BD%AF%E4%BB%B6%E7%9A%84%E8%B7%AF%E5%BE%84%E8%A7%84%E5%88%92">三、一个生动的类比：导航软件的路径规划</a></li>
+<li><a href="#%E5%9B%9B-%E6%80%BB%E8%80%97%E6%97%B6%E5%85%AC%E5%BC%8F%E7%90%86%E8%A7%A3-starrocks-%E7%9A%84%E6%80%A7%E8%83%BD%E9%80%BB%E8%BE%91">四、总耗时公式：理解 StarRocks 的性能逻辑</a></li>
+<li><a href="#%E4%BA%94-%E6%80%BB%E7%BB%93">五、总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">SQL 执行前搞这么多分析，StarRocks 不怕慢吗？</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-18 21:09
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                13 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://zhangjunjie00323.github.io/post-images/sql-zhi-xing-qian-gao-zhe-me-duo-fen-xi-starrocks-bu-pa-man-ma.png" alt="SQL 执行前搞这么多分析，StarRocks 不怕慢吗？">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>如果你刚接触 StarRocks 这类 MPP 分析型数据库，可能会有一个很自然的疑问：“一条 SQL 提交后，要先做语法解析、语义分析、RBO 规则重写、CBO 成本优化……这么多步骤都是实时执行的，难道不会拖慢查询速度吗？为什么不能提前做掉一部分？”</p>
+<!-- more -->
+<p>这个疑问非常合理。毕竟在我们的直觉里，“少做点事”似乎应该更快。但 StarRocks 的设计哲学恰恰相反——<strong>它选择在每次查询执行前，都做一次精密而短暂的“思考”</strong>，而且这样做反而让整体性能实现了数量级的飞跃。<br>
+本文将为你揭示这背后的设计逻辑：StarRocks 如何在“实时决策”与“极致性能”之间找到平衡。</p>
+<h3 id="一-实时优化用毫秒级思考换秒级行动">一、实时优化：用毫秒级“思考”换秒级“行动”</h3>
+<p>首先明确一点：<strong>解析、语义分析、RBO、CBO 等步骤，确实是在收到 SQL 查询后实时、动态执行的</strong>。</p>
+<p>StarRocks 的 Frontend（FE）节点在收到查询请求后，会立即启动一个完整的优化流水线：</p>
+<pre><code class="language-latex">SQL 文本 → 词法/语法解析 → 语义分析 → RBO 规则重写 → CBO 成本优化 → 生成物理执行计划
+</code></pre>
+<p>这个过程通常耗时在 <strong>几十毫秒到几百毫秒</strong> 之间。</p>
+<p>你可能会问：几百毫秒也是时间，积少成多不会影响高并发下的响应速度吗？</p>
+<p>关键点在于 <strong>“思考”与“执行”的时间比例</strong>。</p>
+<p>StarRocks 定位是分析型数据仓库（OLAP），处理的往往是 TB/PB 级别的复杂聚合查询。这类查询的原始执行时间可能在 <strong>数十秒到数分钟</strong> 甚至更长。而经过 CBO 优化后，执行时间可能被压缩到 <strong>几秒</strong> 以内。</p>
+<p>用一个直观的对比来说明：</p>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>优化时间</th>
+<th>执行时间</th>
+<th>总耗时</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>不进行优化（暴力执行）</td>
+<td>0ms</td>
+<td>120,000ms（2分钟）</td>
+<td>120,000ms</td>
+</tr>
+<tr>
+<td>进行完整优化</td>
+<td>200ms</td>
+<td>3,000ms（3秒）</td>
+<td>3,200ms</td>
+</tr>
+</tbody>
+</table>
+<p>用 <strong>200ms 的“思考”换取 117 秒的“行动”节省</strong>，这笔账怎么算都划算。</p>
+<p>这就是 StarRocks 效率哲学的第一层：<strong>用微小的前置成本，撬动巨大的后端收益</strong>。</p>
+<hr>
+<h3 id="二-不止于思考三大机制让优化器越用越快">二、不止于“思考”：三大机制让优化器越用越快</h3>
+<p>如果 StarRocks 只是每次查询都从头优化一遍，确实会在高并发场景下产生累积开销。但它的设计远不止于此——通过以下三大机制，StarRocks 将“实时优化”的代价降到了最低。</p>
+<h4 id="21-计划缓存为重复查询抄近路">2.1 计划缓存：为重复查询“抄近路”</h4>
+<p>在实际业务中，很多查询是<strong>高度重复</strong>的——比如报表系统每天执行的固定 SQL，或者应用程序中使用 <code>Prepared Statement</code> 的参数化查询。</p>
+<p>对于这类查询，StarRocks 会启用 <strong>执行计划缓存</strong>：</p>
+<ul>
+<li>
+<p>首次查询：完整走完优化流程，生成执行计划并缓存</p>
+</li>
+<li>
+<p>后续相同查询：直接命中缓存，<strong>跳过解析、分析、优化的全部步骤</strong>，立即分发执行</p>
+</li>
+</ul>
+<p>这就像学生考试：第一次遇到难题需要仔细思考解题步骤，但如果下次考到一模一样的题，就可以直接调用记忆中的解法。</p>
+<p>计划缓存将高频查询的优化开销<strong>一次性摊销</strong>，使得重复查询的响应时间几乎等同于纯执行时间。</p>
+<h4 id="22-查询反馈让-cbo-自我学习">2.2 查询反馈：让 CBO “自我学习”</h4>
+<p>CBO 依赖统计信息来估算成本，但估算总有偏差。比如，它可能高估了某次 Join 的数据量，导致选了一个次优计划。</p>
+<p>StarRocks 引入了 <strong>Query Feedback（查询反馈）</strong> 机制来解决这个问题：</p>
+<ul>
+<li>
+<p>查询执行后，系统会收集<strong>实际运行数据</strong>（实际行数、实际字节数、实际执行时间等）</p>
+</li>
+<li>
+<p>这些反馈信息被记录并用于<strong>修正后续相似查询的成本估算</strong></p>
+</li>
+<li>
+<p>随着运行时间增加，CBO 的成本模型会越来越贴近真实数据分布，估算越来越准</p>
+</li>
+</ul>
+<p>这相当于 CBO 拥有“自我进化”能力——它不是每次都从零开始“瞎猜”，而是从历史执行中学习经验。用得越久，决策越精准，犯错的概率越低。</p>
+<h4 id="23-物化视图为复杂查询预先算好">2.3 物化视图：为复杂查询“预先算好”</h4>
+<p>对于特别复杂且频繁执行的查询（例如按天汇总的多表关联），实时计算无论如何都会有较高开销。StarRocks 提供了 <strong>物化视图</strong> 这一“作弊器”：</p>
+<ul>
+<li>
+<p>你可以预先定义一个物化视图，本质上是将复杂查询的结果<strong>提前计算并物理存储</strong></p>
+</li>
+<li>
+<p>当用户提交的查询能够被物化视图覆盖时，CBO 会<strong>自动改写查询</strong>，直接从物化视图中读取预计算结果</p>
+</li>
+<li>
+<p>原来需要扫描数十亿行原始数据的查询，变成了读取几百行预聚合数据</p>
+</li>
+</ul>
+<p>物化视图将“实时计算”转化为“实时读取”，相当于把最繁重的工作提前做完了。对于这类查询，优化器甚至不需要做复杂的成本估算——因为“直接读物化视图”的成本一定是最低的。</p>
+<hr>
+<h3 id="三-一个生动的类比导航软件的路径规划">三、一个生动的类比：导航软件的路径规划</h3>
+<p>如果上述机制还不够直观，我们可以用一个生活中的例子来理解：</p>
+<p>StarRocks 的优化器就像你手机里的<strong>导航软件</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>类比项</th>
+<th>导航软件</th>
+<th>StarRocks 优化器</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>规划行为</strong></td>
+<td>输入目的地后，计算多条路线并推荐最快的一条</td>
+<td>收到 SQL 后，枚举多种执行计划并选择成本最低的一条</td>
+</tr>
+<tr>
+<td><strong>耗时</strong></td>
+<td>规划需要几秒钟</td>
+<td>优化需要几十到几百毫秒</td>
+</tr>
+<tr>
+<td><strong>收益</strong></td>
+<td>避开拥堵，节省数十分钟行车时间</td>
+<td>选择最优 Join 顺序和分布策略，节省数十秒查询时间</td>
+</tr>
+<tr>
+<td><strong>缓存机制</strong></td>
+<td>常去地点一键导航，无需重复输入</td>
+<td>计划缓存让重复 SQL 直接执行</td>
+</tr>
+<tr>
+<td><strong>学习机制</strong></td>
+<td>根据历史路况数据优化路线推荐</td>
+<td>查询反馈让成本模型越来越准</td>
+</tr>
+<tr>
+<td><strong>预计算机制</strong></td>
+<td>实时路况数据的预先采集与处理</td>
+<td>物化视图预先计算复杂查询结果</td>
+</tr>
+</tbody>
+</table>
+<p>你会因为导航规划需要花几秒钟，就放弃使用导航、凭感觉开车吗？显然不会。因为你知道，这几秒钟的投入能让你避开拥堵，总到达时间反而更短。</p>
+<p>StarRocks 的优化器正是这个道理——<strong>它不是在“浪费时间”，而是在为你的查询“规划最优路径”</strong>。</p>
+<hr>
+<h3 id="四-总耗时公式理解-starrocks-的性能逻辑">四、总耗时公式：理解 StarRocks 的性能逻辑</h3>
+<p>最后，我们用一个简单的公式来总结 StarRocks 查询的性能逻辑：</p>
+<pre><code class="language-latex">总耗时 = 规划时间（优化器耗时） + 执行时间（引擎计算耗时）
+</code></pre>
+<p>不同的优化策略，对这个公式的影响截然不同：</p>
+<ul>
+<li>
+<p><strong>不优化的查询</strong>：规划时间 ≈ 0，但执行时间可能极长（因选择了低效的执行路径）</p>
+</li>
+<li>
+<p><strong>仅 RBO 优化</strong>：规划时间较短，执行时间有所缩短（但无法应对复杂场景）</p>
+</li>
+<li>
+<p><strong>RBO + CBO 完整优化</strong>：规划时间稍长（~100ms），但执行时间被压到最低</p>
+</li>
+<li>
+<p><strong>命中计划缓存</strong>：规划时间 ≈ 0，执行时间同样最优（因为用的是之前选好的最优计划）</p>
+</li>
+<li>
+<p><strong>命中物化视图</strong>：规划时间极短，执行时间也极短（直接读预计算结果）</p>
+</li>
+</ul>
+<p>StarRocks 的设计目标，就是让绝大多数查询落在后两种场景中——<strong>通过缓存和预计算，让“最优路径”成为默认路径</strong>。</p>
+<hr>
+<h3 id="五-总结">五、总结</h3>
+<p>回到最初的问题：“StarRocks 在 SQL 执行时实时做语义分析、RBO、CBO，不会影响效率吗？”</p>
+<p>答案是：<strong>不仅不会，反而这是 StarRocks 实现高性能的核心秘诀</strong>。</p>
+<ul>
+<li>
+<p><strong>短查询</strong>：依靠计划缓存，优化开销被一次性摊销，响应时间几乎等同于纯执行</p>
+</li>
+<li>
+<p><strong>长查询</strong>：用毫秒级的优化投入，换取数十秒甚至分钟级的执行时间压缩，性价比极高</p>
+</li>
+<li>
+<p><strong>重复查询</strong>：依靠物化视图和计划缓存，直接绕过复杂计算</p>
+</li>
+</ul>
+<p>StarRocks 的优化器不是一个“拖慢查询”的累赘，而是一个<strong>精明的投资决策者</strong>——它精准地知道什么时候该花时间“思考”，什么时候该直接“行动”，以及什么时候该调用“历史经验”。</p>
+<p>这种设计哲学，正是现代分析型数据库能够在海量数据下依然保持高性能交互体验的根本原因。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-DataSave/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/cong-sql-dao-zhi-xing-ji-hua-starrocks-fe-jie-dian-de-jia-gou-she-ji-yu-he-xin-zhi-ze/">
+                  <h3 class="post-title">
+                    从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

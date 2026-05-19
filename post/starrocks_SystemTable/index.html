@@ -1,0 +1,1776 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks 系统表完全指南：从元数据查询到集群监控 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="玩转 StarRocks 系统库：字段级解析 *statistics*, information_schema, sys
+
+前言
+在 StarRocks 中，系统表是我们监控集群健康度、优化查询性能和排查问题的基石。随着版本迭代（特别是 v..." />
+    <meta name="keywords" content="StarRocks" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%89%8D%E8%A8%80">前言</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0_statistics_-%E7%BB%9F%E8%AE%A1%E4%BF%A1%E6%81%AF%E5%BA%93">第一章：<code>_statistics_</code> 统计信息库</a>
+<ul>
+<li><a href="#11-column_statistics">1.1 column_statistics</a></li>
+<li><a href="#12-histogram_statistics">1.2 histogram_statistics</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0information_schema-%E5%85%83%E6%95%B0%E6%8D%AE%E5%BA%93">第二章：<code>information_schema</code> 元数据库</a>
+<ul>
+<li><a href="#21-tables">2.1 tables</a></li>
+<li><a href="#22-columns">2.2 columns</a></li>
+<li><a href="#23-partitions">2.3 partitions</a></li>
+<li><a href="#24-loads">2.4 loads</a></li>
+<li><a href="#25-be_tablets">2.5 be_tablets</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0sys-%E7%B3%BB%E7%BB%9F%E5%85%83%E6%95%B0%E6%8D%AE%E5%BA%93">第三章：<code>sys</code> 系统元数据库</a>
+<ul>
+<li><a href="#31-grants_to_roles">3.1 grants_to_roles</a></li>
+<li><a href="#32-grants_to_users">3.2 grants_to_users</a></li>
+<li><a href="#33-role_edges">3.3 role_edges</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0starrocks_audit_db__-%E5%AE%A1%E8%AE%A1%E6%97%A5%E5%BF%97%E5%BA%93">第四章：<code>starrocks_audit_db__</code> 审计日志库</a>
+<ul>
+<li><a href="#41-starrocks_audit_tbl__">4.1 starrocks_audit_tbl__</a></li>
+</ul>
+</li>
+<li><a href="#%E6%80%BB%E7%BB%93">总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks 系统表完全指南：从元数据查询到集群监控</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-29 21:54
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                69 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/29/O1ks/StarRocks-System-Table.png" alt="StarRocks 系统表完全指南：从元数据查询到集群监控">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>玩转 StarRocks 系统库：字段级解析 *statistics*, information_schema, sys</p>
+<!-- more -->
+<h4 id="前言">前言</h4>
+<p>在 StarRocks 中，系统表是我们监控集群健康度、优化查询性能和排查问题的基石。随着版本迭代（特别是 v3.1/v3.2 之后），系统表的体系愈发完善。</p>
+<p>本文将为你深度剖析 StarRocks 的四个核心系统库，并对每个系统表的<strong>用途</strong>和<strong>具体字段</strong>进行逐项解释。</p>
+<h3 id="第一章_statistics_-统计信息库">第一章：<code>_statistics_</code> 统计信息库</h3>
+<p>CBO（基于代价的优化器）优化器依赖统计信息生成高效的执行计划。</p>
+<p><strong>特别说明</strong>：<code>_statistics_</code> 库下的表结构在 StarRocks v3.2 及以上版本发生了较大重构，以下基于新版本讲解。</p>
+<h4 id="11-column_statistics">1.1 column_statistics</h4>
+<p><strong>用途</strong>：记录<strong>列级别</strong>的基础统计信息。CBO 优化器依赖此表的数据来估算各种执行计划的代价，从而选择最优的执行路径。此表存储了全量的列级统计信息，包括行数、去重值个数（NDV）、空值个数、最大值和最小值等。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>table_id</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">表的唯一ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>partition_id</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">分区的唯一ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>column_name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">列的名称</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>db_id</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数据库的ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>table_name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">表名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>partition_name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">分区名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>row_count</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">该分片的总行数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>data_size</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">该分片的数据总大小（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ndv</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">Number of Distinct Values，该列不同值的估计个数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>null_count</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">该列中 NULL 值的个数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>max</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">该列的最大值</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>min</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">该列的最小值</td>
+</tr>
+</tbody>
+</table>
+<h4 id="12-histogram_statistics">1.2 histogram_statistics</h4>
+<p><strong>用途</strong>：记录列的<strong>直方图统计信息</strong>。当数据存在严重倾斜或高频值时，仅靠 <code>column_statistics</code> 中的基础信息会产生估算偏差。直方图通过分桶记录数据分布，能帮助优化器更准确地估算过滤条件下的行数，从而选择更优的 Join 顺序和 Join 类型。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>table_id</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">表的唯一ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>column_name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">列名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>db_id</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数据库的ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>table_name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">表名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>buckets</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">直方图的桶信息（JSON 格式）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>mcv</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">Most Common Value，高频值及其频次</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>update_time</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">统计信息的最新更新时间</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第二章information_schema-元数据库">第二章：<code>information_schema</code> 元数据库</h3>
+<p>这是兼容 MySQL 协议的元数据库，使用最频繁。它提供了数据库、表、列、分区等核心对象的元数据查询能力。</p>
+<h4 id="21-tables">2.1 tables</h4>
+<p><strong>用途</strong>：记录数据库中所有<strong>表</strong>的元数据信息。可以查询到表的类型（BASE TABLE 或 VIEW）、存储引擎、近似行数、数据大小、创建时间和更新时间等。常用于表资产盘点、存储容量分析。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>TABLE_CATALOG</code></td>
+<td style="text-align:left">VARCHAR(512)</td>
+<td style="text-align:left">目录名（默认 def）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_SCHEMA</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">数据库名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_NAME</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">表名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_TYPE</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">表类型（BASE TABLE / VIEW）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ENGINE</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">存储引擎（默认 StarRocks）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>VERSION</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">版本号</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ROW_FORMAT</code></td>
+<td style="text-align:left">VARCHAR(10)</td>
+<td style="text-align:left">行格式（Fixed / Dynamic）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_ROWS</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">表的近似行数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>AVG_ROW_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">平均行长度（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>DATA_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数据文件大小（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>MAX_DATA_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">最大数据容量</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>INDEX_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">索引文件大小（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>DATA_FREE</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">碎片字节数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>AUTO_INCREMENT</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">自增ID值</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CREATE_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">创建时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>UPDATE_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">最近更新时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CHECK_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">最近检查表的时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_COLLATION</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">表默认排序规则</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CHECKSUM</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">校验和</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CREATE_OPTIONS</code></td>
+<td style="text-align:left">VARCHAR(255)</td>
+<td style="text-align:left">创建表时的额外选项</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_COMMENT</code></td>
+<td style="text-align:left">TEXT</td>
+<td style="text-align:left">表注释</td>
+</tr>
+</tbody>
+</table>
+<h4 id="22-columns">2.2 columns</h4>
+<p><strong>用途</strong>：记录数据库中所有<strong>列</strong>的元数据信息。可以查询到每个表的列名、数据类型、字符长度、数值精度、小数位数、是否可空、默认值、键类型（主键/唯一键等）以及列注释。这是字段级血缘分析和数据字典构建的核心数据源。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>TABLE_CATALOG</code></td>
+<td style="text-align:left">VARCHAR(512)</td>
+<td style="text-align:left">目录名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_SCHEMA</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">数据库名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_NAME</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">表名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COLUMN_NAME</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">列名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ORDINAL_POSITION</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">列在表中的顺序位置（从1开始）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COLUMN_DEFAULT</code></td>
+<td style="text-align:left">TEXT</td>
+<td style="text-align:left">列的默认值</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>IS_NULLABLE</code></td>
+<td style="text-align:left">VARCHAR(3)</td>
+<td style="text-align:left">是否可为空（YES/NO）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>DATA_TYPE</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">数据类型</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CHARACTER_MAXIMUM_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">字符类型的最大长度</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CHARACTER_OCTET_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">字符类型的最大字节数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>NUMERIC_PRECISION</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数值类型的精度（总位数）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>NUMERIC_SCALE</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数值类型的小数位数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>DATETIME_PRECISION</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">日期时间类型的精度</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CHARACTER_SET_NAME</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">字符集名称</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COLLATION_NAME</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">排序规则名称</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COLUMN_TYPE</code></td>
+<td style="text-align:left">MEDIUMTEXT</td>
+<td style="text-align:left">完整的列类型定义（如 varchar(10)）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COLUMN_KEY</code></td>
+<td style="text-align:left">VARCHAR(3)</td>
+<td style="text-align:left">键类型（PRI主键/UNI唯一索引/MUL其他）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>EXTRA</code></td>
+<td style="text-align:left">VARCHAR(27)</td>
+<td style="text-align:left">额外信息（如 auto_increment）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PRIVILEGES</code></td>
+<td style="text-align:left">VARCHAR(154)</td>
+<td style="text-align:left">该列的权限</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COLUMN_COMMENT</code></td>
+<td style="text-align:left">TEXT</td>
+<td style="text-align:left">列注释</td>
+</tr>
+</tbody>
+</table>
+<h4 id="23-partitions">2.3 partitions</h4>
+<p><strong>用途</strong>：记录所有<strong>分区</strong>的详细信息。可以查询到每个表的分区名称、分区方法（Range/List等）、分区表达式、分区的行数和数据大小。是管理分区生命周期、排查数据倾斜问题的重要入口。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>TABLE_CATALOG</code></td>
+<td style="text-align:left">VARCHAR(512)</td>
+<td style="text-align:left">目录名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_SCHEMA</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">数据库名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_NAME</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">表名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PARTITION_NAME</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">分区名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>SUBPARTITION_NAME</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">子分区名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PARTITION_ORDINAL_POSITION</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">分区顺序位置</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PARTITION_METHOD</code></td>
+<td style="text-align:left">VARCHAR(18)</td>
+<td style="text-align:left">分区方法（RANGE/LIST等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PARTITION_EXPRESSION</code></td>
+<td style="text-align:left">LONGTEXT</td>
+<td style="text-align:left">分区表达式</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PARTITION_DESCRIPTION</code></td>
+<td style="text-align:left">LONGTEXT</td>
+<td style="text-align:left">分区描述（如分区键值的范围）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_ROWS</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">该分区的近似行数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>AVG_ROW_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">平均行长度（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>DATA_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数据文件大小（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>MAX_DATA_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">最大数据容量</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>INDEX_LENGTH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">索引文件大小（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CREATE_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">分区创建时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>UPDATE_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">分区最近更新时间</td>
+</tr>
+</tbody>
+</table>
+<h4 id="24-loads">2.4 loads</h4>
+<p><strong>用途</strong>：记录所有<strong>导入作业</strong>的详细信息和执行状态。通过此表可以追踪 Broker Load、Insert 等各类导入任务的状态（PENDING/LOADING/FINISHED/CANCELLED）、进度、开始和结束时间以及执行的 SQL 语句。是排查数据导入故障的核心监控表。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>JOB_ID</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">导入作业ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>LABEL</code></td>
+<td style="text-align:left">VARCHAR(128)</td>
+<td style="text-align:left">导入作业的标签（用户指定的唯一标识）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>STATE</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">作业状态（PENDING/LOADING/FINISHED/CANCELLED）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PROGRESS</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">作业进度描述</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TYPE</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">导入类型（BROKER/INSERT/ROUTINE LOAD等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PRIORITY</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">优先级</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ETL_INFO</code></td>
+<td style="text-align:left">VARCHAR(1024)</td>
+<td style="text-align:left">ETL信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TASK_INFO</code></td>
+<td style="text-align:left">VARCHAR(1024)</td>
+<td style="text-align:left">任务详细信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>CREATE_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">导入作业创建时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ETL_START_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">ETL阶段开始时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ETL_FINISH_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">ETL阶段结束时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>LOAD_START_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">数据加载阶段开始时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>LOAD_FINISH_TIME</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">数据加载阶段结束时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TRACKING_SQL</code></td>
+<td style="text-align:left">VARCHAR(65535)</td>
+<td style="text-align:left">执行的导入SQL语句</td>
+</tr>
+</tbody>
+</table>
+<h4 id="25-be_tablets">2.5 be_tablets</h4>
+<p><strong>用途</strong>：记录每个 BE（后端）节点上所有 <strong>Tablet（数据分片）</strong> 的分布和健康状态。通过此表可以查看 Tablet 的大小、行数、版本数、Compaction 状态以及是否为坏副本。是诊断数据分布均衡性、副本健康度和版本积压问题的核心表。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>BE_ID</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">BE节点的唯一ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLE_ID</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">表的ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>PARTITION_ID</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">分区的ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLET_ID</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">Tablet的唯一ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>SCHEMA_HASH</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">表结构的哈希值</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TABLET_SIZE</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">Tablet的数据大小（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>NUM_VERSION</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">该Tablet当前有多少个版本</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>ROW_COUNT</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">该Tablet的行数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>DATA_SIZE</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">数据实际占用空间（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>COMPACTION_STATUS</code></td>
+<td style="text-align:left">VARCHAR(128)</td>
+<td style="text-align:left">Compaction（合并）状态</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>IS_BAD</code></td>
+<td style="text-align:left">BOOLEAN</td>
+<td style="text-align:left">是否为坏副本（true表示副本损坏）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>VERSION_COUNT</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">历史版本数量</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第三章sys-系统元数据库">第三章：<code>sys</code> 系统元数据库</h3>
+<p>记录 StarRocks 特有的权限关系和对象依赖关系，这些表通常以只读视图（View）的形式提供。</p>
+<h4 id="31-grants_to_roles">3.1 grants_to_roles</h4>
+<p><strong>用途</strong>：查看授予<strong>用户自定义角色</strong>的所有权限。清晰列出了哪个角色在哪个数据库的哪个表上拥有什么权限，以及该角色能否将权限转授给他人。是梳理集群内角色权限分布的核心视图。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>Grantee</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">被授权者（角色名）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Catalog</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">权限对象所在的Catalog</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Database</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">权限对象所在的数据库</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">权限对象的具体名称</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Type</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">对象类型（TABLE/MATERIALIZED VIEW/DATABASE等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Privilege_Type</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">授予的权限类型（SELECT/ALTER/INSERT等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Is_Grantable</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">是否允许被授权者将此权限授予他人（YES/NO）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="32-grants_to_users">3.2 grants_to_users</h4>
+<p><strong>用途</strong>：查看直接授予<strong>用户</strong>的所有权限。与 <code>grants_to_roles</code> 的区别在于，此表记录的是直接绑定在用户账号上的权限，而非通过角色继承的权限。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>Grantee</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">被授权者（用户名）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Catalog</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">权限对象所在的Catalog</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Database</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">权限对象所在的数据库</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Name</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">权限对象的具体名称</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Object_Type</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">对象类型（TABLE/MATERIALIZED VIEW/DATABASE等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Privilege_Type</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">授予的权限类型（SELECT/ALTER/INSERT等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>Is_Grantable</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">是否允许被授权者将此权限授予他人（YES/NO）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="33-role_edges">3.3 role_edges</h4>
+<p><strong>用途</strong>：查看<strong>角色之间的继承和授予关系</strong>。可以清晰地看到哪个角色被授予给了哪个用户，或者哪个角色继承了另一个角色的权限。是绘制角色权限继承链的关键视图。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>FROM_ROLE</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">源角色（父角色，其权限被继承）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TO_ROLE</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">目标角色（子角色，继承源角色的权限）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>TO_USER</code></td>
+<td style="text-align:left">VARCHAR</td>
+<td style="text-align:left">目标用户（角色被直接授予给此用户）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="第四章starrocks_audit_db__-审计日志库">第四章：<code>starrocks_audit_db__</code> 审计日志库</h3>
+<p>用于持久化存储和查询 StarRocks 集群中执行过的所有 SQL 审计日志。</p>
+<p><strong>前置条件</strong>：需要安装并启用审计日志插件，并执行官方的建表脚本，才能在此库下生成 <code>starrocks_audit_tbl__</code> 表。</p>
+<h4 id="41-starrocks_audit_tbl__">4.1 starrocks_audit_tbl__</h4>
+<p><strong>用途</strong>：记录集群中所有<strong>SQL执行的审计日志</strong>。涵盖查询和导入等操作。记录了谁在什么时间从哪个IP执行了哪条SQL，以及执行耗时、扫描数据量、返回行数、资源消耗（CPU/内存）等关键指标。是安全审计、性能分析与慢查询排查的核心数据源。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">字段名</th>
+<th style="text-align:left">数据类型</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>queryId</code></td>
+<td style="text-align:left">VARCHAR(48)</td>
+<td style="text-align:left">查询唯一ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>timestamp</code></td>
+<td style="text-align:left">DATETIME</td>
+<td style="text-align:left">查询开始时间</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>queryType</code></td>
+<td style="text-align:left">VARCHAR(12)</td>
+<td style="text-align:left">查询类型（query / slow_query）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>clientIp</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">客户端IP地址</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>user</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">发起查询的用户名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>authorizedUser</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">认证通过的用户名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>resourceGroup</code></td>
+<td style="text-align:left">VARCHAR(64)</td>
+<td style="text-align:left">使用的资源组</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>catalog</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">查询所在的Catalog名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>db</code></td>
+<td style="text-align:left">VARCHAR(96)</td>
+<td style="text-align:left">查询所在的数据库名</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>state</code></td>
+<td style="text-align:left">VARCHAR(8)</td>
+<td style="text-align:left">执行状态（OK/ERR/EOF）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>errorCode</code></td>
+<td style="text-align:left">VARCHAR(96)</td>
+<td style="text-align:left">错误码（成功时为空）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>queryTime</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">查询总耗时（毫秒）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>scanBytes</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">扫描数据量（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>scanRows</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">扫描行数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>returnRows</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">返回行数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>cpuCostNs</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">CPU消耗（纳秒）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>memCostBytes</code></td>
+<td style="text-align:left">BIGINT</td>
+<td style="text-align:left">内存消耗（字节）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>stmtId</code></td>
+<td style="text-align:left">INT</td>
+<td style="text-align:left">该SQL语句的增量ID</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>isQuery</code></td>
+<td style="text-align:left">TINYINT</td>
+<td style="text-align:left">是否为查询操作（1查询/0导入等）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>feIp</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">处理该语句的FE节点IP地址</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>stmt</code></td>
+<td style="text-align:left">STRING</td>
+<td style="text-align:left">原始SQL语句文本</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>digest</code></td>
+<td style="text-align:left">VARCHAR(32)</td>
+<td style="text-align:left">SQL语句的哈希指纹（用于聚类相同的SQL）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>planCpuCosts</code></td>
+<td style="text-align:left">DOUBLE</td>
+<td style="text-align:left">查询规划阶段消耗的CPU（纳秒）</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>planMemCosts</code></td>
+<td style="text-align:left">DOUBLE</td>
+<td style="text-align:left">查询规划阶段消耗的内存（字节）</td>
+</tr>
+</tbody>
+</table>
+<h3 id="总结">总结</h3>
+<p>系统表是我们监控和管理 StarRocks 的显微镜。<code>_statistics_</code> 负责查询性能优化，<code>information_schema</code> 负责元数据和基础监控，<code>sys</code> 负责权限梳理，<code>starrocks_audit_db__</code> 负责 SQL 审计追踪。当遇到性能问题或想了解集群状态时，不妨先去这些系统表里找找线索。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-DataSave/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/StarRocks_TrainingSet_Testing Set/">
+                  <h3 class="post-title">
+                    训练集、验证集与测试集：机器学习中最基础的“行规”
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

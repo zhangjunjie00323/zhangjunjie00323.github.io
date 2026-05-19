@@ -1,0 +1,1139 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks 智能物化视图：用“预计算”换“快查询”的透明加速利器 | Zhang Junjie&#39;s Personal Blog</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1779193571787">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1779193571787">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init({id:"3PgbPb0weaDFEpoq",ck:"3PgbPb0weaDFEpoq"})
+      }
+    }
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="有没有一种方式，能把计算“提前”做掉，让查询直接读结果？
+
+在之前的系列文章中，我们深入探讨了 StarRocks 的 RBO（基于规则的优化器）和 CBO（基于成本的优化器），理解了优化器如何在 SQL 执行时通过“规划最优路径”来提升查..." />
+    <meta name="keywords" content="大数据,StarRocks" />
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1779193571787" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E4%BB%80%E4%B9%88%E6%98%AF%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE">一、什么是物化视图？</a>
+<ul>
+<li><a href="#11-%E6%A6%82%E5%BF%B5%E9%A2%84%E8%AE%A1%E7%AE%97%E7%9A%84%E6%9F%A5%E8%AF%A2%E7%BB%93%E6%9E%9C">1.1 概念：预计算的查询结果</a></li>
+<li><a href="#12-starrocks-%E4%B8%AD%E7%9A%84%E4%B8%A4%E7%A7%8D%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE">1.2 StarRocks 中的两种物化视图</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%8C-%E5%BC%82%E6%AD%A5%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE%E7%9A%84%E4%B8%89%E5%A4%A7%E6%99%BA%E8%83%BD%E7%89%B9%E6%80%A7">二、异步物化视图的三大智能特性</a>
+<ul>
+<li><a href="#21-%E6%99%BA%E8%83%BD%E9%80%8F%E6%98%8E%E6%94%B9%E5%86%99%E4%B8%8D%E6%94%B9-sql%E8%87%AA%E5%8A%A8%E5%8A%A0%E9%80%9F">2.1 智能透明改写：不改 SQL，自动加速</a></li>
+<li><a href="#22-%E8%87%AA%E5%8A%A8%E5%88%B7%E6%96%B0%E6%95%B0%E6%8D%AE%E8%B7%9F%E5%BE%97%E4%B8%8A%E6%97%A0%E9%9C%80%E4%BA%BA%E5%B7%A5%E5%B9%B2%E9%A2%84">2.2 自动刷新：数据“跟得上”，无需人工干预</a></li>
+<li><a href="#23-%E5%88%86%E5%8C%BA%E5%A2%9E%E9%87%8F%E5%88%B7%E6%96%B0%E5%8F%AA%E5%88%B7%E6%96%B0%E5%8F%98%E4%BA%86%E7%9A%84%E9%82%A3%E9%83%A8%E5%88%86">2.3 分区增量刷新：只刷新“变了的”那部分</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E5%BC%82%E6%AD%A5%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE%E7%9A%84%E5%A2%9E%E5%BC%BA%E8%83%BD%E5%8A%9B">三、异步物化视图的增强能力</a>
+<ul>
+<li><a href="#31-%E5%A4%9A%E6%BA%90%E8%81%94%E9%82%A6%E4%B8%80%E4%B8%AA%E8%A7%86%E5%9B%BE%E8%B7%A8%E6%BA%90%E5%8A%A0%E9%80%9F">3.1 多源联邦：一个视图，跨源加速</a></li>
+<li><a href="#32-%E4%B8%B0%E5%AF%8C%E7%9A%84%E6%94%B9%E5%86%99%E8%83%BD%E5%8A%9B%E8%A6%86%E7%9B%96%E6%9B%B4%E5%A4%9A%E5%9C%BA%E6%99%AF">3.2 丰富的改写能力：覆盖更多场景</a></li>
+<li><a href="#33-%E5%B5%8C%E5%A5%97%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE%E6%9E%84%E5%BB%BA%E5%88%86%E5%B1%82%E8%81%9A%E5%90%88%E4%BD%93%E7%B3%BB">3.3 嵌套物化视图：构建分层聚合体系</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-%E6%A0%B8%E5%BF%83%E4%BD%BF%E7%94%A8%E5%AE%9E%E8%B7%B5">四、核心使用实践</a>
+<ul>
+<li><a href="#41-%E5%88%9B%E5%BB%BA%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE">4.1 创建物化视图</a></li>
+<li><a href="#42-%E9%AA%8C%E8%AF%81%E6%9F%A5%E8%AF%A2%E6%98%AF%E5%90%A6%E8%A2%AB%E6%94%B9%E5%86%99">4.2 验证查询是否被改写</a></li>
+<li><a href="#43-%E7%9B%91%E6%8E%A7%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE%E7%8A%B6%E6%80%81">4.3 监控物化视图状态</a></li>
+<li><a href="#44-%E7%AE%A1%E7%90%86%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE">4.4 管理物化视图</a></li>
+<li><a href="#45-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE">4.5 最佳实践建议</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-%E6%80%BB%E7%BB%93">五、总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks 智能物化视图：用“预计算”换“快查询”的透明加速利器</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-16 22:24
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                22 min read
+              </span>
+              <span class="meta-item meta-read-count show" id="post-read-count">
+                <i class="fa fa-user-o"></i>
+                <span class="js-page-pv-mirror">--</span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/j2cO/StarRocks.jpg" alt="StarRocks 智能物化视图：用“预计算”换“快查询”的透明加速利器">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>有没有一种方式，能把计算“提前”做掉，让查询直接读结果？</p>
+<!-- more -->
+<p>在之前的系列文章中，我们深入探讨了 StarRocks 的 RBO（基于规则的优化器）和 CBO（基于成本的优化器），理解了优化器如何在 SQL 执行时通过“规划最优路径”来提升查询性能。</p>
+<p>但优化器再怎么聪明，也绕不过一个根本问题：<strong>计算量</strong>。如果一条查询需要扫描数十亿行数据、执行多张大表的 JOIN 和聚合，即使优化器选择了最优的执行计划，计算本身的代价依然难以避免。</p>
+<p>答案就是<strong>物化视图（Materialized View）</strong> 。如果说 RBO 和 CBO 是在查询时“优化计算过程”，那么物化视图就是“避免重复计算”——把复杂查询的结果预先计算好并存储下来，后续查询直接读取预计算结果，从而实现数量级的性能飞跃。</p>
+<p>StarRocks 的物化视图更进一步，做到了 <strong>“智能”</strong> ：自动刷新、自动查询改写、支持多表关联和复杂聚合。本文将带你深入 StarRocks 智能物化视图的世界，理解它的核心原理、独特优势以及最佳实践。</p>
+<hr>
+<h3 id="一-什么是物化视图">一、什么是物化视图？</h3>
+<h4 id="11-概念预计算的查询结果">1.1 概念：预计算的查询结果</h4>
+<p>物化视图是包含一个查询结果的数据库对象。它可以是远端数据的一份本地拷贝，也可以是一个表或一个 JOIN 结果的子集，还可以是使用聚合函数的一个汇总结果。</p>
+<p>与普通的逻辑视图不同，逻辑视图只是一个“别名”，每次查询时都需要实时计算；而物化视图将查询结果<strong>物化</strong>（即实际存储下来），查询时直接读取，避免了重复计算。</p>
+<p>用一句话概括：<strong>物化视图 = 预先计算 + 物理存储</strong>。</p>
+<h4 id="12-starrocks-中的两种物化视图">1.2 StarRocks 中的两种物化视图</h4>
+<p>StarRocks 提供了两种物化视图：<strong>同步物化视图</strong>和<strong>异步物化视图</strong>，两者定位和适用场景有明显差异：</p>
+<table>
+<thead>
+<tr>
+<th>对比维度</th>
+<th>同步物化视图（Rollup）</th>
+<th>异步物化视图</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>多表关联</strong></td>
+<td>不支持（仅单表）</td>
+<td>支持</td>
+</tr>
+<tr>
+<td><strong>聚合算子</strong></td>
+<td>仅部分聚合函数</td>
+<td>支持丰富的聚合算子</td>
+</tr>
+<tr>
+<td><strong>查询改写</strong></td>
+<td>支持</td>
+<td>支持</td>
+</tr>
+<tr>
+<td><strong>刷新策略</strong></td>
+<td>同步刷新（导入时自动更新）</td>
+<td>异步刷新 / 手动刷新</td>
+</tr>
+<tr>
+<td><strong>基表来源</strong></td>
+<td>仅 Default Catalog 单表</td>
+<td>Default Catalog、External Catalog、已有物化视图</td>
+</tr>
+<tr>
+<td><strong>典型场景</strong></td>
+<td>实时场景下单表聚合查询的透明加速</td>
+<td>多表关联、复杂聚合、数据湖加速</td>
+</tr>
+</tbody>
+</table>
+<p>同步物化视图（Rollup）可以看作是一种特殊的“查询加速索引”，适合对实时性要求极高、但查询模式简单的场景——比如单表的 COUNT、SUM、MIN、MAX 等聚合查询。</p>
+<p>而异步物化视图则是 StarRocks 智能物化视图的核心形态，<strong>支持多表关联、丰富的聚合算子、自动/手动刷新，以及强大的自动查询改写能力</strong>。本文后续将聚焦于异步物化视图。</p>
+<hr>
+<h3 id="二-异步物化视图的三大智能特性">二、异步物化视图的三大智能特性</h3>
+<h4 id="21-智能透明改写不改-sql自动加速">2.1 智能透明改写：不改 SQL，自动加速</h4>
+<p>异步物化视图最核心的“智能”之处在于<strong>透明查询改写</strong>：你不需要修改任何业务 SQL，也不需要显式指定使用哪个物化视图，StarRocks 的优化器会自动判断是否可以复用物化视图中的预计算结果，如果可以，就自动将查询改写为读取物化视图。</p>
+<p>这一机制的实现基于 <strong>SPJG（Select-Project-Join-Group-by）</strong> 模式的查询改写算法，覆盖了分析型查询中最常见的算子类型。</p>
+<p><strong>举个实际案例：</strong></p>
+<p>某电商平台需要频繁分析各品类的销售额：</p>
+<pre><code class="language-sql">-- 原始查询（每次需要扫描全量订单明细表）
+SELECT product_type, SUM(sales_amount) 
+FROM orders 
+WHERE order_date &gt;= '2024-01-01' 
+GROUP BY product_type;
+</code></pre>
+<p>如果直接执行，每次都需要扫描上亿行的订单明细表。数据工程师可以创建一个物化视图来预聚合：</p>
+<pre><code class="language-sql">-- 创建物化视图（预计算每天各品类的销售额）
+CREATE MATERIALIZED VIEW mv_product_daily_sales
+PARTITION BY order_date
+REFRESH ASYNC START('2024-01-01') EVERY(INTERVAL 1 DAY)
+AS
+SELECT order_date, product_type, SUM(sales_amount) AS total_sales
+FROM orders
+GROUP BY order_date, product_type;
+</code></pre>
+<p>之后，<strong>业务 SQL 完全不用修改</strong>，StarRocks 的 CBO 优化器会自动识别到 <code>mv_product_daily_sales</code> 中的预聚合数据可以满足原始查询，将查询改写为直接读取物化视图——扫描的数据量从 TB 级骤降至 MB 级，查询响应时间从分钟级降到秒级。</p>
+<p>得物在从 ClickHouse 迁移到 StarRocks 的实践中，就充分利用了这一特性。原本 ClickHouse 没有自动的透明物化视图改写能力，需要外部代码主动管理物化视图并改写 SQL，引入额外复杂度；而 StarRocks 的物化视图完全自管理，查询可以自动透明改写到物化视图，用户无需改 SQL 且保证数据正确性。</p>
+<h4 id="22-自动刷新数据跟得上无需人工干预">2.2 自动刷新：数据“跟得上”，无需人工干预</h4>
+<p>异步物化视图的另一个“智能”体现在<strong>刷新策略</strong>上。StarRocks 支持多种刷新模式，满足不同场景的数据时效性需求：</p>
+<table>
+<thead>
+<tr>
+<th>刷新策略</th>
+<th>描述</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ASYNC（异步自动刷新）</strong></td>
+<td>基表数据变化时，按指定间隔自动触发刷新</td>
+<td>定期更新的报表、天级汇总</td>
+</tr>
+<tr>
+<td><strong>MANUAL（手动刷新）</strong></td>
+<td>不自动刷新，需用户手动维护刷新任务</td>
+<td>数据变化不频繁、需精准控制刷新时机</td>
+</tr>
+<tr>
+<td><strong>定时调度刷新</strong></td>
+<td>指定开始时间和间隔（如每天凌晨1点刷新）</td>
+<td>固定周期的批量计算</td>
+</tr>
+</tbody>
+</table>
+<p>ASYNC 模式是默认的“智能”模式：每当基表数据发生变化，物化视图就会根据指定的刷新间隔自动触发刷新任务，确保预计算结果始终与基表保持一定程度的同步。</p>
+<p>这种自动化能力，让物化视图从“需要人工维护的静态快照”升级为“自管理的动态加速层”。</p>
+<h4 id="23-分区增量刷新只刷新变了的那部分">2.3 分区增量刷新：只刷新“变了的”那部分</h4>
+<p>对于时间序列数据，全量刷新整个物化视图的成本可能仍然很高。StarRocks 支持<strong>分区物化视图</strong>，实现分区级别的增量刷新：</p>
+<ul>
+<li><strong>增量构建</strong>：你可以设置分区刷新任务分批执行，避免所有分区并行刷新导致过多资源消耗</li>
+<li><strong>增量刷新</strong>：基表分区有数据更新时，仅更新物化视图的对应分区，而非刷新整个视图，大幅减少资源浪费</li>
+<li><strong>部分物化</strong>：可以为物化视图分区设置 TTL（生存时间），只保留热数据的分区物化结果，冷数据查询回退到基表</li>
+</ul>
+<p>这意味着，你只需要刷新“变了的”那部分数据，而不是每次都从头计算所有历史数据，计算开销和存储开销都得到极大优化。</p>
+<hr>
+<h3 id="三-异步物化视图的增强能力">三、异步物化视图的增强能力</h3>
+<p>除了三大核心智能特性，StarRocks 异步物化视图还具备一系列增强能力，让它在复杂场景下同样游刃有余：</p>
+<h4 id="31-多源联邦一个视图跨源加速">3.1 多源联邦：一个视图，跨源加速</h4>
+<p>异步物化视图的基表可以来自多种数据源：</p>
+<ul>
+<li><strong>Default Catalog 内部表</strong>：StarRocks 原生表</li>
+<li><strong>External Catalog 外部表</strong>：Hive、Iceberg、Hudi、Paimon、JDBC 等</li>
+<li><strong>已有异步物化视图</strong>：支持嵌套物化视图，构建分层聚合</li>
+<li><strong>逻辑视图</strong>：基于视图构建物化视图</li>
+</ul>
+<p>这意味着你可以基于数据湖中的外部表创建物化视图，实现对数据湖查询的透明加速——无需将数据导入 StarRocks，直接在湖上构建加速层。</p>
+<h4 id="32-丰富的改写能力覆盖更多场景">3.2 丰富的改写能力：覆盖更多场景</h4>
+<p>StarRocks 异步物化视图的查询改写能力持续演进，已覆盖大量复杂场景：</p>
+<ul>
+<li><strong>单表改写</strong>：基于单表的聚合查询改写</li>
+<li><strong>多表 JOIN 改写</strong>：支持 INNER JOIN、CROSS JOIN、FULL OUTER JOIN、Semi Join、Anti Join 等</li>
+<li><strong>聚合改写</strong>：基本聚合类型的 JOIN 查询改写，AVG 改写为 SUM/COUNT</li>
+<li><strong>View Delta Join 改写</strong>：查询 JOIN 的表是物化视图 JOIN 的子集时自动改写</li>
+<li><strong>Union 改写</strong>：支持谓词 UNION 补偿改写和分区 UNION 补偿改写，实现冷热数据分离查询</li>
+<li><strong>嵌套物化视图改写</strong>：基于内表的嵌套物化视图查询改写</li>
+<li><strong>文本改写（v3.3+）</strong> ：改写与物化视图定义具有相同抽象语法树的查询</li>
+</ul>
+<p>特别值得一提的是 <strong>Union 改写</strong>：你可以将热数据放在物化视图中（如最近 7 天的数据），冷数据查询时自动回退到基表，实现透明的冷热分离查询。</p>
+<h4 id="33-嵌套物化视图构建分层聚合体系">3.3 嵌套物化视图：构建分层聚合体系</h4>
+<p>StarRocks 支持基于已有的异步物化视图再创建新的物化视图，形成<strong>分层聚合体系</strong>：</p>
+<pre><code class="language-latex">原始明细表（天级粒度）
+    ↓
+物化视图 L1（小时级聚合）
+    ↓
+物化视图 L2（天级聚合）
+    ↓
+物化视图 L3（月级聚合）
+</code></pre>
+<p>这种设计允许你在多个物化视图之间构建层级聚合关系，实现分钟级→小时级→天级→月级的分层预计算，每个层级只处理上一层聚合后的数据，大幅降低计算量和存储成本。</p>
+<hr>
+<h3 id="四-核心使用实践">四、核心使用实践</h3>
+<h4 id="41-创建物化视图">4.1 创建物化视图</h4>
+<pre><code class="language-sql">-- 创建异步物化视图（自动刷新）
+CREATE MATERIALIZED VIEW mv_name
+REFRESH ASYNC
+AS
+SELECT ... FROM ... WHERE ... GROUP BY ...;
+
+-- 创建定时刷新的物化视图
+CREATE MATERIALIZED VIEW mv_name
+REFRESH ASYNC START('2025-01-01 01:00:00') EVERY(INTERVAL 1 DAY)
+AS
+SELECT ...;
+
+-- 创建分区物化视图（关联基表分区）
+CREATE MATERIALIZED VIEW mv_name
+PARTITION BY order_date
+REFRESH ASYNC
+AS
+SELECT order_date, product_id, SUM(amount) AS total
+FROM orders
+GROUP BY order_date, product_id;
+</code></pre>
+<h4 id="42-验证查询是否被改写">4.2 验证查询是否被改写</h4>
+<pre><code class="language-sql">-- 查看执行计划，确认是否使用了物化视图
+EXPLAIN SELECT ...;
+
+-- 使用 TRACE 命令诊断改写过程（v3.2+）
+TRACE REWRITE SELECT ...;
+TRACE REASON MV SELECT ...;
+</code></pre>
+<h4 id="43-监控物化视图状态">4.3 监控物化视图状态</h4>
+<pre><code class="language-sql">-- 查看所有物化视图
+SHOW MATERIALIZED VIEWS;
+
+-- 从 information_schema 查看详细信息
+SELECT * FROM information_schema.materialized_views;
+
+-- 查看刷新历史
+SELECT * FROM information_schema.task_runs 
+WHERE task_name = 'mv-xxx' 
+ORDER BY create_time DESC;
+
+-- 查看物化视图与基表的依赖关系（v3.2+）
+SELECT * FROM sys.object_dependencies;
+</code></pre>
+<h4 id="44-管理物化视图">4.4 管理物化视图</h4>
+<pre><code class="language-sql">-- 手动刷新
+REFRESH MATERIALIZED VIEW mv_name;
+
+-- 激活失效的物化视图（基表 Schema 变更后）
+ALTER MATERIALIZED VIEW mv_name ACTIVE;
+
+-- 原子替换物化视图（v3.1+）
+ALTER MATERIALIZED VIEW mv_old SWAP WITH mv_new;
+
+-- 全局开关：禁用查询改写（用于故障排查）
+SET GLOBAL enable_materialized_view_rewrite = false;
+</code></pre>
+<h4 id="45-最佳实践建议">4.5 最佳实践建议</h4>
+<ul>
+<li><strong>分区对齐</strong>：物化视图的分区键应与基表（通常是事实表）的分区键对齐，以实现分区级增量刷新。对于时间序列数据，按日期分区是最常见的做法。</li>
+<li><strong>合理选择刷新策略</strong>：对实时性要求高的场景使用 ASYNC 自动刷新；对数据变化不频繁的场景使用 MANUAL 手动刷新或定时调度，避免不必要的计算开销。</li>
+<li><strong>避免过度创建</strong>：物化视图会占用存储空间和刷新计算资源。建议先分析慢查询模式，按需创建，而非盲目创建大量视图。</li>
+<li><strong>监控刷新任务</strong>：定期检查 <code>information_schema.task_runs</code> 中的刷新历史，确保刷新任务正常执行，及时发现失败的刷新。</li>
+<li><strong>利用嵌套视图分层</strong>：对于多级聚合需求（如分钟→小时→天），利用嵌套物化视图构建分层体系，每层只处理上一层聚合后的数据，大幅降低整体计算成本。</li>
+<li><strong>冷热分离设计</strong>：利用分区 TTL 和 Union 改写能力，将热数据物化、冷数据回退基表，平衡加速效果与存储成本。</li>
+<li><strong>版本注意</strong>：部分高级特性（如文本改写、基于视图的物化视图等）对 StarRocks 版本有要求，建议使用 v3.1+ 以获得完整能力。</li>
+</ul>
+<hr>
+<h3 id="五-总结">五、总结</h3>
+<p>StarRocks 的智能物化视图是一项将“空间换时间”发挥到极致的技术。它通过以下机制实现查询性能的飞跃：</p>
+<ol>
+<li><strong>预计算</strong>：将复杂查询的结果提前计算并物理存储，避免重复计算</li>
+<li><strong>智能透明改写</strong>：不改业务 SQL，优化器自动匹配最优视图</li>
+<li><strong>自动刷新</strong>：数据变化时自动更新物化视图，无需人工干预</li>
+<li><strong>分区增量刷新</strong>：只刷新变更的分区，大幅降低计算和存储开销</li>
+<li><strong>多源联邦</strong>：支持跨内部表、数据湖、JDBC 等多源构建物化视图</li>
+<li><strong>分层聚合</strong>：通过嵌套物化视图构建多级预计算体系</li>
+</ol>
+<p>如果说 RBO 和 CBO 是 StarRocks 查询优化的“左右脑”——一个负责规则改写，一个负责成本决策——那么智能物化视图就是 StarRocks 的“缓存外挂”。它绕开了实时计算的瓶颈，用预先算好的结果直接响应查询，让“秒级响应 PB 级数据”成为可能。</p>
+<p>理解智能物化视图，不仅能帮你更好地利用 StarRocks 的加速能力，更能让你在设计数据模型时，拥有“预计算优先”的思维——把最耗时的计算提前做掉，让查询变得轻盈而迅速。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-Deploy and install/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-DataSave/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-xiang-liang-hua-yin-qing-ru-he-rang-cpu-zai-shu-ju-fen-xi-zhong-huo-li-quan-kai/">
+                  <h3 class="post-title">
+                    StarRocks 向量化引擎：如何让 CPU 在数据分析中“火力全开”
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+          <footer class="site-stats-bar">
+            <div class="site-stats-inner">
+              <span id="busuanzi_container_page_pv" class="site-stat page-pv">
+                <i class="fa fa-eye"></i>
+                <span class="label">本文阅读</span>
+                <span class="value" id="busuanzi_value_page_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_pv" class="site-stat">
+                <i class="fa fa-eye"></i>
+                <span class="label">总访问</span>
+                <span class="value" id="busuanzi_value_site_pv"></span>
+              </span>
+              <span id="busuanzi_container_site_uv" class="site-stat">
+                <i class="fa fa-user"></i>
+                <span class="label">访客</span>
+                <span class="value" id="busuanzi_value_site_uv"></span>
+              </span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    var pvStoragePrefix = 'gridea:pv:';
+    var normalizePvPath = function(url) {
+      try {
+        return new URL(url, window.location.origin).pathname;
+      } catch (e) {
+        return String(url || '');
+      }
+    };
+    var getSavedPv = function(url) {
+      try {
+        var path = normalizePvPath(url);
+        return (localStorage.getItem(pvStoragePrefix + path) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    };
+    var setSavedPv = function(pathname, value) {
+      try {
+        localStorage.setItem(pvStoragePrefix + pathname, value);
+      } catch (e) {}
+    };
+    var fillSavedPostPvs = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var saved = getSavedPv(url);
+        var parent = el.closest('.meta-read-count');
+        if (saved) {
+          el.textContent = saved;
+          if (parent) parent.classList.add('show');
+        } else {
+          el.textContent = '--';
+          if (parent) parent.classList.add('show');
+        }
+      });
+    };
+    fillSavedPostPvs();
+    window.addEventListener('pageshow', fillSavedPostPvs);
+
+    var fetchJsonp = function(url, onSuccess, onError) {
+      var callback = 'BszCb_' + Math.floor(Math.random() * 1e16);
+      var timeoutId;
+      var cleanup = function() {
+        if (timeoutId) clearTimeout(timeoutId);
+        try { delete window[callback]; } catch (e) { window[callback] = undefined; }
+        if (script && script.parentNode) script.parentNode.removeChild(script);
+      };
+      window[callback] = function(data) {
+        cleanup();
+        try { onSuccess && onSuccess(data); } catch (e) {}
+      };
+      var script = document.createElement('script');
+      script.async = true;
+      script.defer = true;
+      script.src = url.replace('=BusuanziCallback', '=' + callback);
+      script.onerror = function() {
+        cleanup();
+        onError && onError();
+      };
+      timeoutId = setTimeout(function() {
+        cleanup();
+        onError && onError();
+      }, 7000);
+      document.getElementsByTagName('head')[0].appendChild(script);
+    };
+
+    var initListPostPvFetch = function() {
+      var nodes = document.querySelectorAll('.js-post-pv[data-url]');
+      if (!nodes || nodes.length === 0) return;
+
+      var pathToEls = new Map();
+      nodes.forEach(function(el) {
+        var url = el.getAttribute('data-url');
+        var path = normalizePvPath(url);
+        if (!path) return;
+        if (!pathToEls.has(path)) pathToEls.set(path, []);
+        pathToEls.get(path).push(el);
+      });
+
+      var queue = [];
+      pathToEls.forEach(function(els, path) {
+        var saved = '';
+        try { saved = (localStorage.getItem(pvStoragePrefix + path) || '').trim(); } catch (e) {}
+        if (saved) return;
+        els.forEach(function(el) {
+          el.textContent = '...';
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.add('show');
+        });
+        queue.push(path);
+      });
+
+      if (queue.length === 0) return;
+
+      var api = 'https://busuanzi.ibruce.info/busuanzi?jsonpCallback=BusuanziCallback';
+      var running = 0;
+      var maxConcurrency = 4;
+      var pump = function() {
+        while (running < maxConcurrency && queue.length > 0) {
+          var path = queue.shift();
+          (function(pathname) {
+            running++;
+            var url = api + '&url=' + encodeURIComponent(pathname);
+            var done = function(value) {
+              var els = pathToEls.get(pathname) || [];
+              els.forEach(function(el) {
+                el.textContent = value;
+                var parent = el.closest('.meta-read-count');
+                if (parent) parent.classList.add('show');
+              });
+              running--;
+              setTimeout(pump, 150);
+            };
+
+            fetchJsonp(url, function(data) {
+              var value = data && data.page_pv != null ? String(data.page_pv) : '';
+              if (!value) value = '--';
+              if (value !== '--') setSavedPv(pathname, value);
+              done(value);
+            }, function() {
+              done('--');
+            });
+          })(path);
+        }
+      };
+      pump();
+    };
+    initListPostPvFetch();
+
+    var pvSource = document.getElementById('busuanzi_value_page_pv');
+    var pvTargets = document.querySelectorAll('.js-page-pv-mirror');
+    if (pvSource && pvTargets && pvTargets.length > 0 && typeof MutationObserver !== 'undefined') {
+      var updatePv = function() {
+        var value = (pvSource.textContent || '').trim();
+        if (!value) value = '--';
+        pvTargets.forEach(function(el) {
+          el.textContent = value;
+          var parent = el.closest('.meta-read-count');
+          if (parent) parent.classList.toggle('show', value.length > 0);
+        });
+        if (value !== '--') {
+          setSavedPv(window.location.pathname, value);
+          fillSavedPostPvs();
+        }
+      };
+      updatePv();
+      var observer = new MutationObserver(updatePv);
+      observer.observe(pvSource, { childList: true, characterData: true, subtree: true });
+      setTimeout(updatePv, 1500);
+    }
+  });
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 不蒜子统计脚本 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>
