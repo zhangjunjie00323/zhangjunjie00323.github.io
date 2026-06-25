@@ -1,0 +1,1862 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks 数据存储说明 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StarRocks 数据存储说明 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="本文用同一份业务数据贯穿说明：在 StarRocks 中从 Table → Partition → Tablet → Rowset → Segment 各层级分别存什么、怎么组织，并配有可对照的数字与行级示例，便于建立直观印象。 阅读指引...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png">
+
+<meta name="keywords" content="大数据,StarRocks">
+
+
+<meta property="article:published_time" content="2026-05-14T21:20:01+08:00">
+<meta property="article:modified_time" content="2026-05-14T21:20:01+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="大数据">
+
+<meta property="article:tag" content="StarRocks">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StarRocks 数据存储说明 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="本文用同一份业务数据贯穿说明：在 StarRocks 中从 Table → Partition → Tablet → Rowset → Segment 各层级分别存什么、怎么组织，并配有可对照的数字与行级示例，便于建立直观印象。 阅读指引...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-storage/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/starrocks-storage/"
+      },
+      "headline": "StarRocks 数据存储说明",
+      "description": "本文用同一份业务数据贯穿说明：在 StarRocks 中从 Table → Partition → Tablet → Rowset → Segment 各层级分别存什么、怎么组织，并配有可对照的数字与行级示例，便于建立直观印象。 阅读指引...",
+      "image": "https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png",
+      "url": "https://zhangjunjie00323.github.io/post/starrocks-storage/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-05-14T21:20:01+08:00",
+      "dateModified": "2026-05-14T21:20:01+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "大数据",
+        "StarRocks"
+      ],
+      "keywords": "大数据,StarRocks",
+      "wordCount": 11546
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-storage/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "大数据",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "StarRocks 数据存储说明",
+          "item": "https://zhangjunjie00323.github.io/post/starrocks-storage/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E9%98%85%E8%AF%BB%E6%8C%87%E5%BC%95%E6%9C%AC%E6%96%87%E7%BB%93%E6%9E%84">阅读指引（本文结构）</a></li>
+</ul>
+</li>
+<li><a href="#1-%E7%A4%BA%E4%BE%8B%E4%B8%9A%E5%8A%A1%E8%AE%A2%E5%8D%95%E6%98%8E%E7%BB%86%E8%A1%A8">1. 示例业务：订单明细表</a>
+<ul>
+<li><a href="#11-%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE10-%E8%A1%8C">1.1 示例数据（10 行）</a></li>
+</ul>
+</li>
+<li><a href="#2-%E5%B1%82%E7%BA%A7%E6%80%BB%E8%A7%88%E8%B0%81%E5%AD%98%E4%BB%80%E4%B9%88">2. 层级总览：谁存「什么」</a></li>
+<li><a href="#3-table%E8%A1%A8%E9%80%BB%E8%BE%91%E5%85%A8%E9%9B%86-%E5%85%83%E6%95%B0%E6%8D%AE">3. Table（表）：逻辑全集 + 元数据</a>
+<ul>
+<li><a href="#31-%E5%AD%98%E4%BB%80%E4%B9%88">3.1 存什么</a></li>
+<li><a href="#32-%E7%94%A8%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E6%80%8E%E4%B9%88%E7%90%86%E8%A7%A3">3.2 用示例数据怎么理解</a></li>
+<li><a href="#33-%E5%85%83%E6%95%B0%E6%8D%AE%E5%9C%A8%E5%93%AA%E9%87%8C-%E8%A1%8C%E6%95%B0%E6%8D%AE%E5%9C%A8%E5%93%AA%E9%87%8C%E6%A6%82%E5%BF%B5%E5%88%86%E5%B7%A5">3.3 元数据在哪里、行数据在哪里（概念分工）</a></li>
+</ul>
+</li>
+<li><a href="#4-partition%E5%88%86%E5%8C%BA%E6%8C%89%E5%88%86%E5%8C%BA%E9%94%AE%E5%88%87%E7%9A%84%E7%AC%AC%E4%B8%80%E5%88%80">4. Partition（分区）：按分区键切的第一刀</a>
+<ul>
+<li><a href="#41-%E5%AD%98%E4%BB%80%E4%B9%88">4.1 存什么</a></li>
+<li><a href="#42-%E7%94%A8%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E5%88%92%E5%88%86%E5%88%86%E5%8C%BA">4.2 用示例数据划分分区</a></li>
+<li><a href="#43-%E5%88%86%E5%8C%BA%E4%B8%8E%E7%A4%BA%E4%BE%8B%E8%A1%8C%E7%9A%84%E4%B8%80%E4%B8%80%E5%AF%B9%E5%BA%94">4.3 分区与示例行的「一一对应」</a></li>
+<li><a href="#44-%E5%88%86%E5%8C%BA%E7%B1%BB%E5%9E%8B%E7%9F%A5%E8%AF%86%E7%82%B9%E4%B8%8E%E7%A4%BA%E4%BE%8B%E6%97%A0%E5%85%B3">4.4 分区类型（知识点，与示例无关）</a></li>
+</ul>
+</li>
+<li><a href="#5-tablet%E5%88%86%E7%89%87-%E6%95%B0%E6%8D%AE%E5%88%86%E7%89%87%E5%88%86%E6%A1%B6%E5%90%8E%E7%9A%84%E5%B9%B6%E8%A1%8C%E4%B8%8E%E5%88%86%E5%B8%83%E5%8D%95%E5%85%83">5. Tablet（分片 / 数据分片）：分桶后的并行与分布单元</a>
+<ul>
+<li><a href="#51-%E5%AD%98%E4%BB%80%E4%B9%88">5.1 存什么</a></li>
+<li><a href="#52-%E7%94%A8%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E6%BC%94%E7%A4%BA%E5%88%86%E6%A1%B6%E7%AE%80%E5%8C%96%E5%93%88%E5%B8%8C%E7%A4%BA%E6%84%8F">5.2 用示例数据演示分桶（简化哈希示意）</a></li>
+<li><a href="#53-%E5%80%BE%E6%96%9C%E7%A4%BA%E4%BE%8B%E5%B8%AE%E5%8A%A9%E7%90%86%E8%A7%A3%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E9%80%89%E5%A5%BD%E5%88%86%E6%A1%B6%E9%94%AE">5.3 倾斜示例（帮助理解为什么要选好分桶键）</a></li>
+<li><a href="#54-%E5%85%A8%E9%87%8F%E6%98%A0%E5%B0%84%E6%AF%8F%E4%B8%80%E8%A1%8C%E8%90%BD%E5%9C%A8%E5%93%AA%E4%B8%AA%E5%88%86%E5%8C%BA-%E5%93%AA%E4%B8%AA-tablet">5.4 全量映射：每一行落在「哪个分区 + 哪个 Tablet」</a></li>
+<li><a href="#55-%E5%89%AF%E6%9C%AC%E4%B8%8E-be%E5%90%8C%E4%B8%80-tablet-%E4%B8%8A%E7%9A%84%E6%95%B0%E6%8D%AE%E9%95%BF%E4%BB%80%E4%B9%88%E6%A0%B7">5.5 副本与 BE：同一 Tablet 上的数据长什么样</a></li>
+</ul>
+</li>
+<li><a href="#6-rowset%E4%B8%80%E6%AC%A1%E5%86%99%E5%85%A5%E6%88%96%E4%B8%80%E6%AC%A1-compaction-%E4%BA%A7%E7%94%9F%E7%9A%84%E4%B8%8D%E5%8F%AF%E5%8F%98%E6%89%B9%E6%AC%A1">6. Rowset：一次写入或一次 Compaction 产生的「不可变批次」</a>
+<ul>
+<li><a href="#61-%E5%AD%98%E4%BB%80%E4%B9%88">6.1 存什么</a></li>
+<li><a href="#62-%E7%94%A8%E5%90%8C%E4%B8%80%E6%89%B9%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E6%A8%A1%E6%8B%9F%E4%B8%A4%E6%AC%A1%E5%AF%BC%E5%85%A5">6.2 用同一批示例数据模拟两次导入</a></li>
+<li><a href="#63-%E5%90%8C%E4%B8%80-tablet-%E4%B8%8A%E5%A4%9A%E4%B8%AA-rowset-%E6%97%B6%E6%9F%A5%E8%AF%A2%E6%80%8E%E4%B9%88%E7%9C%8B%E6%88%90%E4%B8%80%E8%A1%8C">6.3 同一 Tablet 上多个 Rowset 时，查询怎么「看成一行」</a></li>
+<li><a href="#64-%E7%94%A8%E6%97%B6%E9%97%B4%E7%BA%BF%E8%A1%A8%E7%A4%BA-rowset-%E4%B8%8E-compactiontablet-t1-%E7%A4%BA%E6%84%8F">6.4 用时间线表示 Rowset 与 Compaction（Tablet T1 示意）</a></li>
+</ul>
+</li>
+<li><a href="#7-segment%E5%88%97%E5%AD%98%E8%90%BD%E7%9B%98%E6%96%87%E4%BB%B6">7. Segment：列存落盘文件</a>
+<ul>
+<li><a href="#71-%E5%AD%98%E4%BB%80%E4%B9%88">7.1 存什么</a></li>
+<li><a href="#72-%E7%94%A8%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E5%9C%A8%E5%88%97%E6%96%B9%E5%90%91%E4%B8%8A%E7%90%86%E8%A7%A3">7.2 用示例数据在「列方向」上理解</a></li>
+<li><a href="#73-segment-%E5%86%85%E9%83%A8%E5%A4%A7%E8%87%B4%E6%9C%89%E4%BB%80%E4%B9%88%E6%A6%82%E5%BF%B5%E5%B1%82">7.3 Segment 内部大致有什么（概念层）</a></li>
+<li><a href="#74-%E4%BB%8D%E7%94%A8-order_id-10003-%E8%AF%B4%E6%98%8E%E4%B8%80%E8%A1%8C%E5%9C%A8-segment-%E9%87%8C%E4%B8%8D%E6%98%AF%E8%BF%9E%E7%BB%AD%E4%B8%80%E5%9D%97">7.4 仍用 <code>order_id = 10003</code> 说明「一行在 Segment 里不是连续一块」</a></li>
+</ul>
+</li>
+<li><a href="#8-%E6%8A%8A%E4%BA%94%E5%B1%82%E4%B8%B2%E6%88%90%E4%B8%80%E6%9D%A1%E5%8D%95%E8%A1%8C%E6%97%85%E7%A8%8B">8. 把五层串成一条「单行旅程」</a></li>
+<li><a href="#9-%E5%B0%8F%E7%BB%93%E8%A1%A8%E5%AF%B9%E7%85%A7%E8%AE%B0%E5%BF%86">9. 小结表（对照记忆）</a></li>
+<li><a href="#10-%E4%B8%8E-1-%E5%AF%B9%E9%BD%90%E7%9A%84%E5%BB%BA%E8%A1%A8-ddl-%E7%A4%BA%E4%BE%8Bduplicate-%E6%98%8E%E7%BB%86%E6%A8%A1%E5%9E%8B">10. 与 §1 对齐的建表 DDL 示例（Duplicate 明细模型）</a></li>
+<li><a href="#11-%E5%86%99%E5%85%A5%E8%B7%AF%E5%BE%84%E4%BB%8E%E4%B8%9A%E5%8A%A1%E8%A1%8C%E5%88%B0rowset-segment">11. 写入路径：从「业务行」到「Rowset / Segment」</a></li>
+<li><a href="#12-%E8%AF%BB%E5%8F%96%E8%B7%AF%E5%BE%84%E4%BB%8E-sql-%E5%88%B0-segment-%E8%AF%BB%E5%93%AA%E4%BA%9B%E5%9D%97">12. 读取路径：从 SQL 到 Segment 读哪些块</a></li>
+<li><a href="#13-compaction-%E5%86%8D%E8%AF%B4%E6%98%8E%E8%A7%A3%E5%86%B3%E4%BB%80%E4%B9%88%E9%97%AE%E9%A2%98-%E5%AF%B9%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E6%84%8F%E5%91%B3%E7%9D%80%E4%BB%80%E4%B9%88">13. Compaction 再说明：解决什么问题、对示例数据意味着什么</a>
+<ul>
+<li><a href="#131-%E8%A7%A3%E5%86%B3%E7%9A%84%E9%97%AE%E9%A2%98">13.1 解决的问题</a></li>
+<li><a href="#132-%E5%AF%B9-tablet-t1-%E7%9A%84%E7%9B%B4%E8%A7%82%E5%90%AB%E4%B9%89">13.2 对 Tablet T1 的直观含义</a></li>
+</ul>
+</li>
+<li><a href="#14-%E8%A1%A8%E6%A8%A1%E5%9E%8B%E4%B8%8E%E5%AD%98%E5%82%A8%E8%A1%8C%E4%B8%BA%E5%B7%AE%E5%BC%82%E7%9F%A5%E8%AF%86%E7%82%B9-%E4%B8%8E%E7%A4%BA%E4%BE%8B%E7%9A%84%E5%85%B3%E7%B3%BB">14. 表模型与存储行为差异（知识点 + 与示例的关系）</a></li>
+<li><a href="#15-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E7%BB%93%E5%90%88%E7%A4%BA%E4%BE%8B%E6%95%B0%E6%8D%AE%E5%8F%A3%E5%BE%84">15. 常见问题（结合示例数据口径）</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks 数据存储说明</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-05-14 21:20
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                58 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>本文用<strong>同一份业务数据</strong>贯穿说明：在 StarRocks 中从 <strong>Table → Partition → Tablet → Rowset → Segment</strong> 各层级分别存什么、怎么组织，并配有<strong>可对照的数字与行级示例</strong>，便于建立直观印象。</p>
+<!-- more -->
+<h3 id="阅读指引本文结构">阅读指引（本文结构）</h3>
+<table>
+<thead>
+<tr>
+<th>章节</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>§1～§2</td>
+<td>示例数据与五层总览</td>
+</tr>
+<tr>
+<td>§3～§7</td>
+<td>各层「存什么」+ 用同一批订单逐层对照</td>
+</tr>
+<tr>
+<td>§8</td>
+<td>单行从表到 Segment 的串联</td>
+</tr>
+<tr>
+<td>§9</td>
+<td>小结表（对照记忆）</td>
+</tr>
+<tr>
+<td>§10～§16</td>
+<td><strong>加深篇</strong>：DDL、写入路径、读取路径、Compaction、表模型差异、常见问题、延伸阅读</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="1-示例业务订单明细表">1. 示例业务：订单明细表</h2>
+<p>假设有一张订单明细表 <code>dwd_order_detail</code>，逻辑上就是一张「用户可见的表」。</p>
+<h3 id="11-示例数据10-行">1.1 示例数据（10 行）</h3>
+<p>下面这 10 行是<strong>业务语义上的原始行</strong>（你在 <code>SELECT *</code> 时看到的形态）：</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>user_id</th>
+<th>city</th>
+<th>order_date</th>
+<th>amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10001</td>
+<td>U01</td>
+<td>杭州</td>
+<td>2026-01-15</td>
+<td>120.00</td>
+</tr>
+<tr>
+<td>10002</td>
+<td>U02</td>
+<td>上海</td>
+<td>2026-01-15</td>
+<td>88.50</td>
+</tr>
+<tr>
+<td>10003</td>
+<td>U01</td>
+<td>杭州</td>
+<td>2026-01-16</td>
+<td>200.00</td>
+</tr>
+<tr>
+<td>10004</td>
+<td>U03</td>
+<td>北京</td>
+<td>2026-01-16</td>
+<td>45.00</td>
+</tr>
+<tr>
+<td>10005</td>
+<td>U02</td>
+<td>上海</td>
+<td>2026-01-17</td>
+<td>300.00</td>
+</tr>
+<tr>
+<td>10006</td>
+<td>U04</td>
+<td>深圳</td>
+<td>2026-01-17</td>
+<td>60.00</td>
+</tr>
+<tr>
+<td>10007</td>
+<td>U01</td>
+<td>杭州</td>
+<td>2026-01-18</td>
+<td>99.00</td>
+</tr>
+<tr>
+<td>10008</td>
+<td>U05</td>
+<td>广州</td>
+<td>2026-01-18</td>
+<td>150.00</td>
+</tr>
+<tr>
+<td>10009</td>
+<td>U03</td>
+<td>北京</td>
+<td>2026-01-19</td>
+<td>70.00</td>
+</tr>
+<tr>
+<td>10010</td>
+<td>U02</td>
+<td>上海</td>
+<td>2026-01-19</td>
+<td>110.00</td>
+</tr>
+</tbody>
+</table>
+<p>建表时若约定：</p>
+<ul>
+<li><strong>分区键</strong>：<code>order_date</code>（按天 RANGE 分区，便于按日期裁剪）。</li>
+<li><strong>分桶键</strong>：<code>user_id</code>（<code>DISTRIBUTED BY HASH(user_id) BUCKETS 4</code>，便于并行与分散热点；示例里故意用较少桶数便于数清楚）。</li>
+</ul>
+<p>则这 10 行在物理上会落入「若干分区 → 若干 Tablet → 多次写入形成多个 Rowset → 每个 Rowset 再切成 Segment 文件」。</p>
+<hr>
+<h2 id="2-层级总览谁存什么">2. 层级总览：谁存「什么」</h2>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>对用户是否直接可见</th>
+<th>主要存什么</th>
+<th>典型大小/数量级（经验值，非硬性上限）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Table</strong></td>
+<td>是</td>
+<td>表名、列定义、模型（Duplicate/Aggregate/Unique/Primary）、分区/分桶规则等<strong>元数据 + 全表数据的逻辑集合</strong></td>
+<td>行数、列数无上限（受集群与运维约束）</td>
+</tr>
+<tr>
+<td><strong>Partition</strong></td>
+<td>间接（通过分区列体现）</td>
+<td><strong>某个分区键取值范围内</strong>的所有行（逻辑切片）</td>
+<td>单分区常见建议量级：<strong>数十 GB 级内更易治理</strong>（过大则运维与压缩压力上升）</td>
+</tr>
+<tr>
+<td><strong>Tablet</strong></td>
+<td>否（内部单元）</td>
+<td><strong>哈希分桶后</strong>落在同一分片上的行子集 + <strong>多副本</strong></td>
+<td>单 Tablet 常见观察：<strong>百 MB～数 GB</strong>；桶数由 <code>BUCKETS n</code> 决定</td>
+</tr>
+<tr>
+<td><strong>Rowset</strong></td>
+<td>否</td>
+<td><strong>一次导入或一次 Compaction</strong> 产生的<strong>一批不可变数据</strong>（版本视角的一段增量）</td>
+<td>与导入批次、Compaction 策略强相关</td>
+</tr>
+<tr>
+<td><strong>Segment</strong></td>
+<td>否</td>
+<td><strong>列存物理文件</strong>（Segment 文件），真正落盘</td>
+<td>单文件常见上限量级：<strong>数百 MB 级</strong>（版本差异以官方为准）</td>
+</tr>
+</tbody>
+</table>
+<p>下面按层级展开，并始终用 <strong>§1 的 10 行订单</strong> 做「同一批数据在不同层级长什么样」的对照。</p>
+<hr>
+<h2 id="3-table表逻辑全集-元数据">3. Table（表）：逻辑全集 + 元数据</h2>
+<h3 id="31-存什么">3.1 存什么</h3>
+<ul>
+<li><strong>逻辑上</strong>：整张表的所有行（你看到的全部业务数据）。</li>
+<li><strong>物理上</strong>：表本身不等于「一个大文件」，而是<strong>元数据 + 指向各 Partition/Tablet 的组织关系</strong>。</li>
+<li><strong>元数据包括</strong>（概念列举）：库名、表名、列类型、键模型、分区表达式、分桶列与桶数、副本数、索引/排序键等。</li>
+</ul>
+<h3 id="32-用示例数据怎么理解">3.2 用示例数据怎么理解</h3>
+<p>对上文的 10 行来说：</p>
+<ul>
+<li><strong>Table 层</strong>回答的问题是：「<strong>这张表里允许出现哪些列、按什么规则分区与分桶、用什么模型存</strong>」。</li>
+<li>这 10 行<strong>在 Table 层</strong>就是「都属于 <code>dwd_order_detail</code> 这一逻辑集合」；至于它们最终在哪个 Tablet，由下一层决定。</li>
+</ul>
+<h3 id="33-元数据在哪里-行数据在哪里概念分工">3.3 元数据在哪里、行数据在哪里（概念分工）</h3>
+<p>便于和集群组件对应，可以粗略记：</p>
+<ul>
+<li><strong>FE（Frontend）</strong>：保存表的<strong>逻辑定义</strong>与<strong>分区/分桶/Tablet 路由信息</strong>等元数据（你 <code>SHOW CREATE TABLE</code>、<code>DESC</code> 看到的内容归属这类）。查询规划阶段需要知道「去哪些 Tablet 取数」。</li>
+<li><strong>BE（Backend）</strong>：在本地磁盘上保存 <strong>Tablet 的数据文件</strong>（Rowset、Segment 等落在这里）。同一 Tablet 的多个副本会在多个 BE 上各存一份。</li>
+</ul>
+<p>因此：<strong>Table 不等于某一个 BE 上的一个大文件</strong>；Table 是逻辑对象，物理数据按 Tablet 分散在多个 BE 上。</p>
+<hr>
+<h2 id="4-partition分区按分区键切的第一刀">4. Partition（分区）：按分区键切的第一刀</h2>
+<h3 id="41-存什么">4.1 存什么</h3>
+<ul>
+<li><strong>每个分区</strong>保存：<code>partition_key</code> 落在该分区范围内的<strong>所有行</strong>（逻辑上的子集）。</li>
+<li><strong>查询裁剪</strong>：<code>WHERE order_date = '2026-01-16'</code> 时，优化器尽量只扫 <code>2026-01-16</code> 对应分区，减少 IO。</li>
+</ul>
+<h3 id="42-用示例数据划分分区">4.2 用示例数据划分分区</h3>
+<p>按 <code>order_date</code> 每天一个分区，则 10 行会落入 <strong>5 个分区</strong>（每天若干行）：</p>
+<table>
+<thead>
+<tr>
+<th>分区（示例命名）</th>
+<th>包含的 order_id（来自 §1）</th>
+<th>行数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>p20260115</td>
+<td>10001, 10002</td>
+<td>2</td>
+</tr>
+<tr>
+<td>p20260116</td>
+<td>10003, 10004</td>
+<td>2</td>
+</tr>
+<tr>
+<td>p20260117</td>
+<td>10005, 10006</td>
+<td>2</td>
+</tr>
+<tr>
+<td>p20260118</td>
+<td>10007, 10008</td>
+<td>2</td>
+</tr>
+<tr>
+<td>p20260119</td>
+<td>10009, 10010</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>直观理解</strong>：分区像「按日期分抽屉」——每个抽屉里仍然可能有多个城市、多个用户，但<strong>日期范围</strong>先把数据粗分一遍。</p>
+<h3 id="43-分区与示例行的一一对应">4.3 分区与示例行的「一一对应」</h3>
+<p>把 §1 的每一行都标上<strong>逻辑分区名</strong>（便于后文引用）：</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>order_date</th>
+<th>逻辑分区</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10001</td>
+<td>2026-01-15</td>
+<td>p20260115</td>
+</tr>
+<tr>
+<td>10002</td>
+<td>2026-01-15</td>
+<td>p20260115</td>
+</tr>
+<tr>
+<td>10003</td>
+<td>2026-01-16</td>
+<td>p20260116</td>
+</tr>
+<tr>
+<td>10004</td>
+<td>2026-01-16</td>
+<td>p20260116</td>
+</tr>
+<tr>
+<td>10005</td>
+<td>2026-01-17</td>
+<td>p20260117</td>
+</tr>
+<tr>
+<td>10006</td>
+<td>2026-01-17</td>
+<td>p20260117</td>
+</tr>
+<tr>
+<td>10007</td>
+<td>2026-01-18</td>
+<td>p20260118</td>
+</tr>
+<tr>
+<td>10008</td>
+<td>2026-01-18</td>
+<td>p20260118</td>
+</tr>
+<tr>
+<td>10009</td>
+<td>2026-01-19</td>
+<td>p20260119</td>
+</tr>
+<tr>
+<td>10010</td>
+<td>2026-01-19</td>
+<td>p20260119</td>
+</tr>
+</tbody>
+</table>
+<h3 id="44-分区类型知识点与示例无关">4.4 分区类型（知识点，与示例无关）</h3>
+<p>常见分区思路包括 <strong>RANGE</strong>（按连续区间，如日期）、<strong>LIST</strong>（按枚举值列表）、以及<strong>表达式分区</strong>（用表达式定义分桶规则，具体语法以版本文档为准）。示例表采用的是「按天 RANGE」这一最常见分析场景。</p>
+<hr>
+<h2 id="5-tablet分片-数据分片分桶后的并行与分布单元">5. Tablet（分片 / 数据分片）：分桶后的并行与分布单元</h2>
+<h3 id="51-存什么">5.1 存什么</h3>
+<ul>
+<li>在每个分区内，再按 <code>DISTRIBUTED BY HASH(user_id) BUCKETS 4</code> 把行<strong>哈希</strong>到 4 个 Tablet（编号记为 T0～T3）。</li>
+<li><strong>副本</strong>：每个 Tablet 会有多份（如 3 副本），分布在不同 BE 上，用于容错；<strong>业务行内容相同</strong>，只是副本位置不同。</li>
+</ul>
+<h3 id="52-用示例数据演示分桶简化哈希示意">5.2 用示例数据演示分桶（简化哈希示意）</h3>
+<p>真实哈希值由引擎计算；为便于阅读，这里用 <strong><code>hash(user_id) % 4</code> 的假想结果</strong> 演示分布（仅教学用，不等同真实哈希函数）：</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>user_id</th>
+<th>order_date</th>
+<th>假想 bucket_id = hash(user_id) % 4</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10001</td>
+<td>U01</td>
+<td>2026-01-15</td>
+<td>1 → Tablet T1</td>
+</tr>
+<tr>
+<td>10002</td>
+<td>U02</td>
+<td>2026-01-15</td>
+<td>2 → Tablet T2</td>
+</tr>
+<tr>
+<td>10003</td>
+<td>U01</td>
+<td>2026-01-16</td>
+<td>1 → Tablet T1</td>
+</tr>
+<tr>
+<td>10004</td>
+<td>U03</td>
+<td>2026-01-16</td>
+<td>3 → Tablet T3</td>
+</tr>
+<tr>
+<td>10005</td>
+<td>U02</td>
+<td>2026-01-17</td>
+<td>2 → Tablet T2</td>
+</tr>
+<tr>
+<td>10006</td>
+<td>U04</td>
+<td>2026-01-17</td>
+<td>0 → Tablet T0</td>
+</tr>
+<tr>
+<td>10007</td>
+<td>U01</td>
+<td>2026-01-18</td>
+<td>1 → Tablet T1</td>
+</tr>
+<tr>
+<td>10008</td>
+<td>U05</td>
+<td>2026-01-18</td>
+<td>0 → Tablet T0</td>
+</tr>
+<tr>
+<td>10009</td>
+<td>U03</td>
+<td>2026-01-19</td>
+<td>3 → Tablet T3</td>
+</tr>
+<tr>
+<td>10010</td>
+<td>U02</td>
+<td>2026-01-19</td>
+<td>2 → Tablet T2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>在分区 <code>p20260115</code> 内</strong>两行会落到不同 Tablet：</p>
+<ul>
+<li><code>10001</code>（U01）→ T1</li>
+<li><code>10002</code>（U02）→ T2</li>
+</ul>
+<p><strong>在分区 <code>p20260116</code> 内</strong>：</p>
+<ul>
+<li><code>10003</code>（U01）→ T1</li>
+<li><code>10004</code>（U03）→ T3</li>
+</ul>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li><strong>分区</strong>决定「这行属于哪一天那个抽屉」。</li>
+<li><strong>Tablet</strong>决定「在这个抽屉里，这行按用户哈希后放到哪个格子」，格子之间可<strong>并行扫描</strong>。</li>
+</ul>
+<h3 id="53-倾斜示例帮助理解为什么要选好分桶键">5.3 倾斜示例（帮助理解为什么要选好分桶键）</h3>
+<p>若把分桶键改成 <code>city</code>，而数据里 80% 行 <code>city='杭州'</code>，则大量行会落到同一 Tablet，<strong>并行度名存实亡</strong>——这是存储层「热点」的常见来源之一。</p>
+<h3 id="54-全量映射每一行落在哪个分区-哪个-tablet">5.4 全量映射：每一行落在「哪个分区 + 哪个 Tablet」</h3>
+<p>在 §4 按天分区、§5.2 假想 <code>hash(user_id) % 4</code> 的前提下，<strong>10 行订单的完整逻辑地址</strong>如下（这是理解「扫描裁剪 + 并行度」最有用的一张表）：</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>user_id</th>
+<th>order_date</th>
+<th>分区</th>
+<th>Tablet（假想）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10001</td>
+<td>U01</td>
+<td>2026-01-15</td>
+<td>p20260115</td>
+<td>T1</td>
+</tr>
+<tr>
+<td>10002</td>
+<td>U02</td>
+<td>2026-01-15</td>
+<td>p20260115</td>
+<td>T2</td>
+</tr>
+<tr>
+<td>10003</td>
+<td>U01</td>
+<td>2026-01-16</td>
+<td>p20260116</td>
+<td>T1</td>
+</tr>
+<tr>
+<td>10004</td>
+<td>U03</td>
+<td>2026-01-16</td>
+<td>p20260116</td>
+<td>T3</td>
+</tr>
+<tr>
+<td>10005</td>
+<td>U02</td>
+<td>2026-01-17</td>
+<td>p20260117</td>
+<td>T2</td>
+</tr>
+<tr>
+<td>10006</td>
+<td>U04</td>
+<td>2026-01-17</td>
+<td>p20260117</td>
+<td>T0</td>
+</tr>
+<tr>
+<td>10007</td>
+<td>U01</td>
+<td>2026-01-18</td>
+<td>p20260118</td>
+<td>T1</td>
+</tr>
+<tr>
+<td>10008</td>
+<td>U05</td>
+<td>2026-01-18</td>
+<td>p20260118</td>
+<td>T0</td>
+</tr>
+<tr>
+<td>10009</td>
+<td>U03</td>
+<td>2026-01-19</td>
+<td>p20260119</td>
+<td>T3</td>
+</tr>
+<tr>
+<td>10010</td>
+<td>U02</td>
+<td>2026-01-19</td>
+<td>p20260119</td>
+<td>T2</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Tablet 总数（逻辑分片数）</strong>：每个分区都有 <strong>4</strong> 个 Tablet（T0～T3），共 <strong>5 个分区</strong>，故「分片槽位」共 <strong>5 × 4 = 20</strong> 个；其中部分槽位在本示例中只有 0 或 1 行数据，但槽位仍然存在。</p>
+<h3 id="55-副本与-be同一-tablet-上的数据长什么样">5.5 副本与 BE：同一 Tablet 上的数据长什么样</h3>
+<p>设 <code>replication_num = 3</code>，集群有 <strong>BE-a、BE-b、BE-c</strong> 三台。则 <strong>Tablet T1 在分区 p20260116 上</strong>的那一份数据（逻辑上包含 <code>order_id=10003</code> 那一行），会在三个 BE 上各存 <strong>一整套 Rowset/Segment 文件</strong>（内容等价，路径不同），任一副本损坏可通过其他副本修复。</p>
+<p>用示意（非真实路径）：</p>
+<table>
+<thead>
+<tr>
+<th>副本</th>
+<th>所在节点</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>T1-p20260116-replica1</td>
+<td>BE-a</td>
+<td>T1 的第一份物理数据</td>
+</tr>
+<tr>
+<td>T1-p20260116-replica2</td>
+<td>BE-b</td>
+<td>T1 的第二份物理数据</td>
+</tr>
+<tr>
+<td>T1-p20260116-replica3</td>
+<td>BE-c</td>
+<td>T1 的第三份物理数据</td>
+</tr>
+</tbody>
+</table>
+<p>查询时，FE 会为每个 Tablet 选择一个<strong>可读的副本</strong>下发扫描任务；导入时，写入需满足多数副本成功等一致性策略（细节以官方「副本写入协议」为准）。</p>
+<hr>
+<h2 id="6-rowset一次写入或一次-compaction-产生的不可变批次">6. Rowset：一次写入或一次 Compaction 产生的「不可变批次」</h2>
+<h3 id="61-存什么">6.1 存什么</h3>
+<ul>
+<li><strong>Rowset</strong> 不是业务表里的某一列，而是<strong>存储引擎内部的一次数据快照单元</strong>：
+<ul>
+<li><strong>Stream Load / Broker Load / Routine Load / INSERT</strong> 等每次成功写入，通常会生成一个或多个 Rowset（与批次大小、并行度有关）。</li>
+<li><strong>Compaction</strong>：后台把多个小 Rowset <strong>合并</strong>成更少、更大的 Rowset，以减少碎片、提升扫描效率。</li>
+</ul>
+</li>
+</ul>
+<h3 id="62-用同一批示例数据模拟两次导入">6.2 用同一批示例数据模拟两次导入</h3>
+<p>假设 <strong>不是</strong> 一次性写入 10 行，而是分两次导入到<strong>同一张表、同一分区</strong>：</p>
+<p><strong>第一次导入</strong>（仅 2026-01-15～2026-01-16 的 4 行）：</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>user_id</th>
+<th>city</th>
+<th>order_date</th>
+<th>amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10001</td>
+<td>U01</td>
+<td>杭州</td>
+<td>2026-01-15</td>
+<td>120.00</td>
+</tr>
+<tr>
+<td>10002</td>
+<td>U02</td>
+<td>上海</td>
+<td>2026-01-15</td>
+<td>88.50</td>
+</tr>
+<tr>
+<td>10003</td>
+<td>U01</td>
+<td>杭州</td>
+<td>2026-01-16</td>
+<td>200.00</td>
+</tr>
+<tr>
+<td>10004</td>
+<td>U03</td>
+<td>北京</td>
+<td>2026-01-16</td>
+<td>45.00</td>
+</tr>
+</tbody>
+</table>
+<p><strong>第二次导入</strong>（剩余 6 行）：</p>
+<table>
+<thead>
+<tr>
+<th>order_id</th>
+<th>user_id</th>
+<th>city</th>
+<th>order_date</th>
+<th>amount</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>10005</td>
+<td>U02</td>
+<td>上海</td>
+<td>2026-01-17</td>
+<td>300.00</td>
+</tr>
+<tr>
+<td>10006</td>
+<td>U04</td>
+<td>深圳</td>
+<td>2026-01-17</td>
+<td>60.00</td>
+</tr>
+<tr>
+<td>10007</td>
+<td>U01</td>
+<td>杭州</td>
+<td>2026-01-18</td>
+<td>99.00</td>
+</tr>
+<tr>
+<td>10008</td>
+<td>U05</td>
+<td>广州</td>
+<td>2026-01-18</td>
+<td>150.00</td>
+</tr>
+<tr>
+<td>10009</td>
+<td>U03</td>
+<td>北京</td>
+<td>2026-01-19</td>
+<td>70.00</td>
+</tr>
+<tr>
+<td>10010</td>
+<td>U02</td>
+<td>上海</td>
+<td>2026-01-19</td>
+<td>110.00</td>
+</tr>
+</tbody>
+</table>
+<p>在存储引擎视角（概念化）可能出现：</p>
+<ul>
+<li><strong>Rowset R1</strong>（由第一次导入生成）：包含多个 Tablet 上的增量文件集合。</li>
+<li><strong>Rowset R2</strong>（由第二次导入生成）：同理。</li>
+</ul>
+<p>对 <strong>Tablet T1</strong>（一直承接 <code>user_id = U01</code> 的行）来说，时间线上可能先后承接：</p>
+<ul>
+<li>R1 中带 <code>10001</code>、<code>10003</code> 的片段；</li>
+<li>R2 中带 <code>10007</code> 的片段。</li>
+</ul>
+<p><strong>Compaction 之后</strong>（示意）：R1、R2 在 T1 上可能被合并成 <strong>Rowset R3</strong>，对外查询结果仍是那几行业务行，但底层文件更少、更顺。</p>
+<p><strong>一句话</strong>：Rowset 是「<strong>某次写入或某次合并</strong>留下的版本化数据包」；查询会按<strong>可见版本规则</strong>在多个 Rowset 上合并出最终行集。</p>
+<h3 id="63-同一-tablet-上多个-rowset-时查询怎么看成一行">6.3 同一 Tablet 上多个 Rowset 时，查询怎么「看成一行」</h3>
+<p>仍看 <strong>Tablet T1</strong>（§5.2 中承接 U01 的 10001、10003、10007）。若两次导入分别在 T1 上留下 <strong>Rowset R1</strong>（含 10001、10003）与 <strong>Rowset R2</strong>（含 10007），则 <strong>SELECT</strong> 扫描 T1 时，执行引擎需要：</p>
+<ol>
+<li>枚举该 Tablet 上<strong>当前可见</strong>的所有 Rowset（R1、R2，以及 Compaction 之后可能替换为 R3）。</li>
+<li>对每个 Rowset 读取其 Segment 中的列块。</li>
+<li>在算子层（如 Scan）把多段数据按版本与模型规则<strong>拼成连续行流</strong>。</li>
+</ol>
+<p>对 <strong>Duplicate Key</strong> 模型，多版本多副本语义相对简单：多行都保留，除非业务用 SQL 去重。若换成 <strong>Unique / Primary Key</strong>，同一主键上的多版本还可能涉及<strong>合并读</strong>（以最新版本为准），存储层会配合删除向量或合并策略（实现细节因版本与模型而异，此处只建立概念）。</p>
+<h3 id="64-用时间线表示-rowset-与-compactiontablet-t1-示意">6.4 用时间线表示 Rowset 与 Compaction（Tablet T1 示意）</h3>
+<pre><code class="language-text">时间 →
+
+导入1 ──► T1 上出现 Rowset R1（行：10001, 10003）
+导入2 ──► T1 上出现 Rowset R2（行：10007）
+后台 Compaction ──► 可能合并为 Rowset R3（仍对应三行，文件更少）
+</code></pre>
+<p><strong>要点</strong>：Compaction <strong>不改变</strong>这三次业务上的「事实行」集合（仍是三行），改变的是<strong>底层文件布局与 Rowset 个数</strong>。</p>
+<hr>
+<h2 id="7-segment列存落盘文件">7. Segment：列存落盘文件</h2>
+<h3 id="71-存什么">7.1 存什么</h3>
+<ul>
+<li><strong>Segment</strong> 是 <strong>列存格式</strong>的物理文件（每列或列组按块存储，带编码与压缩）。</li>
+<li>一个 Rowset 可由 <strong>一个或多个 Segment</strong> 组成（与写入大小、阈值有关）。</li>
+</ul>
+<h3 id="72-用示例数据在列方向上理解">7.2 用示例数据在「列方向」上理解</h3>
+<p>仍取 <strong>Tablet T1</strong> 上与 <code>user_id = U01</code> 相关的行（<code>10001</code>、<code>10003</code>、<code>10007</code>），在 Segment 中更接近下面这种<strong>按列存储</strong>的逻辑视图（数值为示意）：</p>
+<p><strong>列 <code>order_id</code> 的一段编码数据块</strong>（顺序与行对应关系由元数据维护）：</p>
+<pre><code class="language-text">[10001, 10003, 10007]
+</code></pre>
+<p><strong>列 <code>amount</code> 的一段编码数据块</strong>：</p>
+<pre><code class="language-text">[120.00, 200.00, 99.00]
+</code></pre>
+<p><strong>列 <code>order_date</code> 可能以字典或编码形式存放</strong>（概念上仍是三个值）：</p>
+<pre><code class="language-text">['2026-01-15', '2026-01-16', '2026-01-18']
+</code></pre>
+<p><strong>直观理解</strong>：</p>
+<ul>
+<li>你在 SQL 里写的是<strong>行</strong>；</li>
+<li>在 Segment 里更多是<strong>列块 + 编码 + 压缩 + 索引信息</strong>；</li>
+<li>分析型查询只读少数列时，可以<strong>只解码相关列</strong>，减少 IO。</li>
+</ul>
+<h3 id="73-segment-内部大致有什么概念层">7.3 Segment 内部大致有什么（概念层）</h3>
+<p>Segment 除了「列数据块」外，通常还带有辅助元数据，用于<strong>跳过无关数据</strong>与<strong>定位行</strong>：</p>
+<ul>
+<li><strong>列编码与压缩</strong>：例如字典编码对低基数 <code>city</code> 列往往更省空间。对 §1 数据，<code>city</code> 取值只有 {杭州, 上海, 北京, 深圳, 广州}，字典编码后列块里可能存的是<strong>短整型编码 + 字典表</strong>，查询 <code>WHERE city='杭州'</code> 时可先解字典再扫块。</li>
+<li><strong>Zone Map / 列统计（概念）</strong>：记录每个数据块内某列的 min/max 等；若查询带 <code>order_date = '2026-01-16'</code>，可能跳过根本不包含该日期的块（具体能否跳过取决于块边界与数据排列）。</li>
+<li><strong>Ordinal / 行号映射</strong>：把列存块内的顺序与逻辑行对应起来，便于与其他列对齐组装成行。</li>
+</ul>
+<h3 id="74-仍用-order_id-10003-说明一行在-segment-里不是连续一块">7.4 仍用 <code>order_id = 10003</code> 说明「一行在 Segment 里不是连续一块」</h3>
+<p>业务行：</p>
+<pre><code class="language-text">10003, U01, 杭州, 2026-01-16, 200.00
+</code></pre>
+<p>在 Segment 中更接近：</p>
+<ul>
+<li><code>order_id</code> 列块里某处存 <code>10003</code>；</li>
+<li><code>user_id</code> 列块里<strong>同一序位</strong>存 <code>U01</code>；</li>
+<li><code>amount</code> 列块里同一序位存 <code>200.00</code>；</li>
+</ul>
+<p>它们通过**相同行序（ordinal）**对齐，而不是像 CSV 那样把五个字段粘在同一字节串里。</p>
+<hr>
+<h2 id="8-把五层串成一条单行旅程">8. 把五层串成一条「单行旅程」</h2>
+<p>以 <strong><code>order_id = 10003</code></strong> 这一行为例：</p>
+<ol>
+<li><strong>Table</strong>：属于 <code>dwd_order_detail</code>。</li>
+<li><strong>Partition</strong>：<code>order_date = 2026-01-16</code> → 分区 <code>p20260116</code>。</li>
+<li><strong>Tablet</strong>：<code>user_id = U01</code> → 假想到 <strong>T1</strong>。</li>
+<li><strong>Rowset</strong>：若该行来自「第一次导入」→ 落在 <strong>Rowset R1</strong> 的某个 Segment 中；若之后又有一次导入只影响别的行，则 <strong>10003</strong> 仍可能只在 R1 可见，直到 Compaction 与版本管理将其合并进新 Rowset（对查询透明）。</li>
+<li><strong>Segment</strong>：该行的各列值编码后存放在 <strong>某个 <code>.dat</code> 类列存文件</strong> 的数据块中（具体扩展名与内部格式以引擎实现为准）。</li>
+</ol>
+<hr>
+<h2 id="9-小结表对照记忆">9. 小结表（对照记忆）</h2>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>这一层「像什么」</th>
+<th>用 §1 示例一句话说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Table</td>
+<td>整张业务表 + 元数据</td>
+<td>10 行都属于同一张逻辑表</td>
+</tr>
+<tr>
+<td>Partition</td>
+<td>按日期的抽屉</td>
+<td>10 行分布在 5 个按天的分区</td>
+</tr>
+<tr>
+<td>Tablet</td>
+<td>抽屉里的并行格子</td>
+<td>同一分区内按 <code>user_id</code> 哈希到 T0～T3</td>
+</tr>
+<tr>
+<td>Rowset</td>
+<td>每次导入/合并产生的一包不可变数据</td>
+<td>分两次导入会产生 R1、R2；Compaction 可能合并为 R3</td>
+</tr>
+<tr>
+<td>Segment</td>
+<td>列存文件</td>
+<td><code>10003</code> 的 <code>amount=200</code> 与同行的其他列编码在不同列块中</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="10-与-1-对齐的建表-ddl-示例duplicate-明细模型">10. 与 §1 对齐的建表 DDL 示例（Duplicate 明细模型）</h2>
+<p>下面给出与全文假设一致的<strong>示意建表</strong>（分区范围、桶数仅为教学用小表配置；生产请按数据量与官方建议调整）。<strong>语法以你集群版本文档为准</strong>，此处重点是「这些子句对应上文哪一层」。</p>
+<pre><code class="language-sql">CREATE TABLE dwd_order_detail (
+    order_id    BIGINT,
+    user_id     VARCHAR(32),
+    city        VARCHAR(64),
+    order_date  DATE,
+    amount      DECIMAL(18,2)
+)
+DUPLICATE KEY(order_id)
+PARTITION BY RANGE(order_date) (
+    PARTITION p20260115 VALUES [('2026-01-15'), ('2026-01-16')),
+    PARTITION p20260116 VALUES [('2026-01-16'), ('2026-01-17')),
+    PARTITION p20260117 VALUES [('2026-01-17'), ('2026-01-18')),
+    PARTITION p20260118 VALUES [('2026-01-18'), ('2026-01-19')),
+    PARTITION p20260119 VALUES [('2026-01-19'), ('2026-01-20'))
+)
+DISTRIBUTED BY HASH(user_id) BUCKETS 4
+PROPERTIES (
+    &quot;replication_num&quot; = &quot;3&quot;
+);
+</code></pre>
+<blockquote>
+<p>若在你使用的 StarRocks 版本上 <strong>RANGE 分区子句</strong> 与上文不完全一致，以<strong>当前版本官方建表示例</strong>为准；本文重点是各子句与 <strong>Partition / Tablet / 副本</strong> 的对应关系。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>DDL 片段</th>
+<th>对应存储层级</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>PARTITION BY RANGE(order_date)</code></td>
+<td>§4 Partition：按 <code>order_date</code> 落入哪个分区</td>
+</tr>
+<tr>
+<td><code>DISTRIBUTED BY HASH(user_id) BUCKETS 4</code></td>
+<td>§5 Tablet：每分区内 4 个桶 → 4 个 Tablet</td>
+</tr>
+<tr>
+<td><code>DUPLICATE KEY(order_id)</code></td>
+<td>§6 读合并语义：明细保留；与 Unique/Primary 不同</td>
+</tr>
+<tr>
+<td><code>replication_num</code></td>
+<td>§5.5：每个 Tablet 的副本数</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="11-写入路径从业务行到rowset-segment">11. 写入路径：从「业务行」到「Rowset / Segment」</h2>
+<p>一次导入（如 Stream Load）在存储侧可粗理解为：</p>
+<ol>
+<li><strong>解析行</strong>：校验类型、分区键是否命中已有分区（否则可能报「未知分区」）。</li>
+<li><strong>路由</strong>：对每一行计算 <code>partition_id</code>，再计算 <code>bucket_id = hash(distributed_key) % num_buckets</code>。</li>
+<li><strong>按 Tablet 分组</strong>：同一 Tablet 上的行进入同一批写入流水线。</li>
+<li><strong>生成 Rowset</strong>：该批次成功提交后，在对应 Tablet 上产生新的 <strong>Rowset</strong>（可能并行写入产生多个 Rowset，此处不展开）。</li>
+<li><strong>切 Segment</strong>：当内存中缓冲超过阈值，会刷盘为 <strong>Segment</strong> 文件；大导入可能对应「一个 Rowset 多个 Segment」。</li>
+</ol>
+<p>用 §6.2 的<strong>两次导入</strong>对照：</p>
+<ul>
+<li>第一次导入后：分区 p20260115、p20260116 内的 Tablet 上各自出现属于 <strong>R1</strong> 的文件；T1 上有 10001、10003。</li>
+<li>第二次导入后：p20260117～p20260119 各 Tablet 出现 <strong>R2</strong>；T1 上再增加 10007。</li>
+</ul>
+<p><strong>导入与查询并发</strong>：导入不断追加 Rowset 会使 Tablet 上 Rowset 数量变多，读放大上升，因此依赖 <strong>Compaction</strong> 在后台把文件「收拾整齐」。</p>
+<hr>
+<h2 id="12-读取路径从-sql-到-segment-读哪些块">12. 读取路径：从 SQL 到 Segment 读哪些块</h2>
+<p>以查询为例：</p>
+<pre><code class="language-sql">SELECT user_id, SUM(amount)
+FROM dwd_order_detail
+WHERE order_date BETWEEN '2026-01-17' AND '2026-01-18'
+GROUP BY user_id;
+</code></pre>
+<p>粗粒度读路径：</p>
+<ol>
+<li><strong>分区裁剪</strong>：只涉及 <code>p20260117</code>、<code>p20260118</code> 两个分区，其余三个分区整区跳过。</li>
+<li><strong>Tablet 并行</strong>：每个分区内仍要扫 <strong>4</strong> 个 Tablet，但可并行调度到多个 BE。</li>
+<li><strong>Rowset 枚举</strong>：每个 Tablet 上打开当前可见的 Rowset 列表（R1、R2、Compaction 后的 R3 等）。</li>
+<li><strong>Segment 列裁剪</strong>：只读 <code>user_id</code> 与 <code>amount</code> 两列的列块，不读 <code>city</code>（若 SELECT 未引用）。</li>
+<li><strong>聚合下推（若优化器支持）</strong>：部分聚合可能在存储层或执行层完成，此处不展开版本差异。</li>
+</ol>
+<p><strong>与 §1 数据对照</strong>：该 SQL 实际会扫到的业务行是 <code>order_id</code> ∈ {10005,10006,10007,10008} 共 4 行；若你在执行计划中看 Scan 行数，应能与分区裁剪后的子集对应。</p>
+<hr>
+<h2 id="13-compaction-再说明解决什么问题-对示例数据意味着什么">13. Compaction 再说明：解决什么问题、对示例数据意味着什么</h2>
+<h3 id="131-解决的问题">13.1 解决的问题</h3>
+<ul>
+<li><strong>读放大</strong>：Tablet 上 Rowset 太多时，一次查询要打开很多小文件/元数据，延迟上升。</li>
+<li><strong>空间与顺序</strong>：合并后更有利于顺序读与压缩效率。</li>
+<li><strong>后台与前台争抢</strong>：Compaction 占用磁盘与 CPU，可能与导入/查询高峰叠加，因此生产上要关注 Compaction 指标与限流策略（以官方运维建议为准）。</li>
+</ul>
+<h3 id="132-对-tablet-t1-的直观含义">13.2 对 Tablet T1 的直观含义</h3>
+<p>合并前：T1 上可能有 <strong>R1</strong>（10001、10003）与 <strong>R2</strong>（10007）两套物理文件。<br>
+合并后：可能变为 <strong>R3</strong> 一套文件，<strong>查询结果仍是三行</strong>，但扫描路径更短。</p>
+<hr>
+<h2 id="14-表模型与存储行为差异知识点-与示例的关系">14. 表模型与存储行为差异（知识点 + 与示例的关系）</h2>
+<p>全文示例采用 <strong>Duplicate Key</strong> 明细模型，适合「订单明细一行一条、允许重复导入产生重复行」的教学场景。</p>
+<table>
+<thead>
+<tr>
+<th>模型</th>
+<th>存储侧可建立的直觉</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Duplicate</td>
+<td>多次导入同一业务主键可能产生多行，需业务或下游去重。</td>
+</tr>
+<tr>
+<td>Aggregate</td>
+<td>按聚合键预聚合，列上常配合聚合函数语义，节省扫描量但限制灵活性。</td>
+</tr>
+<tr>
+<td>Unique</td>
+<td>唯一键语义下去重，存储与读路径需处理版本合并。</td>
+</tr>
+<tr>
+<td>Primary Key</td>
+<td>主键语义 + 更强更新能力，底层合并与删除标记机制更复杂（版本文档为准）。</td>
+</tr>
+</tbody>
+</table>
+<p>若把 §1 表改成 <strong>Primary Key(order_id)</strong>，再<strong>重复导入</strong> <code>order_id=10003</code> 且 <code>amount</code> 不同，则对外读到的可能是<strong>最新 amount</strong>（取决于导入版本与合并规则），这与 Duplicate 下「可能两行并存」完全不同——<strong>选型直接改变「同一主键在磁盘上如何收敛」</strong>。</p>
+<hr>
+<h2 id="15-常见问题结合示例数据口径">15. 常见问题（结合示例数据口径）</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>可能原因（概念）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>查 <code>2026-01-20</code> 无数据却慢</td>
+<td>若未建该日分区，可能报分区错误；若有大量历史分区且 SQL 未裁剪，会扫很多 Tablet。</td>
+</tr>
+<tr>
+<td>同一 SQL 有时快有时慢</td>
+<td>Rowset 数量波动、Compaction 窗口、并发导入与查询争抢。</td>
+</tr>
+<tr>
+<td>扩容 BE 后仍慢</td>
+<td>数据倾斜（如 §5.3）、热点 Tablet、或 SQL 本身扫描列过多。</td>
+</tr>
+<tr>
+<td>导入成功但条数不对</td>
+<td>Duplicate 下重复行、或 Unique/Primary 合并语义与预期不一致。</td>
+</tr>
+</tbody>
+</table>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC</div>
+                        <div class="related-meta">2026-06-23</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png" alt="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-catalog/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                  <h3 class="post-title">
+                    StarRocks 分区与分桶深度解析：从原理到最佳实践
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

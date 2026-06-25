@@ -1,0 +1,1692 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI Agent 时代的 IT 系统重构 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent 时代的 IT 系统重构 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="目前市面上所有的IT系统，包括但不限于财务系统、HR系统、OA系统、MES系统等，哪怕是个人APP，包括X、INS、微信、微博等全名应用，全部是以人为用户主体进行设计开发，但是随着AI的发展以及Agent的普及，未来的IT系统、APP等必定...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/19/nLs3/101f500.png">
+
+<meta name="keywords" content="AI">
+
+
+<meta property="article:published_time" content="2026-05-19T20:22:29+08:00">
+<meta property="article:modified_time" content="2026-05-19T20:22:29+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="AI">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI Agent 时代的 IT 系统重构 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="目前市面上所有的IT系统，包括但不限于财务系统、HR系统、OA系统、MES系统等，哪怕是个人APP，包括X、INS、微信、微博等全名应用，全部是以人为用户主体进行设计开发，但是随着AI的发展以及Agent的普及，未来的IT系统、APP等必定...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/05/19/nLs3/101f500.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/"
+      },
+      "headline": "AI Agent 时代的 IT 系统重构",
+      "description": "目前市面上所有的IT系统，包括但不限于财务系统、HR系统、OA系统、MES系统等，哪怕是个人APP，包括X、INS、微信、微博等全名应用，全部是以人为用户主体进行设计开发，但是随着AI的发展以及Agent的普及，未来的IT系统、APP等必定...",
+      "image": "https://files.seeusercontent.com/2026/05/19/nLs3/101f500.png",
+      "url": "https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-05-19T20:22:29+08:00",
+      "dateModified": "2026-05-19T20:22:29+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "AI"
+      ],
+      "keywords": "AI",
+      "wordCount": 8812
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "AI",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=AI"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "AI Agent 时代的 IT 系统重构",
+          "item": "https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#0-%E8%83%8C%E6%99%AF">0. 背景</a></li>
+<li><a href="#1-%E6%9C%AA%E6%9D%A5-it-%E7%B3%BB%E7%BB%9F%E4%B8%8E-app-%E4%BC%9A%E6%98%AF%E4%BB%80%E4%B9%88%E5%BD%A2%E6%80%81">1. 未来 IT 系统与 APP 会是什么形态</a>
+<ul>
+<li><a href="#11-%E7%94%A8%E6%88%B7%E4%B8%BB%E4%BD%93%E4%BC%9A%E4%BB%8E%E4%BA%BA%E5%8F%98%E6%88%90%E4%BA%BA-agent">1.1 用户主体会从“人”变成“人 + Agent”</a></li>
+<li><a href="#12-%E6%9C%AA%E6%9D%A5%E7%B3%BB%E7%BB%9F%E4%B8%8D%E6%98%AF%E9%A1%B5%E9%9D%A2%E4%BC%98%E5%85%88%E8%80%8C%E6%98%AF%E8%83%BD%E5%8A%9B%E4%BC%98%E5%85%88">1.2 未来系统不是“页面优先”，而是“能力优先”</a></li>
+<li><a href="#13-app-%E5%8F%AF%E8%83%BD%E4%BB%8E%E4%B8%80%E4%B8%AA%E4%B8%AA%E7%8B%AC%E7%AB%8B%E5%BA%94%E7%94%A8%E5%8F%98%E6%88%90%E8%83%BD%E5%8A%9B%E8%8A%82%E7%82%B9">1.3 APP 可能从“一个个独立应用”变成“能力节点”</a></li>
+<li><a href="#14-%E6%9C%AA%E6%9D%A5%E7%B3%BB%E7%BB%9F%E8%AE%BE%E8%AE%A1%E7%9A%84%E6%A0%B8%E5%BF%83%E5%AF%B9%E8%B1%A1">1.4 未来系统设计的核心对象</a></li>
+</ul>
+</li>
+<li><a href="#2-%E6%97%A7%E7%B3%BB%E7%BB%9F%E6%98%AF%E5%90%A6%E5%8F%AF%E4%BB%A5%E6%94%B9%E9%80%A0%E4%BB%A5%E5%85%BC%E5%AE%B9-agent">2. 旧系统是否可以改造以兼容 Agent</a>
+<ul>
+<li><a href="#21-%E6%97%A7%E7%B3%BB%E7%BB%9F%E6%94%B9%E9%80%A0%E7%9A%84%E4%B8%89%E4%B8%AA%E5%B1%82%E7%BA%A7">2.1 旧系统改造的三个层级</a>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%80%E5%B1%82%E5%8F%AF%E8%AE%BF%E9%97%AE">第一层：可访问</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E5%B1%82%E5%8F%AF%E7%90%86%E8%A7%A3">第二层：可理解</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E5%B1%82%E5%8F%AF%E6%B2%BB%E7%90%86">第三层：可治理</a></li>
+</ul>
+</li>
+<li><a href="#22-%E6%97%A7%E7%B3%BB%E7%BB%9F-agent-%E5%8C%96%E7%9A%84%E6%8E%A8%E8%8D%90%E6%9E%B6%E6%9E%84">2.2 旧系统 Agent 化的推荐架构</a></li>
+<li><a href="#23-%E6%97%A7%E7%B3%BB%E7%BB%9F%E6%94%B9%E9%80%A0%E7%9A%84%E4%BC%98%E5%85%88%E7%BA%A7">2.3 旧系统改造的优先级</a></li>
+<li><a href="#24-%E6%97%A7%E7%B3%BB%E7%BB%9F%E6%94%B9%E9%80%A0%E7%9A%84%E5%85%B3%E9%94%AE%E5%8E%9F%E5%88%99">2.4 旧系统改造的关键原则</a></li>
+</ul>
+</li>
+<li><a href="#3-%E6%96%B0%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E4%B8%8B-olap-%E6%95%B0%E6%8D%AE%E5%BA%93%E5%A6%82%E4%BD%95%E8%AE%BE%E8%AE%A1">3. 新系统架构下 OLAP 数据库如何设计</a>
+<ul>
+<li><a href="#31-%E4%BB%8E%E7%BB%99%E6%8A%A5%E8%A1%A8%E6%9F%A5%E5%8F%98%E6%88%90%E7%BB%99%E4%BA%BA%E5%92%8C-agent-%E4%B8%80%E8%B5%B7%E6%9F%A5">3.1 从“给报表查”变成“给人和 Agent 一起查”</a></li>
+<li><a href="#32-olap-%E8%A1%A8%E8%AE%BE%E8%AE%A1%E8%A6%81%E6%9B%B4%E5%BC%BA%E8%B0%83%E8%AF%AD%E4%B9%89">3.2 OLAP 表设计要更强调语义</a></li>
+<li><a href="#33-olap-%E9%9C%80%E8%A6%81%E6%94%AF%E6%8C%81agent-%E5%8F%AF%E8%A7%A3%E9%87%8A%E6%9F%A5%E8%AF%A2">3.3 OLAP 需要支持“Agent 可解释查询”</a></li>
+<li><a href="#34-olap-%E8%AE%BE%E8%AE%A1%E4%BC%9A%E6%9B%B4%E5%85%B3%E6%B3%A8%E4%B8%89%E7%B1%BB%E8%A1%A8">3.4 OLAP 设计会更关注三类表</a>
+<ul>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%B1%BB%E4%B8%9A%E5%8A%A1%E4%BA%8B%E5%AE%9E%E8%A1%A8">第一类：业务事实表</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%B1%BBagent-%E8%A1%8C%E4%B8%BA%E4%BA%8B%E5%AE%9E%E8%A1%A8">第二类：Agent 行为事实表</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%B1%BB%E8%AF%AD%E4%B9%89%E4%B8%8E%E6%8C%87%E6%A0%87%E5%85%83%E6%95%B0%E6%8D%AE%E8%A1%A8">第三类：语义与指标元数据表</a></li>
+</ul>
+</li>
+<li><a href="#35-olap-%E6%9D%83%E9%99%90%E4%BC%9A%E4%BB%8E%E4%BA%BA%E6%9F%A5%E4%BB%80%E4%B9%88%E6%89%A9%E5%B1%95%E4%B8%BAagent-%E4%BB%A3%E8%A1%A8%E8%B0%81%E6%9F%A5%E4%BB%80%E4%B9%88">3.5 OLAP 权限会从“人查什么”扩展为“Agent 代表谁查什么”</a></li>
+</ul>
+</li>
+<li><a href="#4-%E6%9C%AA%E6%9D%A5%E6%95%B0%E6%8D%AE%E4%BB%93%E5%BA%93%E4%BC%9A%E6%98%AF%E4%BB%80%E4%B9%88%E5%BD%A2%E6%80%81">4. 未来数据仓库会是什么形态</a>
+<ul>
+<li><a href="#41-%E4%BB%8E-data-warehouse-%E5%88%B0-data-action-warehouse">4.1 从 Data Warehouse 到 Data + Action Warehouse</a></li>
+<li><a href="#42-%E6%95%B0%E4%BB%93%E5%88%86%E5%B1%82%E4%BC%9A%E5%8F%91%E7%94%9F%E5%8F%98%E5%8C%96">4.2 数仓分层会发生变化</a>
+<ul>
+<li><a href="#semantic-layer">Semantic Layer</a></li>
+<li><a href="#agent-activity-layer">Agent Activity Layer</a></li>
+<li><a href="#decision-layer">Decision Layer</a></li>
+</ul>
+</li>
+<li><a href="#43-%E6%95%B0%E4%BB%93%E4%BC%9A%E6%9B%B4%E5%83%8F%E4%BC%81%E4%B8%9A%E8%AE%B0%E5%BF%86%E7%B3%BB%E7%BB%9F">4.3 数仓会更像“企业记忆系统”</a></li>
+<li><a href="#44-%E6%95%B0%E4%BB%93%E8%B4%A8%E9%87%8F%E4%BC%9A%E7%9B%B4%E6%8E%A5%E5%BD%B1%E5%93%8D-agent-%E7%9A%84%E5%8F%AF%E9%9D%A0%E6%80%A7">4.4 数仓质量会直接影响 Agent 的可靠性</a></li>
+</ul>
+</li>
+<li><a href="#5-%E5%85%B6%E4%BB%96%E8%A7%82%E7%82%B9%E4%B8%8E%E5%88%A4%E6%96%AD">5. 其他观点与判断</a>
+<ul>
+<li><a href="#51-%E6%9C%AA%E6%9D%A5%E7%B3%BB%E7%BB%9F%E7%9A%84%E6%A0%B8%E5%BF%83%E7%AB%9E%E4%BA%89%E5%8A%9B%E4%B8%8D%E6%98%AF%E9%A1%B5%E9%9D%A2%E8%80%8C%E6%98%AF%E5%8F%AF%E7%BB%84%E5%90%88%E8%83%BD%E5%8A%9B">5.1 未来系统的核心竞争力不是页面，而是可组合能力</a></li>
+<li><a href="#52-agent-%E4%B8%8D%E4%BC%9A%E6%B6%88%E7%81%AD-ui%E4%BD%86%E4%BC%9A%E6%94%B9%E5%8F%98-ui-%E7%9A%84%E5%9C%B0%E4%BD%8D">5.2 Agent 不会消灭 UI，但会改变 UI 的地位</a></li>
+<li><a href="#53-%E7%B3%BB%E7%BB%9F%E8%BE%B9%E7%95%8C%E4%BC%9A%E4%BB%8E%E5%BA%94%E7%94%A8%E8%BE%B9%E7%95%8C%E5%8F%98%E6%88%90%E4%BB%BB%E5%8A%A1%E8%BE%B9%E7%95%8C">5.3 系统边界会从“应用边界”变成“任务边界”</a></li>
+<li><a href="#54-%E5%8F%AF%E5%AE%A1%E8%AE%A1%E4%BC%9A%E6%AF%94%E8%87%AA%E5%8A%A8%E5%8C%96%E6%9B%B4%E9%87%8D%E8%A6%81">5.4 “可审计”会比“自动化”更重要</a></li>
+<li><a href="#55-%E4%BC%9A%E5%87%BA%E7%8E%B0%E6%96%B0%E7%9A%84%E7%B3%BB%E7%BB%9F%E8%A7%92%E8%89%B2agentops">5.5 会出现新的系统角色：AgentOps</a></li>
+<li><a href="#56-%E6%9C%AA%E6%9D%A5%E4%BC%81%E4%B8%9A-it-%E7%9A%84%E6%A0%B8%E5%BF%83%E6%9E%B6%E6%9E%84%E5%8F%AF%E8%83%BD%E6%98%AF%E4%BA%94%E5%B1%82">5.6 未来企业 IT 的核心架构可能是“五层”</a></li>
+</ul>
+</li>
+<li><a href="#6-%E4%B8%80%E4%B8%AA%E5%8F%AF%E8%83%BD%E7%9A%84%E6%96%B0%E7%B3%BB%E7%BB%9F%E6%9E%B6%E6%9E%84%E8%8D%89%E5%9B%BE">6. 一个可能的新系统架构草图</a></li>
+<li><a href="#7-%E6%80%BB%E7%BB%93">7. 总结</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI Agent 时代的 IT 系统重构</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-05-19 20:22
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                41 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/19/nLs3/101f500.png" alt="AI Agent 时代的 IT 系统重构">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>目前市面上所有的IT系统，包括但不限于财务系统、HR系统、OA系统、MES系统等，哪怕是个人APP，包括X、INS、微信、微博等全名应用，全部是以人为用户主体进行设计开发，但是随着AI的发展以及Agent的普及，未来的IT系统、APP等必定会重构。</p>
+<!-- more -->
+<p>背景：目前市面上所有的IT系统，包括但不限于财务系统、HR系统、OA系统、MES系统等，哪怕是个人APP，包括X、INS、微信、微博等全名应用，全部是以人为用户主体进行设计开发，但是随着AI的发展以及Agent的普及，未来的IT系统、APP等必定会重构。在此背景下，我想和你探讨几个问题：</p>
+<p>1：未来的IT系统、APP是怎么样的，如何设计，用户完全是人肯定是过时的，那么用户是人和AI（Agent）还是只有Agent，人只是通过自然语言控制Agent来操作系统进行业务操作；</p>
+<p>2：目前已经在运行的旧系统，是否可以改造以兼容Agent进行业务操作，比如开放API接口；</p>
+<p>3：在新系统的架构下，OLAP数据库如何设计，和原来有什么区别；</p>
+<p>4：由此进一步影响数据仓库，未来数据仓库是什么形态的；</p>
+<p>5：你有其他什么想法或者观点，也可表达；</p>
+<p>基于以上探讨，整理一个md格式的文件。</p>
+<h2 id="0-背景">0. 背景</h2>
+<p>过去几十年的 IT 系统，几乎都是围绕“人”来设计的。</p>
+<p>无论是财务系统、HR 系统、OA 系统、MES 系统，还是微信、微博、X、Instagram 等个人应用，本质上都默认：</p>
+<ul>
+<li>用户是人。</li>
+<li>人通过界面理解系统。</li>
+<li>人点击按钮、填写表单、查看报表。</li>
+<li>系统通过菜单、页面、流程、权限来约束人的操作。</li>
+</ul>
+<p>但随着大模型、AI Agent、自然语言交互、工具调用、MCP、RPA、工作流编排等技术发展，未来的系统不会再只是“给人用的界面”，而会逐步变成“给人和 Agent 共同使用的能力平台”。</p>
+<p>也就是说，未来系统的核心问题会从：</p>
+<blockquote>
+<p>人如何使用系统？</p>
+</blockquote>
+<p>转变为：</p>
+<blockquote>
+<p>人和 Agent 如何共同完成业务目标？</p>
+</blockquote>
+<p>甚至进一步转变为：</p>
+<blockquote>
+<p>Agent 如何代表人、组织、岗位或流程，在可控边界内自动完成任务？</p>
+</blockquote>
+<hr>
+<h2 id="1-未来-it-系统与-app-会是什么形态">1. 未来 IT 系统与 APP 会是什么形态</h2>
+<h3 id="11-用户主体会从人变成人-agent">1.1 用户主体会从“人”变成“人 + Agent”</h3>
+<p>未来很长一段时间内，系统用户不会直接变成“只有 Agent”，而更可能是：</p>
+<blockquote>
+<p>人是责任主体，Agent 是执行主体或协作主体。</p>
+</blockquote>
+<p>也就是说：</p>
+<ul>
+<li>人负责目标、授权、监督、确认和最终责任。</li>
+<li>Agent 负责理解意图、拆解任务、调用工具、执行流程、汇总结果。</li>
+<li>系统负责提供可验证、可审计、可授权、可回滚的业务能力。</li>
+</ul>
+<p>短期内，典型模式是：</p>
+<pre><code class="language-text">人提出目标
+  -&gt; Agent 理解意图
+    -&gt; Agent 调用系统 API / 工具 / 工作流
+      -&gt; 系统执行受控业务操作
+        -&gt; Agent 汇总结果并请求确认
+          -&gt; 人确认或修正
+</code></pre>
+<p>长期看，部分高确定性、低风险、强规则的场景会逐步演进为：</p>
+<pre><code class="language-text">人配置目标与边界
+  -&gt; Agent 持续监控
+    -&gt; Agent 自动执行
+      -&gt; 系统记录全过程
+        -&gt; 人只处理异常与关键审批
+</code></pre>
+<h3 id="12-未来系统不是页面优先而是能力优先">1.2 未来系统不是“页面优先”，而是“能力优先”</h3>
+<p>传统系统常见设计顺序是：</p>
+<pre><code class="language-text">页面
+  -&gt; 表单
+    -&gt; 按钮
+      -&gt; 后端接口
+        -&gt; 数据库
+</code></pre>
+<p>Agent 时代更合理的设计顺序应该是：</p>
+<pre><code class="language-text">业务能力
+  -&gt; 权限与约束
+    -&gt; API / Tool / Workflow
+      -&gt; 人机交互界面
+      -&gt; Agent 调用入口
+      -&gt; 数据与审计
+</code></pre>
+<p>这意味着未来系统要从“UI 驱动”转向“能力驱动”。</p>
+<p>页面仍然存在，但页面不再是唯一入口。系统至少会有三类入口：</p>
+<table>
+<thead>
+<tr>
+<th>入口类型</th>
+<th>使用者</th>
+<th>典型形式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GUI 入口</td>
+<td>人</td>
+<td>页面、按钮、表单、报表</td>
+</tr>
+<tr>
+<td>API / Tool 入口</td>
+<td>Agent / 系统</td>
+<td>REST、GraphQL、gRPC、MCP Tool、内部服务接口</td>
+</tr>
+<tr>
+<td>自然语言入口</td>
+<td>人 + Agent</td>
+<td>对话框、语音、任务助手、企业 Copilot</td>
+</tr>
+</tbody>
+</table>
+<h3 id="13-app-可能从一个个独立应用变成能力节点">1.3 APP 可能从“一个个独立应用”变成“能力节点”</h3>
+<p>现在的 APP 是一个独立入口，例如：</p>
+<ul>
+<li>打开财务系统做报销。</li>
+<li>打开 HR 系统查假期。</li>
+<li>打开 OA 系统提审批。</li>
+<li>打开 MES 系统查工单。</li>
+</ul>
+<p>未来用户更可能直接对 Agent 说：</p>
+<blockquote>
+<p>帮我把上周出差的发票整理好，生成报销单，如果金额没问题就提交审批。</p>
+</blockquote>
+<p>Agent 背后可能同时调用：</p>
+<ul>
+<li>邮箱：找发票。</li>
+<li>OCR：识别票据。</li>
+<li>财务系统：生成报销单。</li>
+<li>OA 系统：发起审批。</li>
+<li>企业微信：通知上级。</li>
+<li>数据仓库：校验差旅政策。</li>
+</ul>
+<p>此时用户感知到的不是“我打开了 5 个系统”，而是：</p>
+<blockquote>
+<p>我把一个业务目标交给了 Agent。</p>
+</blockquote>
+<p>因此，未来 APP 会越来越像“可被 Agent 调用的业务能力节点”，而不是孤立的人机界面。</p>
+<h3 id="14-未来系统设计的核心对象">1.4 未来系统设计的核心对象</h3>
+<p>传统系统核心对象通常是：</p>
+<ul>
+<li>User</li>
+<li>Role</li>
+<li>Permission</li>
+<li>Menu</li>
+<li>Page</li>
+<li>Form</li>
+<li>Process</li>
+</ul>
+<p>Agent 时代还需要新增：</p>
+<ul>
+<li>Agent Identity：Agent 身份。</li>
+<li>Delegation：人对 Agent 的授权。</li>
+<li>Tool Permission：工具级权限。</li>
+<li>Task Context：任务上下文。</li>
+<li>Intent：意图。</li>
+<li>Plan：执行计划。</li>
+<li>Action：实际动作。</li>
+<li>Observation：系统反馈。</li>
+<li>Audit Trail：审计轨迹。</li>
+<li>Human Approval：人工确认点。</li>
+<li>Policy Guardrail：策略护栏。</li>
+</ul>
+<p>可以把未来系统理解为：</p>
+<pre><code class="language-text">传统业务系统
+  + Agent 身份体系
+  + 工具调用体系
+  + 授权委托体系
+  + 过程审计体系
+  + 策略护栏体系
+  + 自然语言交互体系
+</code></pre>
+<hr>
+<h2 id="2-旧系统是否可以改造以兼容-agent">2. 旧系统是否可以改造以兼容 Agent</h2>
+<p>答案是：可以，但要分层改造，不能只“开放几个 API”就认为完成了 Agent 化。</p>
+<h3 id="21-旧系统改造的三个层级">2.1 旧系统改造的三个层级</h3>
+<h4 id="第一层可访问">第一层：可访问</h4>
+<p>目标是让 Agent 能够访问系统能力。</p>
+<p>常见方式：</p>
+<ul>
+<li>开放 REST API。</li>
+<li>提供 GraphQL 查询接口。</li>
+<li>接入 MCP Server，把系统能力包装成 Tool。</li>
+<li>暂时通过 RPA 操作旧页面。</li>
+<li>对数据库只读开放查询视图。</li>
+</ul>
+<p>这一层解决的是：</p>
+<blockquote>
+<p>Agent 能不能用这个系统？</p>
+</blockquote>
+<p>但这还不够。</p>
+<h4 id="第二层可理解">第二层：可理解</h4>
+<p>目标是让 Agent 能够理解系统能力的语义。</p>
+<p>旧系统的 API 往往是给程序员看的，例如：</p>
+<pre><code class="language-text">POST /api/reim/create
+GET /api/user/info
+POST /api/workflow/start
+</code></pre>
+<p>Agent 更需要的是语义化描述：</p>
+<pre><code class="language-text">工具名称：create_expense_claim
+用途：根据发票、出差信息和费用明细创建报销单
+输入：员工ID、发票列表、费用类别、项目编号、说明
+输出：报销单ID、校验结果、下一审批人
+限制：金额超过 5000 元必须人工确认
+</code></pre>
+<p>因此旧系统改造不只是开放 API，还要做：</p>
+<ul>
+<li>API 语义描述。</li>
+<li>参数字段解释。</li>
+<li>枚举值说明。</li>
+<li>错误码解释。</li>
+<li>使用示例。</li>
+<li>业务约束说明。</li>
+<li>风险等级标识。</li>
+</ul>
+<h4 id="第三层可治理">第三层：可治理</h4>
+<p>目标是让 Agent 的操作可控、可审计、可回滚。</p>
+<p>旧系统原来只考虑“用户登录后点击按钮”，现在要考虑：</p>
+<ul>
+<li>这个 Agent 是谁创建的？</li>
+<li>它代表哪个人、哪个岗位、哪个组织？</li>
+<li>它能调用哪些工具？</li>
+<li>它能操作哪些数据范围？</li>
+<li>哪些动作需要人工确认？</li>
+<li>它的每一步操作是否可追踪？</li>
+<li>出错后如何撤销或补偿？</li>
+</ul>
+<p>这一层解决的是：</p>
+<blockquote>
+<p>Agent 用系统时，是否安全、可靠、可追责？</p>
+</blockquote>
+<h3 id="22-旧系统-agent-化的推荐架构">2.2 旧系统 Agent 化的推荐架构</h3>
+<p>不建议直接让 Agent 操作数据库，也不建议直接让 Agent 以管理员权限调用所有接口。更合理的是加一层 Agent Gateway。</p>
+<pre><code class="language-text">Agent
+  -&gt; Agent Gateway
+    -&gt; Policy Engine
+    -&gt; Tool Registry
+    -&gt; Audit Log
+    -&gt; Legacy System API
+      -&gt; Old System
+</code></pre>
+<p>各组件职责：</p>
+<table>
+<thead>
+<tr>
+<th>组件</th>
+<th>职责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent Gateway</td>
+<td>Agent 调用旧系统的统一入口</td>
+</tr>
+<tr>
+<td>Tool Registry</td>
+<td>注册系统可调用能力、参数、说明、风险等级</td>
+</tr>
+<tr>
+<td>Policy Engine</td>
+<td>判断 Agent 是否有权执行某动作</td>
+</tr>
+<tr>
+<td>Audit Log</td>
+<td>记录意图、参数、调用结果、人工确认</td>
+</tr>
+<tr>
+<td>Legacy API Adapter</td>
+<td>适配旧系统接口或页面能力</td>
+</tr>
+</tbody>
+</table>
+<h3 id="23-旧系统改造的优先级">2.3 旧系统改造的优先级</h3>
+<p>不是所有功能都应该一次性开放给 Agent。</p>
+<p>优先级建议：</p>
+<ol>
+<li><strong>只读查询类</strong>：风险低，最适合先开放。</li>
+<li><strong>低风险写入类</strong>：例如生成草稿、创建待确认单据。</li>
+<li><strong>中风险流程类</strong>：例如提交审批、发起工单，需要人工确认。</li>
+<li><strong>高风险操作类</strong>：付款、删除、批量变更、权限分配，必须强约束、强审计。</li>
+</ol>
+<p>一个典型演进路径：</p>
+<pre><code class="language-text">只读问答
+  -&gt; 草稿生成
+    -&gt; 人工确认后提交
+      -&gt; 低风险自动执行
+        -&gt; 高风险强审批执行
+</code></pre>
+<h3 id="24-旧系统改造的关键原则">2.4 旧系统改造的关键原则</h3>
+<ul>
+<li>不要让 Agent 绕过原有权限体系。</li>
+<li>不要让 Agent 直接操作核心数据库写入。</li>
+<li>所有写操作必须有业务语义，而不是裸 SQL。</li>
+<li>高风险动作必须有人类确认或策略确认。</li>
+<li>每次 Agent 操作都要记录“为什么做、做了什么、结果是什么”。</li>
+<li>API 不只是技术接口，更是业务能力契约。</li>
+</ul>
+<hr>
+<h2 id="3-新系统架构下-olap-数据库如何设计">3. 新系统架构下 OLAP 数据库如何设计</h2>
+<p>Agent 时代的 OLAP 数据库不会被弱化，反而会更重要。因为 Agent 要做分析、解释、决策、推荐、监控，就需要更好的分析型数据底座。</p>
+<p>但 OLAP 的设计重点会发生变化。</p>
+<h3 id="31-从给报表查变成给人和-agent-一起查">3.1 从“给报表查”变成“给人和 Agent 一起查”</h3>
+<p>传统 OLAP 主要服务：</p>
+<ul>
+<li>BI 报表。</li>
+<li>管理驾驶舱。</li>
+<li>固定指标看板。</li>
+<li>分析师即席查询。</li>
+</ul>
+<p>未来 OLAP 还要服务：</p>
+<ul>
+<li>Agent 自动分析。</li>
+<li>Agent 自动归因。</li>
+<li>Agent 自动生成报告。</li>
+<li>Agent 监控异常并触发动作。</li>
+<li>Agent 基于数据自动推荐下一步。</li>
+</ul>
+<p>因此 OLAP 不再只是“报表查询引擎”，还会成为 Agent 的“事实查询层”和“决策证据层”。</p>
+<h3 id="32-olap-表设计要更强调语义">3.2 OLAP 表设计要更强调语义</h3>
+<p>传统 OLAP 表可能只强调：</p>
+<ul>
+<li>查询性能。</li>
+<li>分区分桶。</li>
+<li>聚合模型。</li>
+<li>指标口径。</li>
+</ul>
+<p>Agent 时代还要强调：</p>
+<ul>
+<li>字段语义是否清楚。</li>
+<li>指标定义是否机器可读。</li>
+<li>维度枚举是否有解释。</li>
+<li>数据血缘是否可追溯。</li>
+<li>数据质量是否可被 Agent 感知。</li>
+<li>指标是否有业务解释和适用范围。</li>
+</ul>
+<p>例如一个字段：</p>
+<pre><code class="language-text">gmv_amount
+</code></pre>
+<p>仅有字段名是不够的，Agent 还需要知道：</p>
+<pre><code class="language-text">字段名：gmv_amount
+中文名：成交金额
+口径：已支付订单金额，不扣除退款
+单位：元
+时间口径：按支付时间归属
+适用范围：销售分析、渠道分析
+不适用：财务收入确认
+数据质量等级：A
+更新频率：T+0 近实时
+</code></pre>
+<h3 id="33-olap-需要支持agent-可解释查询">3.3 OLAP 需要支持“Agent 可解释查询”</h3>
+<p>未来 Agent 发起查询时，不能只返回结果，还需要返回：</p>
+<ul>
+<li>查询用到了哪些表。</li>
+<li>指标口径是什么。</li>
+<li>数据更新时间。</li>
+<li>是否命中缓存或物化视图。</li>
+<li>是否有数据质量告警。</li>
+<li>结果可信度如何。</li>
+</ul>
+<p>一个理想返回不只是：</p>
+<pre><code class="language-text">本月销售额：1200 万
+</code></pre>
+<p>而是：</p>
+<pre><code class="language-text">本月销售额：1200 万
+口径：已支付订单金额，不扣除退款
+数据范围：2026-05-01 至 2026-05-19
+数据更新时间：2026-05-19 15:30
+来源表：dws_sales_order_day
+质量状态：正常
+注意：该指标不等同于财务确认收入
+</code></pre>
+<h3 id="34-olap-设计会更关注三类表">3.4 OLAP 设计会更关注三类表</h3>
+<h4 id="第一类业务事实表">第一类：业务事实表</h4>
+<p>记录真实业务事件。</p>
+<p>示例：</p>
+<ul>
+<li>订单事实。</li>
+<li>审批事实。</li>
+<li>生产工单事实。</li>
+<li>员工考勤事实。</li>
+<li>财务凭证事实。</li>
+</ul>
+<p>这些表仍然是数据分析的基础。</p>
+<h4 id="第二类agent-行为事实表">第二类：Agent 行为事实表</h4>
+<p>这是 Agent 时代新增的重要数据。</p>
+<p>示例：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>agent_id</td>
+<td>Agent 标识</td>
+</tr>
+<tr>
+<td>human_user_id</td>
+<td>代表的人</td>
+</tr>
+<tr>
+<td>task_id</td>
+<td>任务 ID</td>
+</tr>
+<tr>
+<td>intent</td>
+<td>用户意图</td>
+</tr>
+<tr>
+<td>tool_name</td>
+<td>调用的工具</td>
+</tr>
+<tr>
+<td>action_type</td>
+<td>查询/创建/提交/审批</td>
+</tr>
+<tr>
+<td>risk_level</td>
+<td>风险等级</td>
+</tr>
+<tr>
+<td>approval_required</td>
+<td>是否需要人工确认</td>
+</tr>
+<tr>
+<td>action_result</td>
+<td>成功/失败</td>
+</tr>
+<tr>
+<td>latency_ms</td>
+<td>调用耗时</td>
+</tr>
+<tr>
+<td>created_at</td>
+<td>动作时间</td>
+</tr>
+</tbody>
+</table>
+<p>这类表用于：</p>
+<ul>
+<li>审计 Agent 行为。</li>
+<li>分析 Agent 效率。</li>
+<li>发现异常调用。</li>
+<li>评估 Agent 对业务流程的影响。</li>
+</ul>
+<h4 id="第三类语义与指标元数据表">第三类：语义与指标元数据表</h4>
+<p>让 Agent 理解数据。</p>
+<p>示例：</p>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>metric_name</td>
+<td>指标名</td>
+</tr>
+<tr>
+<td>metric_cn_name</td>
+<td>中文名</td>
+</tr>
+<tr>
+<td>business_definition</td>
+<td>业务定义</td>
+</tr>
+<tr>
+<td>formula</td>
+<td>计算公式</td>
+</tr>
+<tr>
+<td>source_table</td>
+<td>来源表</td>
+</tr>
+<tr>
+<td>owner</td>
+<td>负责人</td>
+</tr>
+<tr>
+<td>refresh_frequency</td>
+<td>刷新频率</td>
+</tr>
+<tr>
+<td>quality_level</td>
+<td>质量等级</td>
+</tr>
+<tr>
+<td>warning</td>
+<td>使用注意事项</td>
+</tr>
+</tbody>
+</table>
+<p>这类表会成为 Agent 查询数据前的重要上下文。</p>
+<h3 id="35-olap-权限会从人查什么扩展为agent-代表谁查什么">3.5 OLAP 权限会从“人查什么”扩展为“Agent 代表谁查什么”</h3>
+<p>传统权限：</p>
+<pre><code class="language-text">user_id -&gt; role -&gt; table/row/column permission
+</code></pre>
+<p>Agent 时代需要扩展为：</p>
+<pre><code class="language-text">agent_id
+  -&gt; delegated_user_id
+  -&gt; delegated_scope
+  -&gt; tool_permission
+  -&gt; data_permission
+  -&gt; action_risk_policy
+</code></pre>
+<p>同一个 Agent 在不同授权上下文中，能看到的数据可能不同。</p>
+<p>例如：</p>
+<ul>
+<li>代表财务经理查询：可看部门费用。</li>
+<li>代表普通员工查询：只能看个人报销。</li>
+<li>代表审计 Agent 查询：可看审计范围内数据，但不能执行付款。</li>
+</ul>
+<hr>
+<h2 id="4-未来数据仓库会是什么形态">4. 未来数据仓库会是什么形态</h2>
+<p>未来数据仓库不会消失，而会从“报表数据仓库”升级为“语义化、可行动、可审计的数据智能底座”。</p>
+<h3 id="41-从-data-warehouse-到-data-action-warehouse">4.1 从 Data Warehouse 到 Data + Action Warehouse</h3>
+<p>传统数仓主要回答：</p>
+<blockquote>
+<p>发生了什么？</p>
+</blockquote>
+<p>未来数仓还要回答：</p>
+<blockquote>
+<p>为什么发生？<br>
+接下来可能发生什么？<br>
+应该做什么？<br>
+谁或哪个 Agent 做了什么？<br>
+这个动作是否有效？</p>
+</blockquote>
+<p>因此未来数仓不仅存业务结果，也会存：</p>
+<ul>
+<li>意图。</li>
+<li>动作。</li>
+<li>决策过程。</li>
+<li>Agent 调用记录。</li>
+<li>人工确认记录。</li>
+<li>策略命中记录。</li>
+<li>反馈结果。</li>
+</ul>
+<p>也就是从“数据仓库”演进为：</p>
+<pre><code class="language-text">业务事实仓库
+  + 指标语义仓库
+  + Agent 行为仓库
+  + 决策过程仓库
+  + 反馈评估仓库
+</code></pre>
+<h3 id="42-数仓分层会发生变化">4.2 数仓分层会发生变化</h3>
+<p>传统分层：</p>
+<pre><code class="language-text">ODS -&gt; DWD -&gt; DWS -&gt; ADS
+</code></pre>
+<p>未来可能变成：</p>
+<pre><code class="language-text">ODS：原始业务数据
+DWD：明细事实与维度
+DWS：主题汇总与指标
+ADS：应用服务层
+Semantic Layer：语义层 / 指标层 / 知识层
+Agent Activity Layer：Agent 行为层
+Decision Layer：决策过程与反馈层
+</code></pre>
+<p>其中最关键的新增层是：</p>
+<h4 id="semantic-layer">Semantic Layer</h4>
+<p>负责让数据“可被人和 Agent 正确理解”。</p>
+<p>包含：</p>
+<ul>
+<li>指标定义。</li>
+<li>业务术语。</li>
+<li>字段解释。</li>
+<li>维度层级。</li>
+<li>口径边界。</li>
+<li>数据血缘。</li>
+<li>数据质量。</li>
+</ul>
+<h4 id="agent-activity-layer">Agent Activity Layer</h4>
+<p>负责记录 Agent 的行为。</p>
+<p>包含：</p>
+<ul>
+<li>Agent 接收了什么任务。</li>
+<li>Agent 调用了哪些系统。</li>
+<li>调用是否成功。</li>
+<li>是否经过人工确认。</li>
+<li>是否发生异常。</li>
+</ul>
+<h4 id="decision-layer">Decision Layer</h4>
+<p>负责记录决策过程和结果反馈。</p>
+<p>包含：</p>
+<ul>
+<li>Agent 的分析过程摘要。</li>
+<li>推荐方案。</li>
+<li>人类选择。</li>
+<li>最终动作。</li>
+<li>后续业务结果。</li>
+</ul>
+<h3 id="43-数仓会更像企业记忆系统">4.3 数仓会更像“企业记忆系统”</h3>
+<p>未来数仓不只是存结构化业务数据，还会和知识库、向量库、文档库、日志系统融合。</p>
+<p>一个企业级 Agent 需要的不只是：</p>
+<ul>
+<li>销售额是多少。</li>
+</ul>
+<p>还需要：</p>
+<ul>
+<li>销售额这个指标是什么意思。</li>
+<li>这个指标和收入有什么区别。</li>
+<li>最近一次口径变更是什么时候。</li>
+<li>哪个部门负责这个指标。</li>
+<li>以前类似异常是怎么处理的。</li>
+<li>哪些制度文档约束这个动作。</li>
+</ul>
+<p>因此未来数据底座可能是：</p>
+<pre><code class="language-text">结构化数仓
+  + 指标平台
+  + 数据目录
+  + 知识库
+  + 向量数据库
+  + 日志审计系统
+  + 工作流记录
+</code></pre>
+<h3 id="44-数仓质量会直接影响-agent-的可靠性">4.4 数仓质量会直接影响 Agent 的可靠性</h3>
+<p>过去数据质量差，主要影响报表。</p>
+<p>未来数据质量差，会影响 Agent 的自动决策。</p>
+<p>例如：</p>
+<ul>
+<li>员工权限数据错误，Agent 可能泄露敏感数据。</li>
+<li>财务指标口径错误，Agent 可能生成错误分析报告。</li>
+<li>库存数据延迟，Agent 可能错误触发采购。</li>
+<li>审批流数据不完整，Agent 可能误判流程状态。</li>
+</ul>
+<p>因此未来数据治理会从“报表治理”升级为“AI 决策治理”。</p>
+<p>数据治理的重要性会显著上升。</p>
+<hr>
+<h2 id="5-其他观点与判断">5. 其他观点与判断</h2>
+<h3 id="51-未来系统的核心竞争力不是页面而是可组合能力">5.1 未来系统的核心竞争力不是页面，而是可组合能力</h3>
+<p>很多系统今天的竞争力体现在：</p>
+<ul>
+<li>页面好不好用。</li>
+<li>流程全不全。</li>
+<li>报表多不多。</li>
+</ul>
+<p>未来会越来越体现在：</p>
+<ul>
+<li>能力是否 API 化。</li>
+<li>语义是否清晰。</li>
+<li>权限是否可委托。</li>
+<li>操作是否可审计。</li>
+<li>是否容易被 Agent 编排。</li>
+<li>是否能和其他系统组合完成复杂任务。</li>
+</ul>
+<h3 id="52-agent-不会消灭-ui但会改变-ui-的地位">5.2 Agent 不会消灭 UI，但会改变 UI 的地位</h3>
+<p>UI 不会消失。</p>
+<p>但 UI 的地位会从“唯一入口”变成：</p>
+<ul>
+<li>人类确认界面。</li>
+<li>异常处理界面。</li>
+<li>过程可视化界面。</li>
+<li>权限与策略配置界面。</li>
+<li>Agent 执行结果解释界面。</li>
+</ul>
+<p>大量重复、规则清晰、跨系统的点击操作，会逐渐被 Agent 接管。</p>
+<h3 id="53-系统边界会从应用边界变成任务边界">5.3 系统边界会从“应用边界”变成“任务边界”</h3>
+<p>传统 IT 系统按应用划分：</p>
+<ul>
+<li>财务系统。</li>
+<li>HR 系统。</li>
+<li>OA 系统。</li>
+<li>MES 系统。</li>
+</ul>
+<p>Agent 时代更关注任务：</p>
+<ul>
+<li>完成一次报销。</li>
+<li>完成一次入职。</li>
+<li>完成一次生产异常处理。</li>
+<li>完成一次销售分析。</li>
+<li>完成一次预算预警。</li>
+</ul>
+<p>一个任务可能横跨多个系统，所以未来架构更需要：</p>
+<ul>
+<li>跨系统身份。</li>
+<li>跨系统权限。</li>
+<li>跨系统流程。</li>
+<li>跨系统数据语义。</li>
+<li>跨系统审计。</li>
+</ul>
+<h3 id="54-可审计会比自动化更重要">5.4 “可审计”会比“自动化”更重要</h3>
+<p>在企业系统中，Agent 最大阻力不是技术能力，而是信任。</p>
+<p>企业会问：</p>
+<ul>
+<li>Agent 为什么这么做？</li>
+<li>它依据了什么数据？</li>
+<li>它有没有越权？</li>
+<li>谁授权它这么做？</li>
+<li>出错后谁负责？</li>
+<li>能不能回滚？</li>
+</ul>
+<p>因此，未来 Agent 系统设计的底线不是“能自动执行”，而是：</p>
+<blockquote>
+<p>自动执行必须可解释、可审计、可约束、可回滚。</p>
+</blockquote>
+<h3 id="55-会出现新的系统角色agentops">5.5 会出现新的系统角色：AgentOps</h3>
+<p>类似 DevOps、DataOps、MLOps，未来很可能出现 AgentOps。</p>
+<p>AgentOps 负责：</p>
+<ul>
+<li>管理 Agent。</li>
+<li>注册工具。</li>
+<li>配置权限。</li>
+<li>监控调用。</li>
+<li>分析失败。</li>
+<li>管理提示词与策略。</li>
+<li>做安全审计。</li>
+<li>做效果评估。</li>
+</ul>
+<p>Agent 不会是“装上就完事”的工具，而会成为企业 IT 治理对象。</p>
+<h3 id="56-未来企业-it-的核心架构可能是五层">5.6 未来企业 IT 的核心架构可能是“五层”</h3>
+<pre><code class="language-text">交互层：自然语言、GUI、语音、移动端
+Agent 层：规划、记忆、工具调用、任务执行
+能力层：API、Tool、Workflow、业务服务
+数据层：OLTP、OLAP、数仓、向量库、知识库
+治理层：权限、策略、审计、安全、质量、合规
+</code></pre>
+<p>其中治理层不是附属，而是贯穿所有层。</p>
+<hr>
+<h2 id="6-一个可能的新系统架构草图">6. 一个可能的新系统架构草图</h2>
+<pre><code class="language-text">                     人
+                     |
+             自然语言 / GUI
+                     |
+              Enterprise Agent
+                     |
+        +------------+-------------+
+        |                          |
+   Task Planner              Policy Guardrail
+        |                          |
+        +------------+-------------+
+                     |
+              Agent Gateway
+                     |
+        +------------+-------------+
+        |            |             |
+   Tool Registry   Audit Log   Permission Engine
+        |            |             |
+        +------------+-------------+
+                     |
+        +------------+-------------+
+        |            |             |
+   财务系统 API   HR 系统 API   OA / MES API
+        |            |             |
+        +------------+-------------+
+                     |
+          OLTP / OLAP / Data Warehouse
+                     |
+          Semantic Layer / Knowledge Base
+</code></pre>
+<p>这个架构的核心不是让 Agent “随便操作系统”，而是让 Agent 在明确授权、语义清晰、过程可审计的框架内操作系统。</p>
+<hr>
+<h2 id="7-总结">7. 总结</h2>
+<p>未来 IT 系统不会简单变成“没有人，只有 Agent”。</p>
+<p>更合理的判断是：</p>
+<blockquote>
+<p>人仍然是目标设定者、授权者、监督者和责任主体；Agent 会成为任务执行者、系统操作者、分析助手和流程协调者。</p>
+</blockquote>
+<p>旧系统可以改造，但不能只做 API 开放，还需要语义化、权限委托、审计和治理。</p>
+<p>新系统要从页面驱动转向能力驱动，从人类 UI 优先转向人和 Agent 双入口，从应用边界转向任务边界。</p>
+<p>OLAP 和数据仓库不会消失，而会升级为 Agent 的事实依据、语义底座、决策记录和行为审计中心。</p>
+<p>最终，企业 IT 的重点会从：</p>
+<pre><code class="language-text">系统能不能让人点得动
+</code></pre>
+<p>转变为：</p>
+<pre><code class="language-text">系统能不能让人和 Agent 在可信边界内共同完成业务目标
+</code></pre>
+<p>这可能是未来十年 IT 系统重构的核心方向。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=AI" class="tag js-tag-link" data-tag-name="AI">
+                    AI
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/">
+                      <div class="related-left">
+                        <div class="related-post-title">AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP</div>
+                        <div class="related-meta">2026-06-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/21/vCt7/PowerBI.png" alt="AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/mcp/">
+                      <div class="related-left">
+                        <div class="related-post-title">一文读懂 MCP：大模型与外部工具的&#34;通用语言&#34;</div>
+                        <div class="related-meta">2026-05-11</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/11/1rNh/MCP.png" alt="一文读懂 MCP：大模型与外部工具的&#34;通用语言&#34;" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/covariance/">
+                  <h3 class="post-title">
+                    协方差（Covariance）：衡量两个变量如何一起变化
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

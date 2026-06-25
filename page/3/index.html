@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="数据科学成长之路">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/">
+<meta property="og:image" content="https://zhangjunjie00323.github.io/images/avatar.png">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="数据科学成长之路">
+<meta name="twitter:image" content="https://zhangjunjie00323.github.io/images/avatar.png">
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+    <meta name="description" content="数据科学成长之路">
+  </head>
+  <body>
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div class="main-container">
+        <div class="content-container">
+          <div class="post-list">
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="0">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/train-validation-test/">
+                    <h2 class="post-title">训练集、验证集与测试集：机器学习中最基础的“行规”</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-28 21:59
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      25 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/train-validation-test/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>数据划分的艺术：训练、验证、测试三兄弟的前世今生</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                          # 机器学习
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/train-validation-test/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/1cmS/9a2ff50.jpg" alt="训练集、验证集与测试集：机器学习中最基础的“行规”" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="100">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/overfitting-underfitting/">
+                    <h2 class="post-title">机器学习第一道坎：拟合、欠拟合与过拟合完全指南</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-28 21:32
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      97 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/overfitting-underfitting/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>一条曲线，三个世界：欠拟合、好拟合与过拟合全景解析</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                          # 机器学习
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/overfitting-underfitting/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/x8zB/88b6586.jpg" alt="机器学习第一道坎：拟合、欠拟合与过拟合完全指南" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="200">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/feature-engineering/">
+                    <h2 class="post-title">特征工程：决定模型上限的隐形艺术家</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-28 21:04
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      58 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/feature-engineering/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>机器学习特征工程完全指南：数据是原石，特征工程是雕琢</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                          # 机器学习
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/feature-engineering/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/y3Bz/ad8f8c8.jpg" alt="特征工程：决定模型上限的隐形艺术家" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="300">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/spleen-stomach-health/">
+                    <h2 class="post-title">后天之本：读懂你的脾胃，就等于读懂健康</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-28 20:52
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      24 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/spleen-stomach-health/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>脾胃好，人不老：一套科学的脾胃养护指南</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%81%A5%E5%BA%B7" class="tag js-tag-link" data-tag-name="健康">
+                          # 健康
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/spleen-stomach-health/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/Kw2y/66a92cf.jpg" alt="后天之本：读懂你的脾胃，就等于读懂健康" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="400">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/liver-detox-health/">
+                    <h2 class="post-title">沉默的巨人：读懂你的肝脏，就读懂了身体的“解毒密码”</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-28 20:37
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      25 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/liver-detox-health/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>肝不好，百病扰：身体里最累的器官，你关心过它吗？</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%81%A5%E5%BA%B7" class="tag js-tag-link" data-tag-name="健康">
+                          # 健康
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/liver-detox-health/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/7lcY/a0839e5.jpg" alt="沉默的巨人：读懂你的肝脏，就读懂了身体的“解毒密码”" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="0">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/logistic-regression/">
+                    <h2 class="post-title">从线性回归到逻辑回归：深入理解分类模型的灵魂</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-26 22:41
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      498 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/logistic-regression/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>逻辑回归：机器学习中最被低估的“分类之王</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                          # 机器学习
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/logistic-regression/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/p8aH/ebdf377.png" alt="从线性回归到逻辑回归：深入理解分类模型的灵魂" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="100">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/polynomial-regression/">
+                    <h2 class="post-title">打破线性假设：多项式回归的数学之美与工程实践</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-26 22:21
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      290 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/polynomial-regression/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>多项式回归全解：当直线不够用，让曲线来拟合</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                          # 机器学习
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/polynomial-regression/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/2bYn/6464115.png" alt="打破线性假设：多项式回归的数学之美与工程实践" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="200">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/hunger/">
+                    <h2 class="post-title">你真的饿了么</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-24 23:15
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      13 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/hunger/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>下丘脑：对不起，我经常把“渴”错当成“饿”</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%81%A5%E5%BA%B7" class="tag js-tag-link" data-tag-name="健康">
+                          # 健康
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/hunger/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/24/jGt3/20260424230824798.png" alt="你真的饿了么" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="300">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/linear-algebra-ai/">
+                    <h2 class="post-title">数据流中的神之语言：为什么你的AI、游戏和未来都由线性代数编译</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-22 22:49
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      36 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/linear-algebra-ai/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>线性代数深度长文</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%95%B0%E5%AD%A6%E4%B9%8B%E7%BE%8E" class="tag js-tag-link" data-tag-name="数学之美">
+                          # 数学之美
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/linear-algebra-ai/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/24/kAc9/1.jpg" alt="数据流中的神之语言：为什么你的AI、游戏和未来都由线性代数编译" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+              <article class="post-item" data-aos="fade-up" data-aos-delay="400">
+                <div class="left">
+                  <a href="https://zhangjunjie00323.github.io/post/linear-regression/">
+                    <h2 class="post-title">线性回归深度解析：不止是一条直线，更是一套建模思想</h2>
+                  </a>
+                  <div class="post-date">
+                    <span class="meta-item meta-date">
+                      <i class="fa fa-calendar-o"></i>
+                      2026-04-21 22:21
+                    </span>
+                    <span class="meta-item meta-read-time">
+                      <i class="fa fa-clock-o"></i>
+                      373 min read
+                    </span>
+                    <span class="meta-item meta-read-count">
+                      <i class="fa fa-eye"></i>
+                      <span class="js-post-pv-cache" data-url="https://zhangjunjie00323.github.io/post/linear-regression/">--</span> 人读过
+                    </span>
+                  </div>
+                  <div class="post-abstract">
+                    <p>机器学习第一课：拆解线性回归——从一条直线到完整建模哲学</p>
+
+                  </div>
+                  
+                    <div class="tag-container">
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E7%AE%97%E6%B3%95" class="tag js-tag-link" data-tag-name="算法">
+                          # 算法
+                        </a>
+                      
+                        <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                          # 机器学习
+                        </a>
+                      
+                    </div>
+                  
+                </div>
+                
+                  <a class="right" href="https://zhangjunjie00323.github.io/post/linear-regression/">
+                    <div class="feature-container">
+                      <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/24/Q4pv/0a96543.jpg" alt="线性回归深度解析：不止是一条直线，更是一套建模思想" loading="lazy">
+                    </div>
+                  </a>
+                
+              </article>
+            
+          </div>
+
+          <div class="pagination-container">
+  
+    <a href="https://zhangjunjie00323.github.io/page/2/" class="prev"><i class="fa fa-angle-left"></i> 上一页</a>
+  
+  
+    <a href="https://zhangjunjie00323.github.io/page/4/" class="next">下一页 <i class="fa fa-angle-right"></i></a>
+  
+</div>
+
+        </div>
+
+        <footer class="dynamic-quote">
+          <div class="quote-container">
+            <span class="quote-icon">✦</span>
+            <span class="quote-text" id="typing-text"></span>
+            <span class="quote-cursor">|</span>
+          </div>
+        </footer>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

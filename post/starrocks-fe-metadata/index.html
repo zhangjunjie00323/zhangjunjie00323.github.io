@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="EditLog + Checkpoint：StarRocks FE 如何实现元数据的“永不丢失”与“秒级恢复” 一、元数据：StarRocks 集群的“核心资产” 在深入 EditLog 和 Checkpoint 之前，我们需要先理解它们...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/25/1jPg/StarRocks-EditLog-Checkpoint.jpg">
+
+<meta name="keywords" content="大数据,StarRocks">
+
+
+<meta property="article:published_time" content="2026-04-21T19:56:56+08:00">
+<meta property="article:modified_time" content="2026-04-21T19:56:56+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="大数据">
+
+<meta property="article:tag" content="StarRocks">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="EditLog + Checkpoint：StarRocks FE 如何实现元数据的“永不丢失”与“秒级恢复” 一、元数据：StarRocks 集群的“核心资产” 在深入 EditLog 和 Checkpoint 之前，我们需要先理解它们...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/25/1jPg/StarRocks-EditLog-Checkpoint.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/"
+      },
+      "headline": "StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析",
+      "description": "EditLog + Checkpoint：StarRocks FE 如何实现元数据的“永不丢失”与“秒级恢复” 一、元数据：StarRocks 集群的“核心资产” 在深入 EditLog 和 Checkpoint 之前，我们需要先理解它们...",
+      "image": "https://files.seeusercontent.com/2026/04/25/1jPg/StarRocks-EditLog-Checkpoint.jpg",
+      "url": "https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-04-21T19:56:56+08:00",
+      "dateModified": "2026-04-21T19:56:56+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "大数据",
+        "StarRocks"
+      ],
+      "keywords": "大数据,StarRocks",
+      "wordCount": 5202
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "大数据",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析",
+          "item": "https://zhangjunjie00323.github.io/post/starrocks-fe-metadata/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E5%85%83%E6%95%B0%E6%8D%AEstarrocks-%E9%9B%86%E7%BE%A4%E7%9A%84%E6%A0%B8%E5%BF%83%E8%B5%84%E4%BA%A7">一、元数据：StarRocks 集群的“核心资产”</a></li>
+<li><a href="#%E4%BA%8C-editlog%E5%85%83%E6%95%B0%E6%8D%AE%E5%8F%98%E6%9B%B4%E7%9A%84%E6%B5%81%E6%B0%B4%E6%97%A5%E8%AE%B0">二、EditLog：元数据变更的“流水日记”</a>
+<ul>
+<li><a href="#21-%E4%BB%80%E4%B9%88%E6%98%AF-editlog">2.1 什么是 EditLog？</a></li>
+<li><a href="#22-editlog-%E7%9A%84%E5%AD%98%E5%82%A8bdbje">2.2 EditLog 的存储：BDBJE</a></li>
+<li><a href="#23-editlog-%E7%9A%84%E5%90%8C%E6%AD%A5%E6%9C%BA%E5%88%B6">2.3 EditLog 的同步机制</a></li>
+<li><a href="#24-editlog-%E7%9A%84%E6%A0%BC%E5%BC%8F%E4%B8%8E%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F">2.4 EditLog 的格式与生命周期</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-checkpoint%E5%85%83%E6%95%B0%E6%8D%AE%E7%9A%84%E5%AE%9A%E6%9C%9F%E5%BF%AB%E7%85%A7">三、Checkpoint：元数据的“定期快照”</a>
+<ul>
+<li><a href="#31-%E4%BB%80%E4%B9%88%E6%98%AF-checkpoint">3.1 什么是 Checkpoint？</a></li>
+<li><a href="#32-checkpoint-%E7%9A%84%E8%A7%A6%E5%8F%91%E6%97%B6%E6%9C%BA">3.2 Checkpoint 的触发时机</a></li>
+<li><a href="#33-checkpoint-%E7%9A%84%E7%94%9F%E6%88%90%E6%B5%81%E7%A8%8B">3.3 Checkpoint 的生成流程</a></li>
+<li><a href="#34-image-%E6%96%87%E4%BB%B6%E7%9A%84%E5%88%86%E5%8F%91">3.4 Image 文件的分发</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-fe-%E9%87%8D%E5%90%AF%E6%81%A2%E5%A4%8Deditlog-checkpoint-%E7%9A%84%E5%AE%8C%E7%BE%8E%E5%8D%8F%E4%BD%9C">四、FE 重启恢复：EditLog + Checkpoint 的完美协作</a></li>
+<li><a href="#%E4%BA%94-%E6%97%A5%E5%B8%B8%E8%BF%90%E7%BB%B4%E4%B8%8E%E7%9B%91%E6%8E%A7">五、日常运维与监控</a>
+<ul>
+<li><a href="#51-%E6%9F%A5%E7%9C%8B-editlog-%E5%92%8C-checkpoint-%E7%8A%B6%E6%80%81">5.1 查看 EditLog 和 Checkpoint 状态</a></li>
+<li><a href="#52-%E6%89%8B%E5%8A%A8%E8%A7%A6%E5%8F%91-checkpoint">5.2 手动触发 Checkpoint</a></li>
+<li><a href="#53-%E6%95%85%E9%9A%9C%E6%81%A2%E5%A4%8D%E5%9C%BA%E6%99%AF%E5%A4%84%E7%90%86">5.3 故障恢复场景处理</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5%E5%BB%BA%E8%AE%AE">六、最佳实践建议</a></li>
+<li><a href="#%E4%B8%83-%E6%80%BB%E7%BB%93">七、总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-21 19:56
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                21 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/1jPg/StarRocks-EditLog-Checkpoint.jpg" alt="StarRocks FE 元数据持久化揭秘：EditLog 与 Checkpoint 机制深度解析">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>EditLog + Checkpoint：StarRocks FE 如何实现元数据的“永不丢失”与“秒级恢复”</p>
+<!-- more -->
+<h3 id="一-元数据starrocks-集群的核心资产">一、元数据：StarRocks 集群的“核心资产”</h3>
+<p>在深入 EditLog 和 Checkpoint 之前，我们需要先理解它们守护的对象——<strong>元数据</strong>。</p>
+<p>StarRocks 集群的元数据包含了所有关键信息：有哪些 Catalog、数据库、表、列、分区、分桶、物化视图、用户权限、BE 节点状态等。没有元数据，存储在各 BE 节点上的数据文件就成了一堆无法解读的二进制碎片。</p>
+<p>FE（Frontend）节点负责管理全部元数据，并且为了极致性能，<strong>元数据主要存储在 FE 的内存中</strong>。内存存储带来了亚毫秒级的访问延迟，但同时也带来了一个致命问题：<strong>一旦 FE 进程重启或宕机，内存中的所有元数据将瞬间蒸发</strong>。</p>
+<p>EditLog 和 Checkpoint，正是为解决这一难题而生的两大利器。</p>
+<h3 id="二-editlog元数据变更的流水日记">二、EditLog：元数据变更的“流水日记”</h3>
+<h4 id="21-什么是-editlog">2.1 什么是 EditLog？</h4>
+<p>EditLog（编辑日志）是一份<strong>顺序记录所有元数据变更操作的日志文件</strong>。每当用户或系统执行一条会改变元数据的命令——例如 <code>CREATE TABLE</code>、<code>ALTER TABLE ADD PARTITION</code>、<code>DROP VIEW</code>、<code>GRANT</code> 等——FE 在执行操作之前，会先将这次操作记录到 EditLog 中。</p>
+<p>可以把它理解为数据库的 <strong>“操作日记”</strong> ：不是记录“现在元数据长什么样”，而是记录“谁在什么时候做了什么改动”。只要按顺序重放这些日记，就能从零开始重建出完整的元数据状态。</p>
+<h4 id="22-editlog-的存储bdbje">2.2 EditLog 的存储：BDBJE</h4>
+<p>StarRocks FE 的 EditLog 并不是简单写在本地文件里，而是依托于 <strong>BDBJE（Berkeley DB Java Edition）</strong> 进行存储和管理。BDBJE 是一个高性能、支持事务的嵌入式键值存储引擎，天然支持数据持久化和多副本同步。</p>
+<p>选择 BDBJE 的原因有三：</p>
+<ul>
+<li><strong>事务保证</strong>：元数据变更与 EditLog 写入是原子操作，要么全部成功，要么全部失败，杜绝“半成功”状态。</li>
+<li><strong>高可用同步</strong>：BDBJE 内置了类 Paxos 的复制协议，Leader FE 写入的 EditLog 会自动同步到所有 Follower FE 的 BDBJE 实例中。</li>
+<li><strong>高效读写</strong>：基于 LSM 树结构，适合顺序写入和随机读取的混合负载。</li>
+</ul>
+<h4 id="23-editlog-的同步机制">2.3 EditLog 的同步机制</h4>
+<p>在 FE 集群中，只有 <strong>Leader FE</strong> 拥有写入 EditLog 的权限。同步流程如下：</p>
+<ol>
+<li>Leader FE 接收到元数据变更请求（如建表）。</li>
+<li>Leader 将该操作序列化为一条 EditLog 条目，提交到本地 BDBJE。</li>
+<li>BDBJE 通过内部复制协议，将这条 EditLog <strong>同步推送给所有 Follower FE 和 Observer FE</strong> 的 BDBJE 实例。</li>
+<li>必须等到<strong>超过半数的 Follower FE 确认同步成功</strong>后，Leader 才认为本次写入真正完成。</li>
+<li>各 FE 节点在后台异步将 EditLog <strong>回放（Replay）</strong> 到自己的内存元数据中。</li>
+</ol>
+<p>这种机制带来了两个关键好处：</p>
+<ul>
+<li><strong>数据不丢失</strong>：只要多数派节点存活，即使 Leader 宕机，新 Leader 也能从完整的 EditLog 中恢复全部元数据。</li>
+<li><strong>读写分离</strong>：Follower 和 Observer 通过回放 EditLog 保持内存元数据与 Leader 一致，从而对外提供一致的只读查询服务。</li>
+</ul>
+<h4 id="24-editlog-的格式与生命周期">2.4 EditLog 的格式与生命周期</h4>
+<p>每条 EditLog 由三部分组成：</p>
+<ul>
+<li><strong>JournalId</strong>：全局递增的唯一序号，用于确定回放顺序。</li>
+<li><strong>OperationType</strong>：操作类型编码，如 <code>OP_CREATE_TABLE</code>、<code>OP_ADD_PARTITION</code>。</li>
+<li><strong>Data</strong>：操作的具体内容，如建表的 SQL 文本或序列化后的表结构对象。</li>
+</ul>
+<p>EditLog 会随时间不断累积。如果永远不清理，BDBJE 的存储空间会被耗尽，FE 重启时从头回放上百万条日志也会极其缓慢。这正是 Checkpoint 登场的时刻。</p>
+<h3 id="三-checkpoint元数据的定期快照">三、Checkpoint：元数据的“定期快照”</h3>
+<h4 id="31-什么是-checkpoint">3.1 什么是 Checkpoint？</h4>
+<p>Checkpoint 是 FE 在某一时刻<strong>将内存中的完整元数据序列化并持久化到磁盘的静态快照</strong>。这个快照文件被称为 <strong>Image 文件</strong>，它记录了生成时刻元数据的全貌，而非变更过程。</p>
+<p>如果说 EditLog 是“流水日记”，那么 Checkpoint 就是“定期拍摄的纪念相册”。有了相册，你不需要从出生第一天的日记开始读，只需要翻到最近一本相册，再读几页后续日记即可。</p>
+<h4 id="32-checkpoint-的触发时机">3.2 Checkpoint 的触发时机</h4>
+<p>StarRocks 提供了灵活的 Checkpoint 触发策略，可通过 FE 配置参数调整：</p>
+<table>
+<thead>
+<tr>
+<th>参数</th>
+<th>默认值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>edit_log_roll_num</code></td>
+<td>50000</td>
+<td>EditLog 累计达到该数量后触发 Checkpoint</td>
+</tr>
+<tr>
+<td><code>checkpoint_interval_second</code></td>
+<td>60</td>
+<td>后台线程检查间隔（秒）</td>
+</tr>
+<tr>
+<td><code>max_edit_log_roll_num</code></td>
+<td>200000</td>
+<td>EditLog 数量强制触发阈值</td>
+</tr>
+</tbody>
+</table>
+<p>通常以 <code>edit_log_roll_num</code> 为主要触发条件。当 Leader FE 检测到自上次 Checkpoint 以来累积的 EditLog 条数超过 50,000 条时，就会启动一次 Checkpoint 流程。</p>
+<h4 id="33-checkpoint-的生成流程">3.3 Checkpoint 的生成流程</h4>
+<p>Checkpoint 由 Leader FE 的后台线程负责执行，主要步骤：</p>
+<ol>
+<li><strong>冻结当前状态</strong>：获取一个一致性读视图，确保序列化过程中内存元数据不会被并发修改。</li>
+<li><strong>序列化元数据</strong>：将 <code>GlobalStateMgr</code> 中的全部对象（数据库、表、分区、物化视图、权限等）递归序列化为二进制流。</li>
+<li><strong>写入 Image 文件</strong>：将二进制流写入 FE 本地目录 <code>fe/meta/image/</code>，文件命名格式为 <code>image.{JournalId}</code>，其中 JournalId 是生成时刻已回放的最新 EditLog 序号。</li>
+<li><strong>清理旧文件</strong>：新 Image 生成成功后，删除比当前 Image 更旧的 Image 文件和对应的 EditLog 归档文件。</li>
+</ol>
+<p><strong>Image 文件命名示例</strong>：</p>
+<pre><code class="language-latex">image.150000   // 表示该快照包含了 JournalId ≤ 150000 的所有元数据变更
+</code></pre>
+<h4 id="34-image-文件的分发">3.4 Image 文件的分发</h4>
+<p>Image 文件仅在 Leader FE 上生成，但 Follower 和 Observer 也需要定期获取最新快照，否则重启时回放的 EditLog 会过长。</p>
+<p>分发机制有两种：</p>
+<ul>
+<li><strong>被动拉取</strong>：Follower/Observer 检测到自身 EditLog 落后 Leader 过多，或本地没有最新 Image 时，会通过 HTTP 从 Leader 下载 Image 文件。</li>
+<li><strong>主动清理触发</strong>：当 Follower 发现需要回放的 EditLog 数量超过阈值，会主动向 Leader 请求最新 Image。</li>
+</ul>
+<p>这种设计避免了每个 FE 都独立执行昂贵的 Checkpoint 计算，Leader 生产一份，全集群共享。</p>
+<h3 id="四-fe-重启恢复editlog-checkpoint-的完美协作">四、FE 重启恢复：EditLog + Checkpoint 的完美协作</h3>
+<p>当任何一个 FE 节点重启（无论是计划内维护还是意外宕机），恢复流程如下：</p>
+<p><strong>阶段一：加载基础快照</strong></p>
+<ol>
+<li>FE 扫描本地 <code>fe/meta/image/</code> 目录，找到 <strong>JournalId 最大的 Image 文件</strong>。</li>
+<li>将 Image 文件反序列化到内存，恢复出一个“基础版本”的元数据。此时元数据状态定格在生成该 Image 的时刻。</li>
+</ol>
+<p><strong>阶段二：回放增量 EditLog</strong></p>
+<ol>
+<li>FE 连接 BDBJE，读取 JournalId <strong>大于</strong> Image 文件中记录 JournalId 的所有 EditLog。</li>
+<li>按照 JournalId 从小到大的顺序，逐条回放（Replay）EditLog，将内存元数据更新至最新状态。</li>
+</ol>
+<p><strong>阶段三：就绪服务</strong></p>
+<ol>
+<li>回放完成后，FE 将自己的角色（Leader/Follower/Observer）与集群当前状态对齐。</li>
+<li>如果是 Follower 或 Observer，开始监听 Leader 后续推送的新 EditLog。</li>
+<li>对外提供服务。</li>
+</ol>
+<p><strong>为什么重启这么快？</strong></p>
+<p>因为恢复的核心耗时在于“回放 EditLog 的数量”。Checkpoint 机制将需要回放的 EditLog 数量<strong>控制在一个可配置的上限内</strong>（默认最多 50,000 条），而非从头回放几百万条。这使得 FE 的重启恢复时间通常在 <strong>几秒到几十秒</strong> 之间，保证了集群的高可用性。</p>
+<h3 id="五-日常运维与监控">五、日常运维与监控</h3>
+<p>理解原理后，还需要知道如何观察和维护 EditLog 与 Checkpoint 的状态。</p>
+<h4 id="51-查看-editlog-和-checkpoint-状态">5.1 查看 EditLog 和 Checkpoint 状态</h4>
+<pre><code class="language-sql">-- 查看 FE 节点元数据状态（包括 JournalId、Checkpoint 版本等）
+SHOW PROC '/frontends';
+
+-- 查看详细的 EditLog 统计信息
+SHOW PROC '/statistic';
+</code></pre>
+<p>关注关键指标：</p>
+<ul>
+<li><code>ReplayedJournalId</code>：当前 FE 已回放的最新 EditLog 序号，应与 Leader 的 <code>MaxJournalId</code> 尽量接近。</li>
+<li><code>IsCheckpointing</code>：是否正在执行 Checkpoint。</li>
+<li><code>LastCheckpointJournalId</code>：最近一次 Checkpoint 对应的 JournalId。</li>
+</ul>
+<h4 id="52-手动触发-checkpoint">5.2 手动触发 Checkpoint</h4>
+<p>正常情况下无需手动干预，但在进行重大元数据变更后（如批量建表），可以主动触发一次 Checkpoint 以立即归档状态：</p>
+<pre><code class="language-sql">ADMIN SET FRONTEND CONFIG (&quot;edit_log_roll_num&quot; = &quot;1&quot;);
+-- 等待 Checkpoint 完成后恢复原值
+ADMIN SET FRONTEND CONFIG (&quot;edit_log_roll_num&quot; = &quot;50000&quot;);
+</code></pre>
+<h4 id="53-故障恢复场景处理">5.3 故障恢复场景处理</h4>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>处理方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Leader 宕机无法恢复</strong></td>
+<td>从剩余 Follower 中自动选举出新 Leader，新 Leader 拥有完整 EditLog 和 Image，数据零丢失。</td>
+</tr>
+<tr>
+<td><strong>所有 FE 的本地 Image 文件均损坏</strong></td>
+<td>从备份的 Image 文件恢复，然后从 BDBJE 回放 EditLog。BDBJE 自身有多副本，通常不会全部损坏。</td>
+</tr>
+<tr>
+<td><strong>EditLog 回放卡住</strong></td>
+<td>可能是 BDBJE 数据损坏或网络分区导致，需检查 <code>bdbje_heartbeat_timeout_second</code> 等网络配置，必要时从健康节点复制 BDBJE 数据目录。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="六-最佳实践建议">六、最佳实践建议</h3>
+<ol>
+<li><strong>合理设置 Checkpoint 阈值</strong>：默认 50,000 条适用于大多数场景。如果元数据变更极其频繁（如大量动态分区创建），可适当调低至 30,000 条以减少恢复时间；如果变更很少，可调高至 80,000 条以减少 Checkpoint 频率。</li>
+<li><strong>定期备份 Image 文件</strong>：虽然 BDBJE 有多副本，但建议将 Leader 生成的 Image 文件定期备份到外部存储（如对象存储），作为极端灾难的恢复手段。</li>
+<li><strong>监控 EditLog 堆积数量</strong>：设置告警，当 <code>MaxJournalId - ReplayedJournalId</code> 持续大于 10,000 时，检查 Follower 同步是否延迟或网络是否抖动。</li>
+<li><strong>避免频繁的小型元数据操作</strong>：例如在循环中逐条执行 <code>ALTER TABLE ADD PARTITION</code>，会快速产生大量 EditLog。尽量合并为批量操作。</li>
+</ol>
+<h3 id="七-总结">七、总结</h3>
+<p>EditLog 与 Checkpoint 是 StarRocks FE 高可用架构中不可或缺的两块基石：</p>
+<table>
+<thead>
+<tr>
+<th>机制</th>
+<th>角色</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>EditLog</strong></td>
+<td>增量流水</td>
+<td>顺序记录每次元数据变更，基于 BDBJE 实现多副本同步，保证数据不丢失</td>
+</tr>
+<tr>
+<td><strong>Checkpoint</strong></td>
+<td>全量快照</td>
+<td>定期将内存元数据序列化为 Image 文件，控制恢复时需要回放的日志量</td>
+</tr>
+</tbody>
+</table>
+<p>两者配合，实现了 <strong>“数据零丢失 + 恢复秒级”</strong> 的目标。理解这套机制，不仅有助于日常运维和故障排查，更能让你深刻体会到 StarRocks 在设计之初对稳定性和高可用性的极致追求。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC</div>
+                        <div class="related-meta">2026-06-23</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png" alt="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-sql-analysis/">
+                  <h3 class="post-title">
+                    SQL 执行前搞这么多分析，StarRocks 不怕慢吗？
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

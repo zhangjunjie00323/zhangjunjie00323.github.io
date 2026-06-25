@@ -1,0 +1,1606 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="本文是 StarRocks 存算一体 shared-nothing 模式 的手动部署方案。该模式下 BE 同时负责数据存储和 SQL 计算，数据落在 BE 本地磁盘，不使用 CN，不配置对象存储或 HDFS 作为共享数据层。如果实际要部署存...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png">
+
+<meta name="keywords" content="大数据,StarRocks">
+
+
+<meta property="article:published_time" content="2026-05-16T21:59:27+08:00">
+<meta property="article:modified_time" content="2026-05-16T21:59:27+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="大数据">
+
+<meta property="article:tag" content="StarRocks">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="本文是 StarRocks 存算一体 shared-nothing 模式 的手动部署方案。该模式下 BE 同时负责数据存储和 SQL 计算，数据落在 BE 本地磁盘，不使用 CN，不配置对象存储或 HDFS 作为共享数据层。如果实际要部署存...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-deploy/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/starrocks-deploy/"
+      },
+      "headline": "StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用",
+      "description": "本文是 StarRocks 存算一体 shared-nothing 模式 的手动部署方案。该模式下 BE 同时负责数据存储和 SQL 计算，数据落在 BE 本地磁盘，不使用 CN，不配置对象存储或 HDFS 作为共享数据层。如果实际要部署存...",
+      "image": "https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png",
+      "url": "https://zhangjunjie00323.github.io/post/starrocks-deploy/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-05-16T21:59:27+08:00",
+      "dateModified": "2026-05-16T21:59:27+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "大数据",
+        "StarRocks"
+      ],
+      "keywords": "大数据,StarRocks",
+      "wordCount": 10797
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-deploy/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "大数据",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用",
+          "item": "https://zhangjunjie00323.github.io/post/starrocks-deploy/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E9%83%A8%E7%BD%B2%E7%9B%AE%E6%A0%87">一、部署目标</a></li>
+<li><a href="#%E4%BA%8C-%E6%9E%B6%E6%9E%84%E8%AF%B4%E6%98%8E">二、架构说明</a></li>
+<li><a href="#%E4%B8%89-%E8%8A%82%E7%82%B9%E8%A7%84%E5%88%92">三、节点规划</a></li>
+<li><a href="#%E5%9B%9B-%E7%AB%AF%E5%8F%A3%E8%A7%84%E5%88%92">四、端口规划</a>
+<ul>
+<li><a href="#41-fe-%E7%AB%AF%E5%8F%A3">4.1 FE 端口</a></li>
+<li><a href="#42-be-%E7%AB%AF%E5%8F%A3">4.2 BE 端口</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-%E7%B3%BB%E7%BB%9F%E5%87%86%E5%A4%87">五、系统准备</a>
+<ul>
+<li><a href="#51-%E5%88%9B%E5%BB%BA%E7%94%A8%E6%88%B7%E5%92%8C%E7%9B%AE%E5%BD%95">5.1 创建用户和目录</a></li>
+<li><a href="#52-%E9%85%8D%E7%BD%AE%E4%B8%BB%E6%9C%BA%E5%90%8D%E8%A7%A3%E6%9E%90">5.2 配置主机名解析</a></li>
+<li><a href="#53-%E5%AE%89%E8%A3%85-jdk">5.3 安装 JDK</a></li>
+<li><a href="#54-%E6%A3%80%E6%9F%A5-cpu-%E6%8C%87%E4%BB%A4%E9%9B%86">5.4 检查 CPU 指令集</a></li>
+<li><a href="#55-%E9%85%8D%E7%BD%AE%E7%B3%BB%E7%BB%9F%E5%8F%82%E6%95%B0">5.5 配置系统参数</a></li>
+<li><a href="#56-%E9%85%8D%E7%BD%AE-limits">5.6 配置 limits</a></li>
+<li><a href="#57-%E5%85%B3%E9%97%AD-swap">5.7 关闭 Swap</a></li>
+<li><a href="#58-%E9%85%8D%E7%BD%AE%E9%80%8F%E6%98%8E%E5%A4%A7%E9%A1%B5">5.8 配置透明大页</a></li>
+<li><a href="#59-%E6%97%B6%E9%97%B4%E5%90%8C%E6%AD%A5">5.9 时间同步</a></li>
+<li><a href="#510-%E6%A3%80%E6%9F%A5%E7%AB%AF%E5%8F%A3%E5%8D%A0%E7%94%A8">5.10 检查端口占用</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E5%87%86%E5%A4%87%E5%AE%89%E8%A3%85%E5%8C%85">六、准备安装包</a></li>
+<li><a href="#%E4%B8%83-%E9%85%8D%E7%BD%AE-fe">七、配置 FE</a>
+<ul>
+<li><a href="#71-sr-fe-01">7.1 sr-fe-01</a></li>
+<li><a href="#72-sr-fe-02">7.2 sr-fe-02</a></li>
+<li><a href="#73-sr-fe-03">7.3 sr-fe-03</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AB-%E5%90%AF%E5%8A%A8-leader-fe">八、启动 Leader FE</a></li>
+<li><a href="#%E4%B9%9D-%E6%B7%BB%E5%8A%A0%E5%B9%B6%E5%90%AF%E5%8A%A8-follower-fe">九、添加并启动 Follower FE</a>
+<ul>
+<li><a href="#91-%E5%9C%A8-leader-fe-%E4%B8%AD%E6%B7%BB%E5%8A%A0-follower">9.1 在 Leader FE 中添加 Follower</a></li>
+<li><a href="#92-%E5%90%AF%E5%8A%A8-sr-fe-02">9.2 启动 sr-fe-02</a></li>
+<li><a href="#93-%E5%90%AF%E5%8A%A8-sr-fe-03">9.3 启动 sr-fe-03</a></li>
+<li><a href="#94-%E9%AA%8C%E8%AF%81-fe-%E9%9B%86%E7%BE%A4">9.4 验证 FE 集群</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81-%E9%85%8D%E7%BD%AE-be">十、配置 BE</a>
+<ul>
+<li><a href="#101-sr-be-01">10.1 sr-be-01</a></li>
+<li><a href="#102-sr-be-02">10.2 sr-be-02</a></li>
+<li><a href="#103-sr-be-03">10.3 sr-be-03</a></li>
+<li><a href="#104-sr-be-04">10.4 sr-be-04</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E4%B8%80-%E5%90%AF%E5%8A%A8-be">十一、启动 BE</a></li>
+<li><a href="#%E5%8D%81%E4%BA%8C-%E6%B7%BB%E5%8A%A0-be-%E5%88%B0%E9%9B%86%E7%BE%A4">十二、添加 BE 到集群</a></li>
+<li><a href="#%E5%8D%81%E4%B8%89-%E5%88%9D%E5%A7%8B%E5%8C%96%E5%AE%89%E5%85%A8%E9%85%8D%E7%BD%AE">十三、初始化安全配置</a></li>
+<li><a href="#%E5%8D%81%E5%9B%9B-%E5%88%9B%E5%BB%BA%E6%B5%8B%E8%AF%95%E5%BA%93%E8%A1%A8">十四、创建测试库表</a></li>
+<li><a href="#%E5%8D%81%E4%BA%94-%E5%B8%B8%E7%94%A8%E8%BF%90%E7%BB%B4%E5%91%BD%E4%BB%A4">十五、常用运维命令</a>
+<ul>
+<li><a href="#151-%E6%9F%A5%E7%9C%8B-fe">15.1 查看 FE</a></li>
+<li><a href="#152-%E6%9F%A5%E7%9C%8B-be">15.2 查看 BE</a></li>
+<li><a href="#153-%E6%9F%A5%E7%9C%8B-broker">15.3 查看 Broker</a></li>
+<li><a href="#154-%E6%9F%A5%E7%9C%8B%E9%9B%86%E7%BE%A4%E5%8F%98%E9%87%8F">15.4 查看集群变量</a></li>
+<li><a href="#155-%E6%9F%A5%E7%9C%8B%E6%95%B0%E6%8D%AE%E5%BA%93">15.5 查看数据库</a></li>
+<li><a href="#156-%E6%9F%A5%E7%9C%8B%E8%A1%A8%E5%89%AF%E6%9C%AC%E4%BF%AE%E5%A4%8D%E4%BB%BB%E5%8A%A1">15.6 查看表副本修复任务</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E5%85%AD-%E5%90%AF%E5%81%9C%E9%A1%BA%E5%BA%8F">十六、启停顺序</a>
+<ul>
+<li><a href="#161-%E5%90%AF%E5%8A%A8%E9%A1%BA%E5%BA%8F">16.1 启动顺序</a></li>
+<li><a href="#162-%E5%81%9C%E6%AD%A2%E9%A1%BA%E5%BA%8F">16.2 停止顺序</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E4%B8%83-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98">十七、常见问题</a>
+<ul>
+<li><a href="#171-fe-%E5%90%AF%E5%8A%A8%E5%A4%B1%E8%B4%A5">17.1 FE 启动失败</a></li>
+<li><a href="#172-be-%E4%B8%80%E7%9B%B4%E4%B8%8D-alive">17.2 BE 一直不 Alive</a></li>
+<li><a href="#173-mysql-%E5%AE%A2%E6%88%B7%E7%AB%AF%E6%97%A0%E6%B3%95%E8%BF%9E%E6%8E%A5">17.3 MySQL 客户端无法连接</a></li>
+<li><a href="#174-4-%E4%B8%AA-be-%E4%B8%8E-3-%E5%89%AF%E6%9C%AC%E7%9A%84%E5%85%B3%E7%B3%BB">17.4 4 个 BE 与 3 副本的关系</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E5%85%AB-%E7%94%9F%E4%BA%A7%E5%BB%BA%E8%AE%AE">十八、生产建议</a></li>
+<li><a href="#%E5%8D%81%E4%B9%9D-%E5%8F%82%E8%80%83%E8%B5%84%E6%96%99">十九、参考资料</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-05-16 21:59
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                46 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>本文是 <strong>StarRocks 存算一体 shared-nothing 模式</strong> 的手动部署方案。该模式下 <strong>BE 同时负责数据存储和 SQL 计算</strong>，数据落在 BE 本地磁盘，不使用 CN，不配置对象存储或 HDFS 作为共享数据层。如果实际要部署存算分离模式，应使用 FE + CN + 远程存储的方案。</p>
+<!-- more -->
+<h3 id="一-部署目标">一、部署目标</h3>
+<p>本文档用于在 Linux 环境手动部署一个 StarRocks 集群：</p>
+<ul>
+<li>3 个 FE：1 个 Leader FE + 2 个 Follower FE，用于元数据高可用。</li>
+<li>4 个 BE：同时负责数据存储和 SQL 计算。</li>
+<li>部署模式：存算一体 shared-nothing。</li>
+<li>存储方式：数据存储在 BE 本地磁盘。</li>
+<li>不涉及组件：CN、对象存储、HDFS 共享数据层。</li>
+<li>访问协议：MySQL 协议，默认端口 <code>9030</code>。</li>
+<li>FE 元数据目录：<code>/data/starrocks/meta</code>。</li>
+<li>BE 数据目录：<code>/data/starrocks/storage</code>。</li>
+<li>StarRocks 安装目录：<code>/opt/starrocks</code>。</li>
+</ul>
+<h3 id="二-架构说明">二、架构说明</h3>
+<p>存算一体模式是 StarRocks 最经典的部署形态，也叫 shared-nothing 模式。它的核心特点是：</p>
+<ul>
+<li><strong>FE 负责管控和调度</strong>：管理元数据、接收 SQL、生成执行计划、调度查询任务。</li>
+<li><strong>BE 负责存储和计算</strong>：每个 BE 都有本地数据目录，既保存 Tablet 副本，也执行 Scan、Join、Aggregation 等计算任务。</li>
+<li><strong>数据不依赖共享存储</strong>：不需要 S3、MinIO、HDFS 等远程共享存储作为主数据层。</li>
+<li><strong>副本保证可靠性</strong>：表数据会按照副本数分布在多个 BE 上，常见生产配置为 3 副本。</li>
+<li><strong>水平扩展简单</strong>：计算和存储能力随 BE 数量一起扩展，适合实时数仓、报表分析、明细查询和高并发 OLAP 场景。</li>
+</ul>
+<p>本文的目标拓扑如下：</p>
+<pre><code class="language-text">MySQL Client / BI Tool
+        |
+        v
++-----------------------------+
+| FE 集群：3 个 FE             |
+| 1 Leader + 2 Follower        |
++-----------------------------+
+        |
+        v
++-----------------------------+
+| BE 集群：4 个 BE             |
+| 本地存储 + SQL 并行计算       |
++-----------------------------+
+</code></pre>
+<h3 id="三-节点规划">三、节点规划</h3>
+<table>
+<thead>
+<tr>
+<th>节点角色</th>
+<th>主机名</th>
+<th>IP 示例</th>
+<th>组件</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>FE</td>
+<td>sr-fe-01</td>
+<td>192.168.10.11</td>
+<td>FE Leader</td>
+<td>首个启动的 FE，后续自动参与选主</td>
+</tr>
+<tr>
+<td>FE</td>
+<td>sr-fe-02</td>
+<td>192.168.10.12</td>
+<td>FE Follower</td>
+<td>元数据副本，参与选主</td>
+</tr>
+<tr>
+<td>FE</td>
+<td>sr-fe-03</td>
+<td>192.168.10.13</td>
+<td>FE Follower</td>
+<td>元数据副本，参与选主</td>
+</tr>
+<tr>
+<td>BE</td>
+<td>sr-be-01</td>
+<td>192.168.10.21</td>
+<td>BE</td>
+<td>数据存储与计算</td>
+</tr>
+<tr>
+<td>BE</td>
+<td>sr-be-02</td>
+<td>192.168.10.22</td>
+<td>BE</td>
+<td>数据存储与计算</td>
+</tr>
+<tr>
+<td>BE</td>
+<td>sr-be-03</td>
+<td>192.168.10.23</td>
+<td>BE</td>
+<td>数据存储与计算</td>
+</tr>
+<tr>
+<td>BE</td>
+<td>sr-be-04</td>
+<td>192.168.10.24</td>
+<td>BE</td>
+<td>数据存储与计算</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>实际部署时，将文档中的 IP 替换为真实服务器 IP。</p>
+</blockquote>
+<h3 id="四-端口规划">四、端口规划</h3>
+<h4 id="41-fe-端口">4.1 FE 端口</h4>
+<table>
+<thead>
+<tr>
+<th>端口</th>
+<th>配置项</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8030</td>
+<td><code>http_port</code></td>
+<td>FE HTTP 服务端口</td>
+</tr>
+<tr>
+<td>9010</td>
+<td><code>edit_log_port</code></td>
+<td>FE 元数据日志同步端口</td>
+</tr>
+<tr>
+<td>9020</td>
+<td><code>rpc_port</code></td>
+<td>FE Thrift RPC 端口</td>
+</tr>
+<tr>
+<td>9030</td>
+<td><code>query_port</code></td>
+<td>MySQL 协议查询端口</td>
+</tr>
+<tr>
+<td>6090</td>
+<td><code>cloud_native_meta_port</code></td>
+<td>云原生元数据 RPC 端口，存算一体部署通常不需要主动配置</td>
+</tr>
+</tbody>
+</table>
+<h4 id="42-be-端口">4.2 BE 端口</h4>
+<table>
+<thead>
+<tr>
+<th>端口</th>
+<th>配置项</th>
+<th>用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8040</td>
+<td><code>be_http_port</code></td>
+<td>BE HTTP 服务端口</td>
+</tr>
+<tr>
+<td>8060</td>
+<td><code>brpc_port</code></td>
+<td>BE bRPC 端口</td>
+</tr>
+<tr>
+<td>9050</td>
+<td><code>heartbeat_service_port</code></td>
+<td>BE 心跳端口，FE 通过该端口管理 BE</td>
+</tr>
+<tr>
+<td>9060</td>
+<td><code>be_port</code></td>
+<td>BE Thrift 服务端口</td>
+</tr>
+<tr>
+<td>9070</td>
+<td><code>starlet_port</code></td>
+<td>BE agent 服务端口</td>
+</tr>
+</tbody>
+</table>
+<p>生产环境需要在防火墙、安全组或 ACL 中放通上述端口。</p>
+<h3 id="五-系统准备">五、系统准备</h3>
+<p>以下操作建议在所有 FE 和 BE 服务器上执行。</p>
+<h4 id="51-创建用户和目录">5.1 创建用户和目录</h4>
+<pre><code class="language-bash">sudo useradd -m -s /bin/bash starrocks
+sudo mkdir -p /opt/starrocks
+sudo mkdir -p /data/starrocks/meta
+sudo mkdir -p /data/starrocks/storage
+sudo chown -R starrocks:starrocks /opt/starrocks /data/starrocks
+</code></pre>
+<p>FE 节点需要 <code>/data/starrocks/meta</code>，BE 节点需要 <code>/data/starrocks/storage</code>。如果 FE 和 BE 分开部署，可以只创建本节点需要的目录。</p>
+<h4 id="52-配置主机名解析">5.2 配置主机名解析</h4>
+<p>在所有节点的 <code>/etc/hosts</code> 中加入：</p>
+<pre><code class="language-text">192.168.10.11 sr-fe-01
+192.168.10.12 sr-fe-02
+192.168.10.13 sr-fe-03
+192.168.10.21 sr-be-01
+192.168.10.22 sr-be-02
+192.168.10.23 sr-be-03
+192.168.10.24 sr-be-04
+</code></pre>
+<p>如果使用 IP 部署，也建议维护主机名解析，后续运维更清晰。</p>
+<h4 id="53-安装-jdk">5.3 安装 JDK</h4>
+<p>StarRocks 依赖 JDK，不支持只安装 JRE。</p>
+<ul>
+<li>StarRocks v3.3、v3.4：JDK 11 或更高版本。</li>
+<li>StarRocks v3.5 及更高版本：JDK 17 或更高版本。</li>
+</ul>
+<p>以 JDK 17 为例：</p>
+<pre><code class="language-bash">java -version
+echo $JAVA_HOME
+</code></pre>
+<p>如果未配置 <code>JAVA_HOME</code>，可以在 <code>/etc/profile</code> 中加入：</p>
+<pre><code class="language-bash">export JAVA_HOME=/usr/lib/jvm/java-17-openjdk
+export PATH=$PATH:$JAVA_HOME/bin
+</code></pre>
+<p>然后执行：</p>
+<pre><code class="language-bash">source /etc/profile
+java -version
+</code></pre>
+<h4 id="54-检查-cpu-指令集">5.4 检查 CPU 指令集</h4>
+<p>StarRocks 的向量化执行强依赖 CPU 能力，生产环境建议使用支持 AVX2 的 x86 机器。</p>
+<pre><code class="language-bash">cat /proc/cpuinfo | grep avx2
+</code></pre>
+<p>有输出表示 CPU 支持 AVX2。</p>
+<h4 id="55-配置系统参数">5.5 配置系统参数</h4>
+<pre><code class="language-bash">sudo tee -a /etc/sysctl.conf &lt;&lt;'EOF'
+vm.overcommit_memory=1
+vm.swappiness=0
+net.ipv4.tcp_abort_on_overflow=1
+net.core.somaxconn=1024
+EOF
+
+sudo sysctl -p
+</code></pre>
+<h4 id="56-配置-limits">5.6 配置 limits</h4>
+<pre><code class="language-bash">sudo tee -a /etc/security/limits.conf &lt;&lt;'EOF'
+* soft nproc 65535
+* hard nproc 65535
+* soft nofile 655350
+* hard nofile 655350
+* soft stack unlimited
+* hard stack unlimited
+* soft memlock unlimited
+* hard memlock unlimited
+EOF
+</code></pre>
+<p>重新登录后验证：</p>
+<pre><code class="language-bash">ulimit -n
+ulimit -u
+</code></pre>
+<h4 id="57-关闭-swap">5.7 关闭 Swap</h4>
+<pre><code class="language-bash">sudo swapoff -a
+free -m
+</code></pre>
+<p>同时检查 <code>/etc/fstab</code>，注释掉 swap 挂载项，避免重启后再次启用。</p>
+<h4 id="58-配置透明大页">5.8 配置透明大页</h4>
+<pre><code class="language-bash">echo madvise | sudo tee /sys/kernel/mm/transparent_hugepage/enabled
+echo madvise | sudo tee /sys/kernel/mm/transparent_hugepage/defrag
+</code></pre>
+<p>可以加入 <code>/etc/rc.d/rc.local</code> 或 systemd 启动脚本中持久化。</p>
+<h4 id="59-时间同步">5.9 时间同步</h4>
+<p>所有节点必须保持时间同步，建议使用 <code>chronyd</code>：</p>
+<pre><code class="language-bash">sudo systemctl enable chronyd
+sudo systemctl start chronyd
+timedatectl
+</code></pre>
+<h4 id="510-检查端口占用">5.10 检查端口占用</h4>
+<p>FE 节点执行：</p>
+<pre><code class="language-bash">netstat -tunlp | grep -E '8030|9010|9020|9030|6090'
+</code></pre>
+<p>BE 节点执行：</p>
+<pre><code class="language-bash">netstat -tunlp | grep -E '8040|8060|9050|9060|9070'
+</code></pre>
+<p>如果端口被占用，需要在 <code>fe.conf</code> 或 <code>be.conf</code> 中调整对应配置。</p>
+<h3 id="六-准备安装包">六、准备安装包</h3>
+<p>在一台运维机或任意节点下载 StarRocks 二进制包。以 x86_64 Linux 为例：</p>
+<pre><code class="language-bash">cd /opt/starrocks
+
+# 根据实际版本和操作系统替换 VERSION 与 OS。
+# OS 通常为 centos 或 ubuntu。
+VERSION=3.5.0
+OS=centos
+
+wget https://releases.starrocks.io/starrocks/StarRocks-${VERSION}-${OS}-amd64.tar.gz
+tar -xzvf StarRocks-${VERSION}-${OS}-amd64.tar.gz
+</code></pre>
+<p>解压后通常包含：</p>
+<pre><code class="language-text">fe/
+be/
+apache_hdfs_broker/
+LICENSE.txt
+NOTICE.txt
+</code></pre>
+<p>分发文件：</p>
+<ul>
+<li>将 <code>fe/</code> 分发到 3 台 FE 节点的 <code>/opt/starrocks/</code>。</li>
+<li>将 <code>be/</code> 分发到 4 台 BE 节点的 <code>/opt/starrocks/</code>。</li>
+</ul>
+<p>示例：</p>
+<pre><code class="language-bash">scp -r fe starrocks@sr-fe-01:/opt/starrocks/
+scp -r fe starrocks@sr-fe-02:/opt/starrocks/
+scp -r fe starrocks@sr-fe-03:/opt/starrocks/
+
+scp -r be starrocks@sr-be-01:/opt/starrocks/
+scp -r be starrocks@sr-be-02:/opt/starrocks/
+scp -r be starrocks@sr-be-03:/opt/starrocks/
+scp -r be starrocks@sr-be-04:/opt/starrocks/
+</code></pre>
+<h3 id="七-配置-fe">七、配置 FE</h3>
+<p>在 3 台 FE 节点上修改 <code>/opt/starrocks/fe/conf/fe.conf</code>。</p>
+<h4 id="71-sr-fe-01">7.1 sr-fe-01</h4>
+<pre><code class="language-properties">meta_dir = /data/starrocks/meta
+
+http_port = 8030
+rpc_port = 9020
+query_port = 9030
+edit_log_port = 9010
+
+priority_networks = 192.168.10.11/32
+</code></pre>
+<h4 id="72-sr-fe-02">7.2 sr-fe-02</h4>
+<pre><code class="language-properties">meta_dir = /data/starrocks/meta
+
+http_port = 8030
+rpc_port = 9020
+query_port = 9030
+edit_log_port = 9010
+
+priority_networks = 192.168.10.12/32
+</code></pre>
+<h4 id="73-sr-fe-03">7.3 sr-fe-03</h4>
+<pre><code class="language-properties">meta_dir = /data/starrocks/meta
+
+http_port = 8030
+rpc_port = 9020
+query_port = 9030
+edit_log_port = 9010
+
+priority_networks = 192.168.10.13/32
+</code></pre>
+<blockquote>
+<p><code>priority_networks</code> 用于指定服务绑定/上报的网络地址。多网卡机器必须配置正确，否则节点之间可能无法互相识别。</p>
+</blockquote>
+<h3 id="八-启动-leader-fe">八、启动 Leader FE</h3>
+<p>在 <code>sr-fe-01</code> 上执行：</p>
+<pre><code class="language-bash">su - starrocks
+cd /opt/starrocks
+./fe/bin/start_fe.sh --daemon
+</code></pre>
+<p>检查日志：</p>
+<pre><code class="language-bash">grep -i &quot;thrift server started&quot; /opt/starrocks/fe/log/fe.log
+</code></pre>
+<p>登录 FE：</p>
+<pre><code class="language-bash">mysql -h 192.168.10.11 -P9030 -uroot
+</code></pre>
+<p>初始 <code>root</code> 用户默认无密码。进入 MySQL 客户端后检查 FE：</p>
+<pre><code class="language-sql">SHOW PROC '/frontends'\G
+</code></pre>
+<p>能看到 <code>sr-fe-01</code> 或 <code>192.168.10.11</code>，且 <code>Alive: true</code>、<code>Role: LEADER</code>，表示首个 FE 启动成功。</p>
+<h3 id="九-添加并启动-follower-fe">九、添加并启动 Follower FE</h3>
+<h4 id="91-在-leader-fe-中添加-follower">9.1 在 Leader FE 中添加 Follower</h4>
+<p>连接 <code>sr-fe-01</code>：</p>
+<pre><code class="language-bash">mysql -h 192.168.10.11 -P9030 -uroot
+</code></pre>
+<p>执行：</p>
+<pre><code class="language-sql">ALTER SYSTEM ADD FOLLOWER &quot;192.168.10.12:9010&quot;;
+ALTER SYSTEM ADD FOLLOWER &quot;192.168.10.13:9010&quot;;
+</code></pre>
+<h4 id="92-启动-sr-fe-02">9.2 启动 sr-fe-02</h4>
+<pre><code class="language-bash">su - starrocks
+cd /opt/starrocks
+./fe/bin/start_fe.sh --helper 192.168.10.11:9010 --daemon
+</code></pre>
+<h4 id="93-启动-sr-fe-03">9.3 启动 sr-fe-03</h4>
+<pre><code class="language-bash">su - starrocks
+cd /opt/starrocks
+./fe/bin/start_fe.sh --helper 192.168.10.11:9010 --daemon
+</code></pre>
+<h4 id="94-验证-fe-集群">9.4 验证 FE 集群</h4>
+<p>在任意 FE 上连接：</p>
+<pre><code class="language-bash">mysql -h 192.168.10.11 -P9030 -uroot
+</code></pre>
+<p>执行：</p>
+<pre><code class="language-sql">SHOW PROC '/frontends'\G
+</code></pre>
+<p>期望结果：</p>
+<ul>
+<li>共 3 个 FE。</li>
+<li>1 个 <code>LEADER</code>，2 个 <code>FOLLOWER</code>。</li>
+<li>3 个 FE 的 <code>Alive</code> 都为 <code>true</code>。</li>
+<li>3 个 FE 的 <code>Join</code> 都为 <code>true</code>。</li>
+</ul>
+<h3 id="十-配置-be">十、配置 BE</h3>
+<p>在 4 台 BE 节点上修改 <code>/opt/starrocks/be/conf/be.conf</code>。</p>
+<h4 id="101-sr-be-01">10.1 sr-be-01</h4>
+<pre><code class="language-properties">storage_root_path = /data/starrocks/storage
+
+be_port = 9060
+be_http_port = 8040
+heartbeat_service_port = 9050
+brpc_port = 8060
+starlet_port = 9070
+
+priority_networks = 192.168.10.21/32
+</code></pre>
+<h4 id="102-sr-be-02">10.2 sr-be-02</h4>
+<pre><code class="language-properties">storage_root_path = /data/starrocks/storage
+
+be_port = 9060
+be_http_port = 8040
+heartbeat_service_port = 9050
+brpc_port = 8060
+starlet_port = 9070
+
+priority_networks = 192.168.10.22/32
+</code></pre>
+<h4 id="103-sr-be-03">10.3 sr-be-03</h4>
+<pre><code class="language-properties">storage_root_path = /data/starrocks/storage
+
+be_port = 9060
+be_http_port = 8040
+heartbeat_service_port = 9050
+brpc_port = 8060
+starlet_port = 9070
+
+priority_networks = 192.168.10.23/32
+</code></pre>
+<h4 id="104-sr-be-04">10.4 sr-be-04</h4>
+<pre><code class="language-properties">storage_root_path = /data/starrocks/storage
+
+be_port = 9060
+be_http_port = 8040
+heartbeat_service_port = 9050
+brpc_port = 8060
+starlet_port = 9070
+
+priority_networks = 192.168.10.24/32
+</code></pre>
+<p>如果 BE 有多块数据盘，可以使用分号配置多个目录：</p>
+<pre><code class="language-properties">storage_root_path = /data1/starrocks/storage;/data2/starrocks/storage;/data3/starrocks/storage
+</code></pre>
+<h3 id="十一-启动-be">十一、启动 BE</h3>
+<p>在 4 台 BE 节点上分别执行：</p>
+<pre><code class="language-bash">su - starrocks
+cd /opt/starrocks
+./be/bin/start_be.sh --daemon
+</code></pre>
+<p>检查日志：</p>
+<pre><code class="language-bash">grep -i &quot;heartbeat&quot; /opt/starrocks/be/log/be.INFO
+</code></pre>
+<p>BE 首次启动后会等待 FE 心跳，只有加入集群后才会变为可用。</p>
+<h3 id="十二-添加-be-到集群">十二、添加 BE 到集群</h3>
+<p>连接 Leader FE：</p>
+<pre><code class="language-bash">mysql -h 192.168.10.11 -P9030 -uroot
+</code></pre>
+<p>执行：</p>
+<pre><code class="language-sql">ALTER SYSTEM ADD BACKEND &quot;192.168.10.21:9050&quot;;
+ALTER SYSTEM ADD BACKEND &quot;192.168.10.22:9050&quot;;
+ALTER SYSTEM ADD BACKEND &quot;192.168.10.23:9050&quot;;
+ALTER SYSTEM ADD BACKEND &quot;192.168.10.24:9050&quot;;
+</code></pre>
+<p>查看 BE 状态：</p>
+<pre><code class="language-sql">SHOW PROC '/backends'\G
+</code></pre>
+<p>期望结果：</p>
+<ul>
+<li>共 4 个 BE。</li>
+<li>每个 BE 的 <code>Alive</code> 为 <code>true</code>。</li>
+<li><code>SystemDecommissioned</code> 为 <code>false</code>。</li>
+<li><code>ClusterDecommissioned</code> 为 <code>false</code>。</li>
+<li><code>TabletNum</code>、容量、CPU、内存信息能够正常展示。</li>
+</ul>
+<h3 id="十三-初始化安全配置">十三、初始化安全配置</h3>
+<p>首次部署后，建议立刻修改 <code>root</code> 密码：</p>
+<pre><code class="language-sql">SET PASSWORD FOR 'root' = PASSWORD('StrongPassword_ChangeMe');
+</code></pre>
+<p>重新登录：</p>
+<pre><code class="language-bash">mysql -h 192.168.10.11 -P9030 -uroot -p
+</code></pre>
+<p>创建业务用户示例：</p>
+<pre><code class="language-sql">CREATE USER 'app_user'@'%' IDENTIFIED BY 'AppPassword_ChangeMe';
+GRANT ALL ON *.* TO 'app_user'@'%';
+</code></pre>
+<p>生产环境不要直接给业务用户 <code>ALL ON *.*</code>，应按数据库、表、Catalog 维度最小授权。</p>
+<h3 id="十四-创建测试库表">十四、创建测试库表</h3>
+<pre><code class="language-sql">CREATE DATABASE IF NOT EXISTS test_db;
+USE test_db;
+
+CREATE TABLE site_access (
+    event_day DATE,
+    site_id INT,
+    city_code SMALLINT,
+    user_name VARCHAR(32),
+    pv BIGINT SUM
+)
+AGGREGATE KEY(event_day, site_id, city_code, user_name)
+DISTRIBUTED BY HASH(site_id) BUCKETS 8
+PROPERTIES (
+    &quot;replication_num&quot; = &quot;3&quot;
+);
+
+INSERT INTO site_access VALUES
+('2026-05-16', 1, 10, 'alice', 100),
+('2026-05-16', 2, 20, 'bob', 200);
+
+SELECT * FROM site_access;
+</code></pre>
+<p>如果插入和查询正常，说明 FE 查询链路、BE 写入链路和副本调度基本可用。</p>
+<h3 id="十五-常用运维命令">十五、常用运维命令</h3>
+<h4 id="151-查看-fe">15.1 查看 FE</h4>
+<pre><code class="language-sql">SHOW PROC '/frontends'\G
+</code></pre>
+<h4 id="152-查看-be">15.2 查看 BE</h4>
+<pre><code class="language-sql">SHOW PROC '/backends'\G
+</code></pre>
+<h4 id="153-查看-broker">15.3 查看 Broker</h4>
+<pre><code class="language-sql">SHOW PROC '/brokers'\G
+</code></pre>
+<h4 id="154-查看集群变量">15.4 查看集群变量</h4>
+<pre><code class="language-sql">SHOW VARIABLES;
+</code></pre>
+<h4 id="155-查看数据库">15.5 查看数据库</h4>
+<pre><code class="language-sql">SHOW DATABASES;
+</code></pre>
+<h4 id="156-查看表副本修复任务">15.6 查看表副本修复任务</h4>
+<pre><code class="language-sql">SHOW PROC '/cluster_balance/pending_tablets';
+SHOW PROC '/cluster_balance/running_tablets';
+SHOW PROC '/cluster_balance/history_tablets';
+</code></pre>
+<h3 id="十六-启停顺序">十六、启停顺序</h3>
+<h4 id="161-启动顺序">16.1 启动顺序</h4>
+<p>建议顺序：</p>
+<ol>
+<li>启动 3 个 FE。</li>
+<li>启动 4 个 BE。</li>
+<li>登录 FE 验证节点状态。</li>
+</ol>
+<p>启动 FE：</p>
+<pre><code class="language-bash">cd /opt/starrocks
+./fe/bin/start_fe.sh --daemon
+</code></pre>
+<p>Follower FE 首次启动才需要 <code>--helper</code>，后续重启通常不需要再加。</p>
+<p>启动 BE：</p>
+<pre><code class="language-bash">cd /opt/starrocks
+./be/bin/start_be.sh --daemon
+</code></pre>
+<h4 id="162-停止顺序">16.2 停止顺序</h4>
+<p>建议先停 BE，再停 FE。</p>
+<p>停止 BE：</p>
+<pre><code class="language-bash">cd /opt/starrocks
+./be/bin/stop_be.sh
+</code></pre>
+<p>停止 FE：</p>
+<pre><code class="language-bash">cd /opt/starrocks
+./fe/bin/stop_fe.sh
+</code></pre>
+<h3 id="十七-常见问题">十七、常见问题</h3>
+<h4 id="171-fe-启动失败">17.1 FE 启动失败</h4>
+<p>优先检查：</p>
+<pre><code class="language-bash">tail -200 /opt/starrocks/fe/log/fe.log
+tail -200 /opt/starrocks/fe/log/fe.warn.log
+</code></pre>
+<p>常见原因：</p>
+<ul>
+<li><code>meta_dir</code> 目录不存在或权限不正确。</li>
+<li>JDK 版本不符合要求。</li>
+<li><code>priority_networks</code> 配错，FE 上报了错误 IP。</li>
+<li><code>edit_log_port</code>、<code>query_port</code> 等端口被占用。</li>
+<li>Follower FE 首次启动没有指定正确的 <code>--helper</code>。</li>
+</ul>
+<h4 id="172-be-一直不-alive">17.2 BE 一直不 Alive</h4>
+<p>优先检查：</p>
+<pre><code class="language-bash">tail -200 /opt/starrocks/be/log/be.INFO
+tail -200 /opt/starrocks/be/log/be.WARNING
+</code></pre>
+<p>常见原因：</p>
+<ul>
+<li>BE 没有执行 <code>ALTER SYSTEM ADD BACKEND</code>。</li>
+<li>添加 BE 时使用了错误 IP 或心跳端口。</li>
+<li><code>storage_root_path</code> 目录不存在或权限不正确。</li>
+<li>FE 与 BE 之间网络不通。</li>
+<li>BE 的 <code>priority_networks</code> 配错。</li>
+</ul>
+<h4 id="173-mysql-客户端无法连接">17.3 MySQL 客户端无法连接</h4>
+<p>检查：</p>
+<pre><code class="language-bash">netstat -tunlp | grep 9030
+telnet 192.168.10.11 9030
+</code></pre>
+<p>常见原因：</p>
+<ul>
+<li>FE 未启动。</li>
+<li>防火墙或安全组未放通 <code>9030</code>。</li>
+<li>连接到了 Follower FE，但当前版本或配置下查询端口未正常提供服务。</li>
+<li>密码错误。</li>
+</ul>
+<h4 id="174-4-个-be-与-3-副本的关系">17.4 4 个 BE 与 3 副本的关系</h4>
+<p>StarRocks 默认表副本数通常为 3。4 个 BE 可以正常部署 3 副本表，系统会在 4 个 BE 之间做副本分布和均衡。</p>
+<p>不过需要注意：</p>
+<ul>
+<li>如果单个 BE 故障，3 副本表仍有可用副本。</li>
+<li>如果连续故障多个 BE，可能影响部分 Tablet 可用性。</li>
+<li>数据量较大时，应关注磁盘使用率、Tablet 分布和副本均衡情况。</li>
+</ul>
+<h3 id="十八-生产建议">十八、生产建议</h3>
+<ul>
+<li>FE 节点建议使用奇数个，3 个 FE 是常见高可用起点。</li>
+<li>BE 节点建议使用 SSD 或 NVMe，尤其是主键表、实时写入和高并发分析场景。</li>
+<li>FE 的 <code>meta_dir</code> 应放在可靠磁盘上，并纳入备份策略。</li>
+<li>BE 的 <code>storage_root_path</code> 不要放在系统盘。</li>
+<li>所有节点必须配置 NTP/Chrony 时间同步。</li>
+<li>生产环境必须修改默认 root 密码。</li>
+<li>业务连接建议通过负载均衡访问 FE 的 <code>9030</code> 端口。</li>
+<li>定期检查 <code>SHOW PROC '/frontends'\G</code> 和 <code>SHOW PROC '/backends'\G</code>。</li>
+<li>重要版本升级前，先阅读对应版本 Release Notes 和 Upgrade 文档。</li>
+</ul>
+<h3 id="十九-参考资料">十九、参考资料</h3>
+<ul>
+<li>StarRocks 官方文档：Deploy Shared-nothing StarRocks Manually<br>
+https://docs.starrocks.io/docs/deployment/deploy_manually/</li>
+<li>StarRocks 官方文档：Deployment Prerequisites<br>
+https://docs.starrocks.io/docs/deployment/deployment_prerequisites/</li>
+<li>StarRocks 官方文档：Check environment configurations<br>
+https://docs.starrocks.io/docs/deployment/environment_configurations/</li>
+<li>StarRocks 官方文档：Prepare deployment files<br>
+https://docs.starrocks.io/docs/deployment/prepare_deployment_files/</li>
+</ul>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC</div>
+                        <div class="related-meta">2026-06-23</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png" alt="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-catalog/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+                  <h3 class="post-title">
+                    StarRocks 数据存储说明
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

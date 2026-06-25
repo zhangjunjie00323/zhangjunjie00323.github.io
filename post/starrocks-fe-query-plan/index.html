@@ -1,0 +1,1188 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="FE：StarRocks 的“智慧大脑”——元数据管理、查询优化与高可用机制详解。 一、FE 在 StarRocks 中的角色：不只是“入口” 在 StarRocks 的架构体系中，FE 与 BE 分工明确——如果说 BE 是负责“干重活...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/25/R3gy/StarRocks-FE.jpg">
+
+<meta name="keywords" content="大数据,StarRocks">
+
+
+<meta property="article:published_time" content="2026-04-17T23:55:45+08:00">
+<meta property="article:modified_time" content="2026-04-17T23:55:45+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="大数据">
+
+<meta property="article:tag" content="StarRocks">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="FE：StarRocks 的“智慧大脑”——元数据管理、查询优化与高可用机制详解。 一、FE 在 StarRocks 中的角色：不只是“入口” 在 StarRocks 的架构体系中，FE 与 BE 分工明确——如果说 BE 是负责“干重活...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/25/R3gy/StarRocks-FE.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/"
+      },
+      "headline": "从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责",
+      "description": "FE：StarRocks 的“智慧大脑”——元数据管理、查询优化与高可用机制详解。 一、FE 在 StarRocks 中的角色：不只是“入口” 在 StarRocks 的架构体系中，FE 与 BE 分工明确——如果说 BE 是负责“干重活...",
+      "image": "https://files.seeusercontent.com/2026/04/25/R3gy/StarRocks-FE.jpg",
+      "url": "https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-04-17T23:55:45+08:00",
+      "dateModified": "2026-04-17T23:55:45+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "大数据",
+        "StarRocks"
+      ],
+      "keywords": "大数据,StarRocks",
+      "wordCount": 5285
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "大数据",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责",
+          "item": "https://zhangjunjie00323.github.io/post/starrocks-fe-query-plan/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E4%B8%80-fe-%E5%9C%A8-starrocks-%E4%B8%AD%E7%9A%84%E8%A7%92%E8%89%B2%E4%B8%8D%E5%8F%AA%E6%98%AF%E5%85%A5%E5%8F%A3">一、FE 在 StarRocks 中的角色：不只是“入口”</a></li>
+<li><a href="#%E4%BA%8C-fe-%E7%9A%84%E4%B8%89%E7%A7%8D%E8%A7%92%E8%89%B2leader-follower-%E4%B8%8E-observer">二、FE 的三种角色：Leader、Follower 与 Observer</a>
+<ul>
+<li><a href="#21-leader-fe%E5%94%AF%E4%B8%80%E7%9A%84%E5%86%99%E5%85%A5%E8%80%85">2.1 Leader FE：唯一的写入者</a></li>
+<li><a href="#22-follower-fe%E9%AB%98%E5%8F%AF%E7%94%A8%E7%9A%84%E5%9F%BA%E7%9F%B3">2.2 Follower FE：高可用的基石</a></li>
+<li><a href="#23-observer-fe%E6%9F%A5%E8%AF%A2%E5%B9%B6%E5%8F%91%E7%9A%84%E6%89%A9%E5%B1%95%E5%99%A8">2.3 Observer FE：查询并发的扩展器</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E5%85%83%E6%95%B0%E6%8D%AE%E7%AE%A1%E7%90%86fe-%E7%9A%84%E8%AE%B0%E5%BF%86%E4%B8%AD%E6%9E%A2">三、元数据管理：FE 的“记忆中枢”</a>
+<ul>
+<li><a href="#31-%E5%86%85%E5%AD%98%E5%AD%98%E5%82%A8%E6%9E%81%E8%87%B4%E6%80%A7%E8%83%BD">3.1 内存存储，极致性能</a></li>
+<li><a href="#32-editlog%E5%85%83%E6%95%B0%E6%8D%AE%E5%8F%98%E6%9B%B4%E7%9A%84%E6%97%A5%E8%AE%B0%E6%9C%AC">3.2 EditLog：元数据变更的“日记本”</a></li>
+<li><a href="#33-checkpoint%E5%85%83%E6%95%B0%E6%8D%AE%E7%9A%84%E5%BF%AB%E7%85%A7">3.3 Checkpoint：元数据的“快照”</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-%E4%BB%8E-sql-%E5%88%B0%E6%89%A7%E8%A1%8C%E8%AE%A1%E5%88%92fe-%E7%9A%84%E6%9F%A5%E8%AF%A2%E5%8D%8F%E8%B0%83%E8%89%BA%E6%9C%AF">四、从 SQL 到执行计划：FE 的查询协调艺术</a>
+<ul>
+<li><a href="#41-%E6%9F%A5%E8%AF%A2%E4%BC%98%E5%8C%96%E7%9A%84%E5%AE%8C%E6%95%B4%E6%B5%81%E6%B0%B4%E7%BA%BF">4.1 查询优化的完整流水线</a></li>
+<li><a href="#42-%E6%9F%A5%E8%AF%A2%E8%B0%83%E5%BA%A6%E5%B0%86%E8%AE%A1%E5%88%92%E5%8F%98%E4%B8%BA%E8%A1%8C%E5%8A%A8">4.2 查询调度：将计划变为行动</a></li>
+<li><a href="#43-%E6%9F%A5%E8%AF%A2%E8%AE%A1%E5%88%92%E7%BC%93%E5%AD%98">4.3 查询计划缓存</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-fe-%E9%AB%98%E5%8F%AF%E7%94%A8%E6%9C%BA%E5%88%B6bdbje-%E5%8D%8F%E8%AE%AE%E4%B8%8E%E6%95%85%E9%9A%9C%E5%88%87%E6%8D%A2">五、FE 高可用机制：BDBJE 协议与故障切换</a>
+<ul>
+<li><a href="#51-bdbje-%E5%8D%8F%E8%AE%AE%E5%85%83%E6%95%B0%E6%8D%AE%E4%B8%80%E8%87%B4%E6%80%A7%E7%9A%84%E4%BF%9D%E9%9A%9C">5.1 BDBJE 协议：元数据一致性的保障</a></li>
+<li><a href="#52-%E6%95%85%E9%9A%9C%E5%88%87%E6%8D%A2%E6%B5%81%E7%A8%8B">5.2 故障切换流程</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-fe-%E9%85%8D%E7%BD%AE%E6%9C%80%E4%BD%B3%E5%AE%9E%E8%B7%B5">六、FE 配置最佳实践</a>
+<ul>
+<li><a href="#61-%E8%8A%82%E7%82%B9%E6%95%B0%E9%87%8F%E8%A7%84%E5%88%92">6.1 节点数量规划</a></li>
+<li><a href="#62-%E5%85%B3%E9%94%AE%E5%8F%82%E6%95%B0%E8%B0%83%E4%BC%98">6.2 关键参数调优</a></li>
+<li><a href="#63-%E7%9B%91%E6%8E%A7%E6%8C%87%E6%A0%87">6.3 监控指标</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%83-%E6%80%BB%E7%BB%93">七、总结</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-17 23:55
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                27 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/25/R3gy/StarRocks-FE.jpg" alt="从 SQL 到执行计划：StarRocks FE 节点的架构设计与核心职责">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>FE：StarRocks 的“智慧大脑”——元数据管理、查询优化与高可用机制详解。</p>
+<!-- more -->
+<h3 id="一-fe-在-starrocks-中的角色不只是入口">一、FE 在 StarRocks 中的角色：不只是“入口”</h3>
+<p>在 StarRocks 的架构体系中，FE 与 BE 分工明确——如果说 BE 是负责“干重活”的四肢，那么 <strong>FE 就是运筹帷幄的“大脑”</strong>。</p>
+<p>FE 是 StarRocks 的前端节点，其核心职责涵盖四大领域：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">职责领域</th>
+<th style="text-align:left">具体工作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>元数据管理</strong></td>
+<td style="text-align:left">管理 Catalog、数据库、表、分区、物化视图、用户权限等所有元数据信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>客户端连接管理</strong></td>
+<td style="text-align:left">兼容 MySQL 协议，接收和处理客户端 SQL 请求</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>查询规划</strong></td>
+<td style="text-align:left">SQL 解析、语义分析、RBO 规则重写、CBO 成本优化、生成分布式执行计划</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>查询调度</strong></td>
+<td style="text-align:left">将执行计划拆分为 Fragment，分发到 BE 节点执行，并汇总结果返回客户端</td>
+</tr>
+</tbody>
+</table>
+<p>FE 采用<strong>无状态设计</strong>，每个 FE 节点都在内存中保留一份完整的元数据副本，因此每个 FE 节点都能提供无差别的服务。这种设计支持水平扩展——在查询高并发场景下，可以增加 Observer FE 节点来分担查询负载。</p>
+<p>在生产环境中，FE 节点的硬件配置直接影响查询响应速度。建议每个 FE 节点配置 <strong>≥ 8 核 CPU、≥ 32GB 内存</strong>，数据盘 100GB 起步即可。FE 与 BE 建议<strong>物理隔离部署</strong>，避免资源争抢。</p>
+<h3 id="二-fe-的三种角色leader-follower-与-observer">二、FE 的三种角色：Leader、Follower 与 Observer</h3>
+<p>为实现高可用和读写分离，FE 节点内部通过<strong>类 Paxos 的 Berkeley DB Java Edition（BDBJE）协议</strong>实现三种角色的分工协作。</p>
+<h4 id="21-leader-fe唯一的写入者">2.1 Leader FE：唯一的写入者</h4>
+<p>Leader 从 Follower 中<strong>自动选举</strong>产生，选举需要集群中有半数以上的 Follower 节点存活。Leader 的核心特权是<strong>唯一提供元数据读写服务的节点</strong>——所有元数据变更（如建表、修改分区、创建物化视图）都必须在 Leader 上执行。</p>
+<p>Leader 更新元数据后，会通过 BDBJE 协议将变更日志同步给所有 Follower 和 Observer。只有当<strong>半数以上的 Follower 节点同步成功</strong>，才算元数据写入成功，保证了数据的一致性和可靠性。</p>
+<h4 id="22-follower-fe高可用的基石">2.2 Follower FE：高可用的基石</h4>
+<p>Follower 承担着双重使命：</p>
+<ul>
+<li><strong>参与选举</strong>：当 Leader 故障时，存活的 Follower 会发起新一轮选举，选出新的 Leader</li>
+<li><strong>元数据同步</strong>：只有元数据读取权限，无写入权限。通过<strong>回放 Leader 的元数据日志</strong>来异步同步数据，保持与 Leader 的元数据一致</li>
+</ul>
+<p>Follower 节点数量必须是<strong>奇数</strong>（如 3 个或 5 个），以保证在网络分区时能够成功选举出 Leader。生产环境建议至少部署 3 个 FE 节点（1 Leader + 2 Follower），确保高可用。</p>
+<h4 id="23-observer-fe查询并发的扩展器">2.3 Observer FE：查询并发的扩展器</h4>
+<p>Observer 是一种<strong>特殊的 Follower</strong>，主要用于扩展集群的查询并发能力，属于可选部署：</p>
+<ul>
+<li><strong>不参与选主</strong>：不会增加集群的选主压力，也不影响 Leader 选举的投票权重</li>
+<li><strong>只读服务</strong>：同样通过回放 Leader 的元数据日志来同步数据，提供只读查询服务</li>
+<li><strong>适用场景</strong>：当业务读并发较高时，通过增加 Observer 节点分担查询负载</li>
+</ul>
+<p><strong>三种角色对比一览：</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">对比维度</th>
+<th style="text-align:left">Leader</th>
+<th style="text-align:left">Follower</th>
+<th style="text-align:left">Observer</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>元数据写入</strong></td>
+<td style="text-align:left">是（唯一入口）</td>
+<td style="text-align:left">否</td>
+<td style="text-align:left">否</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>元数据读取</strong></td>
+<td style="text-align:left">是</td>
+<td style="text-align:left">是</td>
+<td style="text-align:left">是</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>参与 Leader 选举</strong></td>
+<td style="text-align:left">是（本身是选出的）</td>
+<td style="text-align:left">是</td>
+<td style="text-align:left">否</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>主要用途</strong></td>
+<td style="text-align:left">写入协调、集群管理</td>
+<td style="text-align:left">高可用容灾、参与选举</td>
+<td style="text-align:left">扩展查询并发</td>
+</tr>
+</tbody>
+</table>
+<h3 id="三-元数据管理fe-的记忆中枢">三、元数据管理：FE 的“记忆中枢”</h3>
+<p>元数据是 StarRocks 集群的“核心资产”，FE 负责管理所有元数据信息，包括 Catalog、数据库、表结构、分区信息、分桶分布、物化视图定义、用户权限、BE 节点状态等。</p>
+<h4 id="31-内存存储极致性能">3.1 内存存储，极致性能</h4>
+<p>FE 将元数据<strong>主要存储在内存中</strong>，通过 <code>GlobalStateMgr</code> 类统一管理。这样做的好处是<strong>极低的查询延迟</strong>——元数据访问无需磁盘 I/O，SQL 解析和计划生成阶段可以快速获取表结构、分区信息、统计信息等。</p>
+<h4 id="32-editlog元数据变更的日记本">3.2 EditLog：元数据变更的“日记本”</h4>
+<p>为保证元数据的持久化和多节点同步，FE 采用了 <strong>EditLog 机制</strong>：</p>
+<ul>
+<li>每一次元数据变更操作（如 CREATE TABLE、ALTER TABLE、DROP PARTITION）都会被记录为一条 <strong>EditLog 日志条目</strong></li>
+<li>EditLog 存储在 BDBJE 数据库中，Leader FE 负责写入，Follower 和 Observer 通过 BDBJE 协议同步这些日志</li>
+<li>每条 EditLog 由自增的 <strong>JournalId</strong> + <strong>OperationType</strong> + <strong>具体数据</strong>构成</li>
+</ul>
+<p>EditLog 不仅用于多节点同步，更是<strong>故障恢复的核心依据</strong>——当 FE 节点重启时，可以通过回放 EditLog 恢复元数据状态。</p>
+<h4 id="33-checkpoint元数据的快照">3.3 Checkpoint：元数据的“快照”</h4>
+<p>随着时间推移，EditLog 会不断累积，重启时逐条回放效率低下。FE 通过 <strong>Checkpoint 机制</strong>解决这一问题：</p>
+<ul>
+<li>Leader FE 的 checkpoint 线程定期扫描 EditLog 数量，达到阈值（默认 <strong>50,000 条</strong>）时触发 Checkpoint</li>
+<li>Checkpoint 将当前内存中的完整元数据序列化为一个 <strong>Image 文件</strong>（格式为 <code>image.{JournalId}</code>），持久化到 <code>fe/meta</code> 目录</li>
+<li>生成新 Image 后，历史的 EditLog 和旧 Image 可以被清理，节省存储空间</li>
+<li>Follower 和 Observer 节点会从 Leader 下载最新的 Image 文件，实现元数据快速同步</li>
+</ul>
+<p><strong>元数据恢复流程</strong>：</p>
+<ol>
+<li>加载最新的 Image 文件，反序列化恢复基础元数据</li>
+<li>从 BDBJE 中读取 Image 之后的所有 EditLog</li>
+<li>逐条回放（replay）EditLog，将元数据更新到最新状态</li>
+</ol>
+<p>这套 <strong>EditLog + Checkpoint</strong> 机制，既保证了元数据的持久可靠，又兼顾了启动恢复的效率。</p>
+<h3 id="四-从-sql-到执行计划fe-的查询协调艺术">四、从 SQL 到执行计划：FE 的查询协调艺术</h3>
+<p>FE 作为“大脑”，最核心的工作就是将用户提交的 SQL 转化为高效的分布式执行计划。</p>
+<h4 id="41-查询优化的完整流水线">4.1 查询优化的完整流水线</h4>
+<p>当一条 SQL 到达 FE 后，它会经历以下完整流程：</p>
+<p>text</p>
+<pre><code>SQL 请求 → 词法/语法解析 → 语义分析 → RBO 规则重写 → CBO 成本优化 → 生成分布式执行计划 → 分发 Fragment 到 BE
+</code></pre>
+<ul>
+<li><strong>解析与语义分析</strong>：检查 SQL 语法正确性，验证表名、列名是否存在，校验权限</li>
+<li><strong>RBO 规则重写</strong>：执行谓词下推、列裁剪、常量折叠、子查询改写等“稳赚不赔”的优化</li>
+<li><strong>CBO 成本优化</strong>：基于统计信息，从数万种候选计划中选择代价最低的执行计划，包括 Join 顺序选择、Join 算法选择、聚合策略选择</li>
+<li><strong>生成 Fragment</strong>：将优化后的计划拆解为多个 Fragment（执行片段），确定数据分布策略（Shuffle / Broadcast / Colocate）</li>
+</ul>
+<h4 id="42-查询调度将计划变为行动">4.2 查询调度：将计划变为行动</h4>
+<p>生成执行计划后，FE 的 Coordinator（协调器）负责调度执行：</p>
+<ol>
+<li><strong>分发 Fragment</strong>：将 Fragment 分发到存有相关数据 Tablet 的 BE 节点上</li>
+<li><strong>并行执行</strong>：同一个 Fragment 会在多个 BE 上启动多个实例并行执行</li>
+<li><strong>数据 Shuffle 协调</strong>：当需要跨节点数据重组时，FE 协调 BE 之间的数据交换</li>
+<li><strong>结果汇总</strong>：各 BE 返回部分结果后，FE 进行最终合并，返回客户端</li>
+</ol>
+<h4 id="43-查询计划缓存">4.3 查询计划缓存</h4>
+<p>为降低重复查询的优化开销，FE 支持<strong>执行计划缓存</strong>。对于完全相同的 SQL（尤其是通过 Prepared Statement 提交的参数化查询），FE 会缓存其优化后的执行计划，后续相同查询可直接跳过解析和优化阶段，大幅降低响应延迟。</p>
+<h3 id="五-fe-高可用机制bdbje-协议与故障切换">五、FE 高可用机制：BDBJE 协议与故障切换</h3>
+<h4 id="51-bdbje-协议元数据一致性的保障">5.1 BDBJE 协议：元数据一致性的保障</h4>
+<p>FE 节点间通过 <strong>BDBJE（Berkeley DB Java Edition）</strong> 协议实现元数据的强一致性同步：</p>
+<ul>
+<li>BDBJE 是一个高性能、嵌入式的事务型数据库引擎</li>
+<li>Leader FE 将所有元数据变更以 EditLog 形式写入 BDBJE</li>
+<li>Follower 和 Observer 通过 <code>edit_log_port</code>（默认 9010）访问 BDBJE，实时拉取日志并在本地回放</li>
+<li>采用 <strong>Paxos 类共识算法</strong>，保证写入需要半数以上 Follower 确认</li>
+</ul>
+<p>关键配置参数：</p>
+<ul>
+<li><code>edit_log_port</code>：FE 之间通信端口，默认 9010</li>
+<li><code>bdbje_heartbeat_timeout_second</code>：心跳超时时间，默认 30 秒</li>
+<li><code>master_sync_policy</code>：Leader 日志刷盘策略，默认 SYNC（同步刷盘）</li>
+<li><code>meta_delay_toleration_second</code>：非 Leader 节点容忍的最大元数据落后时间，默认 300 秒</li>
+</ul>
+<h4 id="52-故障切换流程">5.2 故障切换流程</h4>
+<p>当 Leader FE 发生故障时：</p>
+<ol>
+<li><strong>故障检测</strong>：Follower 通过心跳检测发现 Leader 失联</li>
+<li><strong>选举触发</strong>：存活的 Follower 发起新一轮 Leader 选举</li>
+<li><strong>投票表决</strong>：基于 BDBJE 的选举机制，获得<strong>半数以上 Follower 投票</strong>的节点成为新 Leader</li>
+<li><strong>服务切换</strong>：新 Leader 接管元数据写入服务，集群恢复正常</li>
+</ol>
+<p>整个切换过程通常在<strong>秒级</strong>完成，对上层应用几乎透明。这也是为什么生产环境要求至少部署 3 个 FE 节点——单节点故障时，剩余 2 个节点仍可完成选举。</p>
+<h3 id="六-fe-配置最佳实践">六、FE 配置最佳实践</h3>
+<h4 id="61-节点数量规划">6.1 节点数量规划</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">集群规模</th>
+<th style="text-align:left">FE 节点配置</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>测试环境</strong></td>
+<td style="text-align:left">1 FE（单节点）</td>
+<td style="text-align:left">仅用于功能验证，无高可用保障</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>中小规模生产</strong></td>
+<td style="text-align:left">3 FE（1 Leader + 2 Follower）</td>
+<td style="text-align:left">标准高可用配置，可容忍 1 个节点故障</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>大规模生产（高并发）</strong></td>
+<td style="text-align:left">5 FE（1 Leader + 2 Follower + 2 Observer）</td>
+<td style="text-align:left">增加 Observer 分担查询负载，5 节点可容忍 2 个节点故障</td>
+</tr>
+</tbody>
+</table>
+<p><strong>注意</strong>：FE 节点数量必须为<strong>奇数</strong>，以避免网络分区时出现“脑裂”问题。</p>
+<h4 id="62-关键参数调优">6.2 关键参数调优</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">参数</th>
+<th style="text-align:left">推荐值</th>
+<th style="text-align:left">说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><code>edit_log_roll_num</code></td>
+<td style="text-align:left">50000</td>
+<td style="text-align:left">Checkpoint 触发的 EditLog 数量阈值</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>heartbeat_mgr_threads_num</code></td>
+<td style="text-align:left">8</td>
+<td style="text-align:left">心跳管理线程数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>max_query_retry_time</code></td>
+<td style="text-align:left">2</td>
+<td style="text-align:left">FE 上查询重试次数</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>statistic_collect_interval_sec</code></td>
+<td style="text-align:left">300</td>
+<td style="text-align:left">自动统计信息收集间隔</td>
+</tr>
+<tr>
+<td style="text-align:left"><code>dynamic_partition_enable</code></td>
+<td style="text-align:left">TRUE</td>
+<td style="text-align:left">开启动态分区功能，自动管理分区生命周期</td>
+</tr>
+</tbody>
+</table>
+<h4 id="63-监控指标">6.3 监控指标</h4>
+<p>建议重点关注以下 FE 指标：</p>
+<ul>
+<li><strong>FE 角色状态</strong>：确认 Leader 是否正常、Follower 是否同步</li>
+<li><strong>元数据延迟</strong>：Follower 落后 Leader 的 EditLog 数量</li>
+<li><strong>连接数</strong>：当前活跃的客户端连接数</li>
+<li><strong>查询 QPS</strong>：每秒处理的查询数量</li>
+<li><strong>JVM 内存使用率</strong>：FE 内存使用情况，避免 Full GC</li>
+</ul>
+<p>可通过 <code>SHOW PROC '/frontends'</code> 命令查看 FE 节点状态，包括角色、是否存活、最后心跳时间等信息。</p>
+<h3 id="七-总结">七、总结</h3>
+<p>FE 是 StarRocks 名副其实的“智慧大脑”，它的设计哲学可以概括为：</p>
+<ol>
+<li><strong>元数据统一管理</strong>：所有 Catalog、表结构、分区、权限等信息由 FE 集中管理，内存存储保证低延迟访问</li>
+<li><strong>角色分工明确</strong>：Leader 负责写入，Follower 保障高可用，Observer 扩展读并发，三者各司其职</li>
+<li><strong>持久化与恢复</strong>：EditLog + Checkpoint 机制，既保证数据可靠，又兼顾恢复效率</li>
+<li><strong>智能查询优化</strong>：RBO 规则重写 + CBO 成本优化，自动选择最优执行计划</li>
+<li><strong>BDBJE 共识协议</strong>：类 Paxos 协议保障元数据强一致性，故障切换秒级完成</li>
+</ol>
+<p>理解 FE 的工作原理，不仅能帮你更好地进行集群规划（节点数量、角色配置），也能让你在遇到元数据相关问题时，知道从哪个环节入手排查——是 Leader 写入卡顿？是 Follower 同步延迟？还是 Checkpoint 耗时过长？</p>
+<p>FE 与 BE 的完美协作，正是 StarRocks 能够实现极速全场景数据分析的根本保障。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC</div>
+                        <div class="related-meta">2026-06-23</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png" alt="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-be-storage/">
+                  <h3 class="post-title">
+                    StarRocks BE 存储引擎深度解析：从 Tablet 到列式存储的物理实现
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

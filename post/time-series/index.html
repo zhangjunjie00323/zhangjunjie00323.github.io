@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>时间序列入门指南：你的数据里藏着一条时间轴 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/time-series/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="时间序列入门指南：你的数据里藏着一条时间轴 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="从股价到天气：机器学习如何预测未来？ 引言：有一种数据，打乱顺序就废了 想象一下，你手里有两组数据： 数据A：100张猫的照片。你把它们的顺序随机打乱，扔给模型去训练，模型依然能学会“这是猫”。因为每张照片是独立的，照片1和照片100之间...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/time-series/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/26/wm5S/1fa8d55.jpg">
+
+<meta name="keywords" content="机器学习">
+
+
+<meta property="article:published_time" content="2026-04-12T19:55:27+08:00">
+<meta property="article:modified_time" content="2026-04-12T19:55:27+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="机器学习">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="时间序列入门指南：你的数据里藏着一条时间轴 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="从股价到天气：机器学习如何预测未来？ 引言：有一种数据，打乱顺序就废了 想象一下，你手里有两组数据： 数据A：100张猫的照片。你把它们的顺序随机打乱，扔给模型去训练，模型依然能学会“这是猫”。因为每张照片是独立的，照片1和照片100之间...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/26/wm5S/1fa8d55.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/time-series/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/time-series/"
+      },
+      "headline": "时间序列入门指南：你的数据里藏着一条时间轴",
+      "description": "从股价到天气：机器学习如何预测未来？ 引言：有一种数据，打乱顺序就废了 想象一下，你手里有两组数据： 数据A：100张猫的照片。你把它们的顺序随机打乱，扔给模型去训练，模型依然能学会“这是猫”。因为每张照片是独立的，照片1和照片100之间...",
+      "image": "https://files.seeusercontent.com/2026/04/26/wm5S/1fa8d55.jpg",
+      "url": "https://zhangjunjie00323.github.io/post/time-series/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-04-12T19:55:27+08:00",
+      "dateModified": "2026-04-12T19:55:27+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "机器学习"
+      ],
+      "keywords": "机器学习",
+      "wordCount": 5001
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/time-series/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "机器学习",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "时间序列入门指南：你的数据里藏着一条时间轴",
+          "item": "https://zhangjunjie00323.github.io/post/time-series/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%BC%95%E8%A8%80%E6%9C%89%E4%B8%80%E7%A7%8D%E6%95%B0%E6%8D%AE%E6%89%93%E4%B9%B1%E9%A1%BA%E5%BA%8F%E5%B0%B1%E5%BA%9F%E4%BA%86">引言：有一种数据，打乱顺序就废了</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E7%9A%84%E4%B8%89%E4%B8%AA%E6%A0%B8%E5%BF%83%E6%A6%82%E5%BF%B5">第一章：时间序列的三个核心概念</a>
+<ul>
+<li><a href="#11-%E8%87%AA%E7%9B%B8%E5%85%B3%E8%87%AA%E5%B7%B1%E5%92%8C%E8%87%AA%E5%B7%B1%E6%AF%94">1.1 自相关：自己和自己比</a></li>
+<li><a href="#12-%E5%B9%B3%E7%A8%B3%E6%80%A7%E8%BF%99%E6%9D%A1%E6%B2%B3%E6%98%AF%E5%B9%B3%E7%BC%93%E8%BF%98%E6%98%AF%E6%B9%8D%E6%80%A5">1.2 平稳性：这条河是平缓还是湍急？</a></li>
+<li><a href="#13-%E5%AD%A3%E8%8A%82%E6%80%A7%E5%83%8F%E5%9B%9B%E5%AD%A3%E4%B8%80%E6%A0%B7%E8%BD%AE%E5%9B%9E">1.3 季节性：像四季一样轮回</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E4%BB%BB%E5%8A%A1%E7%B1%BB%E5%9E%8B%E5%85%A8%E6%99%AF">第二章：时间序列任务类型全景</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0%E4%B8%A4%E5%A4%A7%E6%B5%81%E6%B4%BE%E4%BC%A0%E7%BB%9F%E7%BB%9F%E8%AE%A1%E6%A8%A1%E5%9E%8B-vs-%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B">第三章：两大流派——传统统计模型 vs 机器学习模型</a>
+<ul>
+<li><a href="#31-%E7%AC%AC%E4%B8%80%E6%B5%81%E6%B4%BE%E7%BB%8F%E5%85%B8%E7%BB%9F%E8%AE%A1%E6%A8%A1%E5%9E%8B">3.1 第一流派：经典统计模型</a></li>
+<li><a href="#32-%E7%AC%AC%E4%BA%8C%E6%B5%81%E6%B4%BE%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E6%A8%A1%E5%9E%8B">3.2 第二流派：机器学习与深度学习模型</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E8%BF%9B%E9%98%B6%E6%A6%82%E5%BF%B5%E9%80%9F%E8%A7%88">第四章：进阶概念速览</a>
+<ul>
+<li><a href="#41-%E5%8D%95%E5%8F%98%E9%87%8F-vs-%E5%A4%9A%E5%8F%98%E9%87%8F">4.1 单变量 vs 多变量</a></li>
+<li><a href="#42-%E7%9B%B4%E6%8E%A5%E9%A2%84%E6%B5%8B-vs-%E6%BB%9A%E5%8A%A8%E9%A2%84%E6%B5%8B">4.2 直接预测 vs 滚动预测</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E4%B8%80%E4%B8%AA%E6%97%B6%E9%97%B4%E5%BA%8F%E5%88%97%E9%A1%B9%E7%9B%AE%E7%9A%84%E5%AE%9E%E6%88%98%E5%9C%B0%E5%9B%BE">第五章：一个时间序列项目的实战地图</a></li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E5%B8%B8%E8%A7%81%E9%99%B7%E9%98%B1%E4%B8%8E%E9%81%BF%E5%9D%91%E6%8C%87%E5%8D%97">第六章：常见陷阱与避坑指南</a></li>
+<li><a href="#%E7%BB%93%E8%AF%AD%E6%97%B6%E9%97%B4%E6%98%AF%E6%9C%80%E5%A4%A7%E7%9A%84%E7%89%B9%E5%BE%81">结语：时间是最大的特征</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">时间序列入门指南：你的数据里藏着一条时间轴</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-12 19:55
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                34 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/wm5S/1fa8d55.jpg" alt="时间序列入门指南：你的数据里藏着一条时间轴">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><strong>从股价到天气：机器学习如何预测未来？</strong></p>
+<!-- more -->
+<h4 id="引言有一种数据打乱顺序就废了">引言：有一种数据，打乱顺序就废了</h4>
+<p>想象一下，你手里有两组数据：</p>
+<p><strong>数据A</strong>：100张猫的照片。你把它们的顺序随机打乱，扔给模型去训练，模型依然能学会“这是猫”。因为每张照片是<strong>独立</strong>的，照片1和照片100之间没有因果关系。</p>
+<p><strong>数据B</strong>：过去30天每天的股价。你把第1天和第30天的数据对调一下，会发生什么？模型会彻底疯掉。</p>
+<p>这就是<strong>时间序列数据</strong>最核心的特征：<strong>顺序即信息。</strong></p>
+<p>时间序列，就是<strong>按时间顺序排列的一组数据点</strong>。你的心跳频率、城市每小时的温度、网站每分钟的访问量、超市每天的销售额——这些全部是时间序列数据。</p>
+<p>普通的机器学习任务（分类、回归）假设样本之间<strong>独立同分布</strong>，但时间序列数据天然<strong>不独立</strong>——今天的气温，和昨天的气温高度相关；这个月的销售额，受上个月促销活动的影响。</p>
+<p>所以，处理时间序列需要一套专门的思维框架和算法工具箱。这篇文章带你建立这个框架。</p>
+<hr>
+<h3 id="第一章时间序列的三个核心概念">第一章：时间序列的三个核心概念</h3>
+<p>在聊算法之前，先建立三个最基础、最重要的概念。它们是理解一切时间序列模型的地基。</p>
+<h4 id="11-自相关自己和自己比">1.1 自相关：自己和自己比</h4>
+<p><strong>定义</strong>：当前时刻的数值，与过去某个时刻的数值之间的相关性。</p>
+<p>举个最直观的例子：</p>
+<ul>
+<li>今天气温35度，昨天是34度，前天是33度。它们高度相关。</li>
+<li>今天的股价是100元，去年今天的股价是50元。相隔太远，几乎不相关。</li>
+</ul>
+<p><strong>自相关函数</strong>就是用来量化这种关系的工具：<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi></mrow><annotation encoding="application/x-tex">t</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.61508em;vertical-align:0em;"></span><span class="mord mathdefault">t</span></span></span></span> 时刻的值，和 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mo>−</mo><mn>1</mn></mrow><annotation encoding="application/x-tex">t-1</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69841em;vertical-align:-0.08333em;"></span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">1</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mo>−</mo><mn>2</mn></mrow><annotation encoding="application/x-tex">t-2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69841em;vertical-align:-0.08333em;"></span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">2</span></span></span></span>、<span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>t</mi><mo>−</mo><mn>7</mn></mrow><annotation encoding="application/x-tex">t-7</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.69841em;vertical-align:-0.08333em;"></span><span class="mord mathdefault">t</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.64444em;vertical-align:0em;"></span><span class="mord">7</span></span></span></span> 时刻的值，到底有多大的相关性？</p>
+<p><strong>意义</strong>：自相关分析告诉你，<strong>“回头看多少步是有意义的”</strong>。如果发现数据每隔7天有一个强自相关峰值，说明数据有<strong>周周期性</strong>。</p>
+<h4 id="12-平稳性这条河是平缓还是湍急">1.2 平稳性：这条河是平缓还是湍急？</h4>
+<p><strong>定义</strong>：一个时间序列的统计特性（均值、方差、自相关结构）不随时间变化。</p>
+<ul>
+<li><strong>平稳序列</strong>：围绕一个固定值上下波动，波动的幅度也基本固定。比如：某个地区常年的日均气温波动（排除气候变暖的长期趋势）。</li>
+<li><strong>非平稳序列</strong>：有明显的上升/下降趋势，或者波动幅度越来越大。比如：一家初创公司的用户数（持续增长）、股票价格（长期趋势+波动聚集）。</li>
+</ul>
+<p><strong>为什么平稳性如此重要？</strong><br>
+绝大多数经典时间序列模型（比如后面要讲的ARIMA）都<strong>假设数据是平稳的</strong>。因为只有数据“稳定”，模型才能从历史中学习到可以推广到未来的规律。如果数据一直在“变”，今天学的规律明天就不适用了。</p>
+<p><strong>怎么做</strong>：如果数据不平稳，需要通过<strong>差分</strong>（用今天减昨天，去掉趋势）或<strong>对数变换</strong>（稳定方差）来让它变平稳。</p>
+<h4 id="13-季节性像四季一样轮回">1.3 季节性：像四季一样轮回</h4>
+<p><strong>定义</strong>：时间序列中由固定周期因素引起的重复模式。</p>
+<ul>
+<li>电商销售额：每年11月（双十一）和12月（双十二）暴涨——<strong>年季节性</strong>。</li>
+<li>餐厅客流量：每周五、周六晚上高峰，周一中午低谷——<strong>周季节性</strong>。</li>
+<li>用电量：每天中午和傍晚出现峰值，凌晨降到谷底——<strong>日季节性</strong>。</li>
+</ul>
+<p>季节性是可以被<strong>预测和利用</strong>的规律，而<strong>趋势</strong>是长期的方向性变化。一个优秀的时间序列模型，必须能够<strong>分离趋势、季节性、以及剩下的随机波动</strong>。</p>
+<hr>
+<h3 id="第二章时间序列任务类型全景">第二章：时间序列任务类型全景</h3>
+<p>时间序列机器学习不仅仅是“预测未来”，它主要包含以下几类任务：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">任务类型</th>
+<th style="text-align:left">目标</th>
+<th style="text-align:left">输入</th>
+<th style="text-align:left">输出</th>
+<th style="text-align:left">典型场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>预测</strong></td>
+<td style="text-align:left">预测未来多个时间点的值</td>
+<td style="text-align:left">过去 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">N</span></span></span></span> 个时间点的序列</td>
+<td style="text-align:left">未来 <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>M</mi></mrow><annotation encoding="application/x-tex">M</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.68333em;vertical-align:0em;"></span><span class="mord mathdefault" style="margin-right:0.10903em;">M</span></span></span></span> 个时间点的预测值</td>
+<td style="text-align:left">销量预测、电力负荷预测、股价预测</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>分类</strong></td>
+<td style="text-align:left">判断整条序列属于哪一类</td>
+<td style="text-align:left">一条完整的时间序列</td>
+<td style="text-align:left">一个类别标签</td>
+<td style="text-align:left">根据心电图判断心律失常类型、根据传感器数据判断设备是否故障</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>异常检测</strong></td>
+<td style="text-align:left">找出序列中不正常的时间点</td>
+<td style="text-align:left">一条时间序列</td>
+<td style="text-align:left">异常点的位置和置信度</td>
+<td style="text-align:left">服务器CPU突然飙升、信用卡异常交易、工业设备异响</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>聚类</strong></td>
+<td style="text-align:left">把相似的序列归为一组</td>
+<td style="text-align:left">多条时间序列</td>
+<td style="text-align:left">每条序列的组别</td>
+<td style="text-align:left">把有相似销售模式的商品归为一类、把有相似用电模式的家庭归为一类</td>
+</tr>
+</tbody>
+</table>
+<p>其中，<strong>预测</strong> 是时间序列最核心、最经典的任务，也是本文的重点。</p>
+<hr>
+<h3 id="第三章两大流派传统统计模型-vs-机器学习模型">第三章：两大流派——传统统计模型 vs 机器学习模型</h3>
+<p>处理时间序列预测，历史上形成了两条泾渭分明、后来又逐渐融合的技术路线。</p>
+<h4 id="31-第一流派经典统计模型">3.1 第一流派：经典统计模型</h4>
+<p>这一派的方法，是专门为时间序列数据<strong>量身定制</strong>的数学模型。它们理论基础扎实，可解释性强，在数据量不大的情况下表现优异。</p>
+<p><strong>代表算法一：ARIMA（自回归积分滑动平均模型）</strong></p>
+<p>这是时间序列预测界的<strong>祖师爷</strong>级别算法，诞生于上世纪70年代，至今仍在广泛使用。</p>
+<ul>
+<li><strong>AR（自回归）</strong>：用<strong>自己过去的值</strong>预测未来。“今天的气温 ≈ 0.8×昨天 + 0.2×前天”。</li>
+<li><strong>I（差分）</strong>：让数据变平稳的操作。</li>
+<li><strong>MA（滑动平均）</strong>：用<strong>过去预测的误差</strong>来修正当前预测。“前两天我预测偏高了，今天我得往下调一点”。</li>
+</ul>
+<p><strong>ARIMA的核心假设</strong>：未来是过去的线性延续。它在捕捉<strong>线性趋势和季节性</strong>方面非常强大。</p>
+<p><strong>代表算法二：Prophet</strong></p>
+<p>由Facebook（现Meta）开源的一个时间序列预测工具，专门为<strong>业务预测</strong>场景设计。</p>
+<p>它的核心思想是<strong>将时间序列分解</strong>：</p>
+<pre><code class="language-text">y(t) = 趋势项 + 季节性项 + 节假日效应 + 噪声
+</code></pre>
+<ul>
+<li><strong>趋势项</strong>：整体是往上走还是往下走？是直线还是饱和曲线？</li>
+<li><strong>季节性项</strong>：按年、按月、按周的周期波动。</li>
+<li><strong>节假日效应</strong>：春节、双十一、圣诞节这些特殊日子的冲击。</li>
+</ul>
+<p><strong>Prophet的优势</strong>：</p>
+<ol>
+<li><strong>对缺失值和异常值鲁棒</strong>（现实中业务数据经常缺失）。</li>
+<li><strong>建模速度快</strong>，几行代码就能出结果。</li>
+<li><strong>可解释性强</strong>，你可以清晰地看到趋势、季节性各自贡献了多少。</li>
+<li><strong>允许人工干预</strong>：分析师可以手动指定特殊日期的影响。</li>
+</ol>
+<p><strong>何时选择传统统计模型？</strong></p>
+<ul>
+<li>数据量不大（几百到几千个时间点）。</li>
+<li>数据有明显的线性趋势和稳定季节性。</li>
+<li>需要向老板/客户解释“为什么预测是这个数”。</li>
+</ul>
+<hr>
+<h4 id="32-第二流派机器学习与深度学习模型">3.2 第二流派：机器学习与深度学习模型</h4>
+<p>当数据量巨大、或者数据中的规律<strong>高度非线性</strong>时，传统统计模型开始力不从心。这时候，机器学习模型接管战场。</p>
+<p><strong>阶段一：通用机器学习模型的特征工程化改造</strong></p>
+<p>你是否可以直接把随机森林、XGBoost 用于时间序列预测？</p>
+<p>可以，但有前提：<strong>你需要手动把时间序列问题，转换成标准的“特征→标签”表格问题。</strong></p>
+<p>这个过程叫<strong>滑动窗口切分</strong>：</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">特征1</th>
+<th style="text-align:left">特征2</th>
+<th style="text-align:left">特征3</th>
+<th style="text-align:left">标签（你要预测的）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">昨天销量</td>
+<td style="text-align:left">前天销量</td>
+<td style="text-align:left">大前天销量</td>
+<td style="text-align:left"><strong>今天销量</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">前天销量</td>
+<td style="text-align:left">大前天销量</td>
+<td style="text-align:left">大大前天销量</td>
+<td style="text-align:left"><strong>昨天销量</strong></td>
+</tr>
+<tr>
+<td style="text-align:left">...</td>
+<td style="text-align:left">...</td>
+<td style="text-align:left">...</td>
+<td style="text-align:left">...</td>
+</tr>
+</tbody>
+</table>
+<p>除此之外，你还可以加入时间特征：<strong>星期几、是否周末、是否节假日、第几季度</strong>。</p>
+<p>完成这个转换后，<strong>XGBoost、LightGBM、随机森林</strong>就可以直接上了。在很多 Kaggle 时间序列比赛中，<strong>经过精细特征工程的 LightGBM 经常吊打专门的时序模型</strong>。</p>
+<p><strong>阶段二：深度学习——让神经网络记住“历史”</strong></p>
+<p>传统神经网络（如多层感知机）没有“记忆”——它看到“昨天”和“今天”是独立的两个样本，理解不了它们之间的先后关系。</p>
+<p><strong>RNN（循环神经网络）</strong> 的诞生改变了这一切。它在网络内部引入了一个<strong>隐藏状态</strong>，这个状态像一个“记忆体”，会随着时间步不断更新。</p>
+<ul>
+<li>读到第1天的数据，RNN更新记忆。</li>
+<li>读到第2天的数据，RNN结合<strong>新的输入</strong> + <strong>第1天的记忆</strong>，再更新记忆。</li>
+<li>读到第100天的数据时，RNN的记忆里已经融合了前面99天的信息。</li>
+</ul>
+<p>但经典RNN有个致命缺陷：<strong>长期记忆衰减</strong>。第1天的信息传了99步之后，几乎消失殆尽了。</p>
+<p><strong>LSTM（长短期记忆网络）</strong> 和 <strong>GRU（门控循环单元）</strong> 解决了这个问题。它们引入精巧的 <strong>“门”结构</strong>，让网络学会：</p>
+<ul>
+<li><strong>输入门</strong>：新来的信息哪些值得记？</li>
+<li><strong>遗忘门</strong>：旧的记忆哪些可以扔了？</li>
+<li><strong>输出门</strong>：当前应该输出什么？</li>
+</ul>
+<p>这套机制让LSTM能够<strong>有选择地</strong>记住几十甚至上百步之前的重要信息。</p>
+<p><strong>阶段三：Transformer——时间序列的新王者？</strong></p>
+<p>近年来，来自NLP领域的 Transformer 架构被大量迁移到时序预测上。</p>
+<ul>
+<li>核心优势：<strong>自注意力机制</strong>允许模型直接建立任意两个时间点之间的关联，不再受限于RNN的“一步一步传”的架构。第1天和第100天可以直接“对话”。</li>
+<li>代表模型：<strong>Informer、Autoformer、PatchTST、TimesNet</strong> 等，在长序列预测任务上大幅超越了LSTM和传统模型。</li>
+</ul>
+<p><strong>何时选择机器学习/深度学习模型？</strong></p>
+<ul>
+<li>数据量巨大（数万条以上的长序列）。</li>
+<li>序列规律极其复杂，存在非线性依赖（比如股价、高频传感器数据）。</li>
+<li>你是多变量预测——不只依赖自己的历史值，还依赖几十个外部变量（天气、汇率、竞品价格等）。</li>
+</ul>
+<hr>
+<h3 id="第四章进阶概念速览">第四章：进阶概念速览</h3>
+<p>如果你已经理解了上面两章，再补充两个进阶概念，让你在讨论中不掉队。</p>
+<h4 id="41-单变量-vs-多变量">4.1 单变量 vs 多变量</h4>
+<ul>
+<li><strong>单变量时间序列</strong>：只用<strong>自己的历史值</strong>预测自己的未来。比如：只用“过去30天的气温”预测“明天的气温”。</li>
+<li><strong>多变量时间序列</strong>：引入<strong>其他相关变量</strong>一起预测。比如：预测“明天的用电量”，不仅看“过去30天的用电量”，还看“过去30天的温度、湿度、是否工作日、是否有大型活动”。</li>
+</ul>
+<p>现实中，<strong>多变量预测通常比单变量更准确</strong>，但建模难度和计算成本也更高。</p>
+<h4 id="42-直接预测-vs-滚动预测">4.2 直接预测 vs 滚动预测</h4>
+<ul>
+<li><strong>直接预测</strong>：训练一个模型直接输出“未来第7天的值”。</li>
+<li><strong>滚动预测</strong>：训练一个模型只预测“明天”，然后把这个预测结果当作“真实值”，喂回模型再预测“后天”……循环7次得到第7天。</li>
+</ul>
+<p><strong>滚动预测的陷阱</strong>：预测误差会<strong>累积放大</strong>。第一步错了1%，第二步可能在错误的基础上再错1%……到第7步可能已经偏到姥姥家了。</p>
+<hr>
+<h3 id="第五章一个时间序列项目的实战地图">第五章：一个时间序列项目的实战地图</h3>
+<p>当你拿到一个时间序列任务时，推荐的步骤流程如下：</p>
+<p><strong>第一步：探索性数据分析</strong></p>
+<ul>
+<li>画出原始序列图，肉眼观察：有趋势吗？有季节性吗？有突然的跳变点吗？</li>
+<li>画出自相关图，确定最佳的回看窗口长度。</li>
+</ul>
+<p><strong>第二步：平稳性检验与处理</strong></p>
+<ul>
+<li>使用ADF检验（Augmented Dickey-Fuller test）判断是否平稳。</li>
+<li>如果不平稳，做差分或对数变换。</li>
+</ul>
+<p><strong>第三步：基线模型建立</strong></p>
+<ul>
+<li>永远先用一个<strong>最简单的模型</strong>作为参照系。</li>
+<li>基线可以是：<strong>“明天 = 今天”</strong>（持久性模型），或者**“明天 = 去年今天”**（季节性朴素模型）。</li>
+<li>如果你的复杂模型连这个简单基线都打不过，说明你大概率做错了什么。</li>
+</ul>
+<p><strong>第四步：模型选择与训练</strong></p>
+<ul>
+<li>数据量小、规律清晰 → 先试 <strong>ARIMA</strong> 或 <strong>Prophet</strong>。</li>
+<li>数据量大、特征多 → 先试 <strong>LightGBM</strong>（需滑动窗口特征工程）。</li>
+<li>数据量极大、序列极长 → 考虑 <strong>LSTM</strong> 或 <strong>Transformer</strong>。</li>
+</ul>
+<p><strong>第五步：评估</strong></p>
+<ul>
+<li>使用<strong>时间序列交叉验证</strong>，而不是普通随机K折交叉验证（因为不能打乱顺序，不能用未来数据验证过去）。</li>
+<li>常用指标：MAE（平均绝对误差）、RMSE（均方根误差）、MAPE（平均绝对百分比误差）。</li>
+</ul>
+<p><strong>第六步：迭代</strong></p>
+<ul>
+<li>分析模型在<strong>哪个时间段预测特别差</strong>，回看那个时间段的数据有什么异常事件，将其编码为特征加入模型。</li>
+</ul>
+<hr>
+<h3 id="第六章常见陷阱与避坑指南">第六章：常见陷阱与避坑指南</h3>
+<p><strong>陷阱一：用未来数据预测过去（数据泄露）</strong></p>
+<ul>
+<li>错误做法：计算“过去30天均值”作为特征时，把<strong>今天</strong>的值也算了进去，然后用这个特征预测<strong>今天</strong>。</li>
+<li>正确做法：任何特征的计算，<strong>只能使用目标时间点之前的数据</strong>。</li>
+</ul>
+<p><strong>陷阱二：忽略时间顺序打乱数据</strong></p>
+<ul>
+<li>错误做法：用 <code>train_test_split</code> 随机划分训练集和测试集。</li>
+<li>正确做法：<strong>按时间切分</strong>——用前80%时间的数据训练，后20%时间的数据测试。</li>
+</ul>
+<p><strong>陷阱三：过度相信复杂模型</strong></p>
+<ul>
+<li>在很多实际业务场景中，<strong>Prophet 或带季节性特征的 LightGBM 已经足够</strong>。LSTM和Transformer不一定更好，但一定更难调试、更难解释、更难部署。</li>
+</ul>
+<hr>
+<h3 id="结语时间是最大的特征">结语：时间是最大的特征</h3>
+<p>时间序列预测，本质上是在和<strong>时间</strong>这个最特殊的维度打交道。它不像一张静态的猫照片，更像一条流动的河——你只能站在“现在”这个点，回望过去，推测未来。</p>
+<p>这篇入门文章希望能帮你建立对时间序列分析的<strong>框架性认知</strong>。当你下次看到一条曲线时，不妨问问自己：它有趋势吗？有周期吗？平稳吗？我该用什么模型去捕捉它？</p>
+<p>这个思考过程，就是时间序列分析的核心肌肉记忆。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                    机器学习
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 智能物化视图 SQL 手册</div>
+                        <div class="related-meta">2026-06-25</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png" alt="StarRocks 智能物化视图 SQL 手册" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUPRC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUPRC 只盯着正样本看——这不是傲慢，是诚实</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/5wwG/AUPRC.png" alt="AUPRC 只盯着正样本看——这不是傲慢，是诚实" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUROC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUROC：从 ROC 曲线到概率解释的完全指南</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/9Wok/AUROC.png" alt="AUROC：从 ROC 曲线到概率解释的完全指南" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/ridge-regression/">
+                      <div class="related-left">
+                        <div class="related-post-title">岭回归：宁可有偏，不可失控</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/sAl6/c76b2a6.png" alt="岭回归：宁可有偏，不可失控" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-architecture/">
+                  <h3 class="post-title">
+                    StarRocks 架构设计哲学：为什么它只需要两种节点就能支撑 PB 级数据分析？
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

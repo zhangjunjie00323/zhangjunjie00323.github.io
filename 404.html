@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Page Not Found</title>
+  <script>
+    (function() {
+      var redirects = {
+        "/post/ai-agent-PowerBI/": "/post/powerbi-agent-mcp-pbip/",
+        "/post/Hash/": "/post/hash/",
+        "/post/Evolution of IT Architecture/": "/post/ai-agent-it-architecture/",
+        "/post/Covariance/": "/post/covariance/",
+        "/post/Standard Deviation/": "/post/standard-deviation/",
+        "/post/Variance/": "/post/variance/",
+        "/post/Discrete Mathematics/": "/post/discrete-math/",
+        "/post/starrocks-Deploy and install/": "/post/starrocks-deploy/",
+        "/post/starrocks-DataSave/": "/post/starrocks-storage/",
+        "/post/starrocks_SystemTable/": "/post/starrocks-system-tables/",
+        "/post/StarRocks_TrainingSet_Testing Set/": "/post/train-validation-test/",
+        "/post/blood circulation/": "/post/blood-circulation/",
+        "/post/Ridge-Regression/": "/post/ridge-regression/",
+        "/post/Tailscale/": "/post/tailscale/",
+        "/post/Image Hosting/": "/post/image-hosting/",
+        "/post/ji-qi-xue-xi-di-yi-dao-kan-ni-he-qian-ni-he-yu-guo-ni-he-wan-quan-zhi-nan/": "/post/overfitting-underfitting/",
+        "/post/te-zheng-gong-cheng-jue-ding-mo-xing-shang-xian-de-yin-xing-yi-zhu-jia/": "/post/feature-engineering/",
+        "/post/hou-tian-zhi-ben-du-dong-ni-de-pi-wei-jiu-deng-yu-du-dong-jian-kang/": "/post/spleen-stomach-health/",
+        "/post/chen-mo-de-ju-ren-du-dong-ni-de-gan-zang-jiu-du-dong-liao-shen-ti-de-jie-du-mi-ma/": "/post/liver-detox-health/",
+        "/post/luo-ji-hui-gui/": "/post/logistic-regression/",
+        "/post/duo-xiang-shi-hui-gui/": "/post/polynomial-regression/",
+        "/post/ni-zhen-de-e-liao-me/": "/post/hunger/",
+        "/post/shu-ju-liu-zhong-de-shen-zhi-yu-yan-wei-shi-me-ni-de-aiyou-xi-he-wei-lai-du-you-xian-xing-dai-shu-bian-yi/": "/post/linear-algebra-ai/",
+        "/post/xian-xing-hui-gui-shen-du-jie-xi-bu-zhi-shi-yi-tiao-zhi-xian-geng-shi-yi-tao-jian-mo-si-xiang/": "/post/linear-regression/",
+        "/post/da-tong-shu-ju-gu-dao-starrocks-catalog-ru-he-shi-xian-nei-wai-bu-shu-ju-de-wu-feng-fang-wen/": "/post/starrocks-catalog/",
+        "/post/starrocks-fe-yuan-shu-ju-chi-jiu-hua-jie-mi-editlog-yu-checkpoint-ji-zhi-shen-du-jie-xi/": "/post/starrocks-fe-metadata/",
+        "/post/sql-zhi-xing-qian-gao-zhe-me-duo-fen-xi-starrocks-bu-pa-man-ma/": "/post/starrocks-sql-analysis/",
+        "/post/cong-sql-dao-zhi-xing-ji-hua-starrocks-fe-jie-dian-de-jia-gou-she-ji-yu-he-xin-zhi-ze/": "/post/starrocks-fe-query-plan/",
+        "/post/starrocks-be-cun-chu-yin-qing-shen-du-jie-xi-cong-tablet-dao-lie-shi-cun-chu-de-wu-li-shi-xian/": "/post/starrocks-be-storage/",
+        "/post/starrocks-biao-mo-xing-shen-du-jie-xi-ming-xi-ju-he-geng-xin-yu-zhu-jian-de-xuan-ze-zhi-dao/": "/post/starrocks-table-model/",
+        "/post/da-tong-shu-ju-dong-mai-starrocks-flink-cdc-shi-shi-tong-bu-lian-lu-shen-du-jie-xi/": "/post/starrocks-flink-cdc/",
+        "/post/cong-hive-dao-icebergshu-ju-hu-biao-ge-shi-de-jin-hua-zhi-lu-yu-lakehouse-xin-fan-shi/": "/post/hive-iceberg-lakehouse/",
+        "/post/starrocks-he-xin-zu-jian-xiang-jie-fe-yu-be-de-da-nao-yu-si-zhi-fen-gong/": "/post/starrocks-fe-be/",
+        "/post/starrocks-shi-jian-lu-xing-time-travelshu-ju-shi-jie-de-hou-hui-yao/": "/post/starrocks-time-travel/",
+        "/post/starrocks-zhi-neng-wu-hua-shi-tu-yong-yu-ji-suan-huan-kuai-cha-xun-de-tou-ming-jia-su-li-qi/": "/post/starrocks-materialized-view/",
+        "/post/starrocks-xiang-liang-hua-yin-qing-ru-he-rang-cpu-zai-shu-ju-fen-xi-zhong-huo-li-quan-kai/": "/post/starrocks-vectorized-engine/",
+        "/post/starrocks-mpp-jia-gou-rang-da-gui-mo-bing-xing-ji-suan-cong-ke-neng-bian-wei-chang-tai/": "/post/starrocks-mpp/",
+        "/post/starrocks-tablet-shen-du-jie-xi-cong-wu-li-fen-pian-dao-ji-qun-jun-heng-de-cun-chu-ji-shi/": "/post/starrocks-tablet/",
+        "/post/shi-jian-xu-lie-ru-men-zhi-nan-ni-de-shu-ju-li-cang-zhao-yi-tiao-shi-jian-zhou/": "/post/time-series/",
+        "/post/starrocks-jia-gou-she-ji-zhe-xue-wei-shi-me-ta-zhi-xu-yao-liang-chong-jie-dian-jiu-neng-zhi-cheng-pb-ji-shu-ju-fen-xi/": "/post/starrocks-architecture/",
+        "/post/ji-qi-xue-xi-suan-fa-quan-jing-tu-yi-kou-qi-kan-wan-50-chong-he-xin-suan-fa/": "/post/machine-learning-algorithms/",
+        "/post/ji-qi-xue-xi-de-san-tiao-cha-lu-kou-jian-du-wu-jian-du-yu-qiang-hua-xue-xi/": "/post/supervised-unsupervised-rl/",
+        "/post/bie-bei-xia-pao-gei-pu-tong-ren-de-ji-qi-xue-xi-di-yi-ke-yuan-lai-ta-jiu-shi-cai-gui-lu/": "/post/machine-learning-intro/"
+      };
+      var path = decodeURIComponent(window.location.pathname);
+      var normalizedPath = path.endsWith("/") ? path : path + "/";
+      var target = redirects[normalizedPath];
+      if (target) {
+        window.location.replace(target + window.location.search + window.location.hash);
+      }
+    })();
+  </script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      text-align: center;
+    }
+    .box {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+    }
+    .number {
+      font-size: 80px;
+      color: #666;
+      font-weight: bold;
+    }
+    .text {
+      font-size: 14px;
+      margin: 24px;
+      color: #333;
+    }
+    .btn-container {
+      display: flex;
+      justify-content: center;
+    }
+    .btn {
+      padding: 8px 24px;
+      display: inline-block;
+      text-decoration: none;
+      background: #fff;
+      border: 2px solid #efefef;
+      color: #333;
+      margin: 24px;
+      border-radius: 20px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+    }
+    .footer {
+      padding: 16px;
+      border-top: 1px solid #efefef;
+      color: #777;
+      font-weight: lighter;
+    }
+    .footer a {
+      text-decoration: none;
+      font-weight: bold;
+      color: #000;
+    }
+  </style>
+</head>
+<body>
+  <div class="box">
+    <div class="number">4 0 4</div>
+    <div class="text">
+      Page not found
+    </div>
+    <div class="btn-container">
+      <a class="btn" id="back">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="16" height="16" style="margin-right: 8px;">
+          <path fill="none" d="M0 0h24v24H0z"/>
+          <path d="M5.828 7l2.536 2.536L6.95 10.95 2 6l4.95-4.95 1.414 1.414L5.828 5H13a8 8 0 1 1 0 16H4v-2h9a6 6 0 1 0 0-12H5.828z"/>
+        </svg>
+        Back
+      </a>
+    </div>
+  </div>
+  <footer class="footer">
+    Powered by <a href="https://gridea.dev" target="_blank">Gridea</a>
+  </footer>
+  <script>
+    var back = document.getElementById('back')
+    back.onclick = function() { console.log('run...'); history.back() }
+  </script>
+</body>
+</html>

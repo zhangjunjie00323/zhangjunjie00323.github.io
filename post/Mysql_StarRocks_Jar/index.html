@@ -1,0 +1,1790 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="在同一台电脑、同一个客户端（DataGrip）、同一个 StarRocks 集群上，对比 MySQL JDBC 与 StarRocks JDBC 两种连接方式的差异——包括连接配置、执行耗时、结果拉取、IDE 体验，以及如何做公平对比。 ...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png">
+
+<meta name="keywords" content="大数据,StarRocks">
+
+
+<meta property="article:published_time" content="2026-06-23T21:56:50+08:00">
+<meta property="article:modified_time" content="2026-06-23T21:56:50+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="大数据">
+
+<meta property="article:tag" content="StarRocks">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="在同一台电脑、同一个客户端（DataGrip）、同一个 StarRocks 集群上，对比 MySQL JDBC 与 StarRocks JDBC 两种连接方式的差异——包括连接配置、执行耗时、结果拉取、IDE 体验，以及如何做公平对比。 ...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/"
+      },
+      "headline": "StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC",
+      "description": "在同一台电脑、同一个客户端（DataGrip）、同一个 StarRocks 集群上，对比 MySQL JDBC 与 StarRocks JDBC 两种连接方式的差异——包括连接配置、执行耗时、结果拉取、IDE 体验，以及如何做公平对比。 ...",
+      "image": "https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png",
+      "url": "https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-06-23T21:56:50+08:00",
+      "dateModified": "2026-06-23T21:56:50+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "大数据",
+        "StarRocks"
+      ],
+      "keywords": "大数据,StarRocks",
+      "wordCount": 11290
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "大数据",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC",
+          "item": "https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E4%B8%BA%E4%BB%80%E4%B9%88-starrocks-%E8%83%BD%E7%94%A8%E4%B8%A4%E7%A7%8D%E9%A9%B1%E5%8A%A8">一、为什么 StarRocks 能用两种驱动？</a></li>
+<li><a href="#%E4%BA%8C-%E4%B8%A4%E7%A7%8D%E9%A9%B1%E5%8A%A8%E6%80%8E%E4%B9%88%E9%85%8Ddatagrip">二、两种驱动怎么配（DataGrip）</a>
+<ul>
+<li><a href="#21-%E5%85%AC%E5%85%B1%E9%85%8D%E7%BD%AE%E4%B8%A4%E4%B8%AA%E6%95%B0%E6%8D%AE%E6%BA%90%E4%BF%9D%E6%8C%81%E4%B8%80%E8%87%B4">2.1 公共配置（两个数据源保持一致）</a></li>
+<li><a href="#22-%E6%95%B0%E6%8D%AE%E6%BA%90-amysql-%E9%A9%B1%E5%8A%A8">2.2 数据源 A：MySQL 驱动</a></li>
+<li><a href="#23-%E6%95%B0%E6%8D%AE%E6%BA%90-bstarrocks-%E5%AE%98%E6%96%B9%E9%A9%B1%E5%8A%A8">2.3 数据源 B：StarRocks 官方驱动</a></li>
+<li><a href="#24-%E8%BF%9E%E6%8E%A5%E6%88%90%E5%8A%9F%E6%A0%87%E5%BF%97">2.4 连接成功标志</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E5%AF%B9%E6%AF%94%E4%BB%80%E4%B9%88%E4%B8%8D%E5%AF%B9%E6%AF%94%E4%BB%80%E4%B9%88">三、对比什么？不对比什么？</a>
+<ul>
+<li><a href="#31-%E9%80%82%E5%90%88%E5%AF%B9%E6%AF%94%E7%9A%84%E7%BB%B4%E5%BA%A6">3.1 适合对比的维度</a></li>
+<li><a href="#32-%E4%B8%8D%E8%A6%81%E7%94%A8%E6%9D%A5%E5%AF%B9%E6%AF%94%E7%9A%84">3.2 不要用来对比的</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-%E5%85%AC%E5%B9%B3%E5%AF%B9%E6%AF%94%E5%AE%9E%E9%AA%8C%E8%AE%BE%E8%AE%A1%E6%8E%A8%E8%8D%90%E6%B5%81%E7%A8%8B">四、公平对比实验设计（推荐流程）</a>
+<ul>
+<li><a href="#41-%E5%AE%9E%E9%AA%8C%E5%8E%9F%E5%88%99">4.1 实验原则</a></li>
+<li><a href="#42-%E5%AE%9E%E9%AA%8C%E8%AE%B0%E5%BD%95%E8%A1%A8%E5%8F%AF%E7%9B%B4%E6%8E%A5%E5%9C%A8-typora-datagrip-%E4%B8%AD%E5%A1%AB%E5%86%99">4.2 实验记录表（可直接在 Typora / DataGrip 中填写）</a></li>
+<li><a href="#43-%E6%93%8D%E4%BD%9C%E6%AD%A5%E9%AA%A4datagrip">4.3 操作步骤（DataGrip）</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-%E5%AF%B9%E6%AF%94%E7%94%A8-sql%E4%B8%89%E6%A1%A3%E7%94%B1%E6%98%93%E5%88%B0%E9%9A%BE">五、对比用 SQL（三档，由易到难）</a>
+<ul>
+<li><a href="#q1-%E8%BD%BB%E9%87%8F%E8%81%9A%E5%90%88%E9%AA%8C%E8%AF%81%E8%BF%9E%E9%80%9A-%E5%9F%BA%E7%BA%BF%E6%9C%8D%E5%8A%A1%E7%AB%AF%E5%B7%AE%E5%BC%82%E5%BA%94%E6%9E%81%E5%B0%8F">Q1 · 轻量聚合（验证连通 + 基线，服务端差异应极小）</a></li>
+<li><a href="#q2-%E5%A4%8D%E6%9D%82%E5%88%86%E6%9E%90%E4%B8%BB%E5%AE%9E%E9%AA%8C%E7%BA%A6-500-%E4%B8%87%E8%A1%8C%E6%89%AB%E6%8F%8F%E6%9C%80%E7%BB%88-limit-5000">Q2 · 复杂分析（主实验，约 500 万行扫描，最终 LIMIT 5000）</a></li>
+<li><a href="#q3-%E5%A4%A7%E7%BB%93%E6%9E%9C%E9%9B%86%E6%8B%89%E5%9B%9E%E8%A7%82%E5%AF%9F%E9%A9%B1%E5%8A%A8%E5%B7%AE%E5%BC%82%E6%9C%80%E6%98%8E%E6%98%BE%E7%9A%84%E4%B8%80%E6%A1%A3">Q3 · 大结果集拉回（观察驱动差异最明显的一档）</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E5%A6%82%E4%BD%95%E8%AF%BB%E6%95%B0%E5%88%AB%E6%8A%8A%E4%B8%A4%E4%BB%B6%E4%BA%8B%E6%B7%B7%E5%9C%A8%E4%B8%80%E8%B5%B7">六、如何读数：别把两件事混在一起</a></li>
+<li><a href="#%E4%B8%83-%E5%AE%9E%E6%B5%8B%E7%BB%93%E8%AE%BA%E6%A8%A1%E6%9D%BF%E5%8F%AF%E7%9B%B4%E6%8E%A5%E8%B4%B4%E8%BF%9B%E6%96%87%E7%AB%A0">七、实测结论模板（可直接贴进文章）</a>
+<ul>
+<li><a href="#71-%E5%A1%AB%E8%A1%A8%E7%A4%BA%E4%BE%8B%E6%95%B0%E5%AD%97%E4%B8%BA%E7%A4%BA%E6%84%8F%E8%AF%B7%E6%8D%A2%E6%88%90%E5%AE%9E%E6%B5%8B">7.1 填表示例（数字为示意，请换成实测）</a></li>
+<li><a href="#72-%E6%89%A7%E8%A1%8C%E6%80%A7%E8%83%BD">7.2 执行性能</a></li>
+<li><a href="#73-%E5%BC%80%E5%8F%91%E4%B8%8E%E8%BF%90%E7%BB%B4%E4%BD%93%E9%AA%8C">7.3 开发与运维体验</a></li>
+<li><a href="#74-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE%E4%B8%80%E5%8F%A5%E8%AF%9D">7.4 选型建议（一句话）</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AB-%E5%B8%B8%E8%A7%81%E9%97%AE%E9%A2%98%E5%86%99%E8%BF%9B%E6%96%87%E7%AB%A0-faq">八、常见问题（写进文章 FAQ）</a>
+<ul>
+<li><a href="#q1%E4%B8%A4%E7%A7%8D%E9%A9%B1%E5%8A%A8%E6%9F%A5%E5%90%8C%E4%B8%80%E6%9D%A1-sql%E9%80%9F%E5%BA%A6%E4%BC%9A%E4%B8%80%E6%A0%B7%E5%90%97">Q1：两种驱动查同一条 SQL，速度会一样吗？</a></li>
+<li><a href="#q2%E4%B8%BA%E4%BB%80%E4%B9%88-mysql-%E9%A9%B1%E5%8A%A8%E4%B8%8B-duplicate-key-%E6%A0%87%E7%BA%A2">Q2：为什么 MySQL 驱动下 <code>DUPLICATE KEY</code> 标红？</a></li>
+<li><a href="#q3%E7%94%9F%E4%BA%A7%E7%8E%AF%E5%A2%83%E7%94%A8%E5%93%AA%E4%B8%AA%E9%A9%B1%E5%8A%A8">Q3：生产环境用哪个驱动？</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B9%9D-%E9%99%84%E5%BD%95%E5%AE%9E%E9%AA%8C%E8%A1%A8%E7%BB%93%E6%9E%84worktime">九、附录：实验表结构（worktime）</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-06-23 21:56
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                64 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png" alt="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>在同一台电脑、同一个客户端（DataGrip）、同一个 StarRocks 集群上，对比 <strong>MySQL JDBC</strong> 与 <strong>StarRocks JDBC</strong> 两种连接方式的差异——包括连接配置、执行耗时、结果拉取、IDE 体验，以及如何做<strong>公平</strong>对比。</p>
+<!-- more -->
+<blockquote>
+<p><strong>实验环境</strong>：StarRocks <strong>4.0.9-ee</strong> · 示例表 <code>pms.worktime</code>（约 <strong>496 万行</strong>）<br>
+<strong>核心结论（先读）</strong>：<strong>查询快慢主要由 StarRocks 服务端决定</strong>；换驱动对「分析型 SQL 执行」影响通常很小，对「大结果集拉回客户端」和「IDE 语法识别」影响更明显。</p>
+</blockquote>
+<h2 id="一-为什么-starrocks-能用两种驱动">一、为什么 StarRocks 能用两种驱动？</h2>
+<p>StarRocks FE 对外提供 <strong>MySQL 协议兼容</strong> 的查询端口（默认 <strong>9030</strong>）。因此：</p>
+<table>
+<thead>
+<tr>
+<th>连接方式</th>
+<th>本质</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>MySQL JDBC</strong></td>
+<td>把 StarRocks 当作「类 MySQL」数据库，走 MySQL  wire protocol</td>
+</tr>
+<tr>
+<td><strong>StarRocks JDBC</strong></td>
+<td>官方驱动，同样连 9030，针对 StarRocks 类型/行为做了适配</td>
+</tr>
+</tbody>
+</table>
+<p>两者发出去的 <strong>SQL 文本相同</strong> 时，服务端执行计划应一致；差异主要在 <strong>客户端 JDBC 层</strong> 和 <strong>IDE 集成</strong>。</p>
+<pre><code>┌─────────────┐     MySQL JDBC      ┌──────────────┐
+│  DataGrip   │ ──────────────────► │              │
+│  (本机)     │     StarRocks JDBC  │  StarRocks   │
+└─────────────┘ ──────────────────► │  FE :9030    │
+                                    └──────┬───────┘
+                                           │ 执行计划 / 聚合 / Scan
+                                           ▼
+                                    ┌──────────────┐
+                                    │  BE 集群      │
+                                    └──────────────┘
+</code></pre>
+<hr>
+<h2 id="二-两种驱动怎么配datagrip">二、两种驱动怎么配（DataGrip）</h2>
+<p>在 DataGrip 里建 <strong>两个数据源</strong>，除驱动外其余配置尽量相同，便于对比。</p>
+<h3 id="21-公共配置两个数据源保持一致">2.1 公共配置（两个数据源保持一致）</h3>
+<table>
+<thead>
+<tr>
+<th>配置项</th>
+<th>建议值</th>
+<th>说明</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Host</td>
+<td>FE 节点 IP</td>
+<td>不要一个写 IP、一个写域名（除非刻意测试）</td>
+</tr>
+<tr>
+<td>Port</td>
+<td><strong>9030</strong></td>
+<td>StarRocks 查询端口，不是 MySQL 3306</td>
+</tr>
+<tr>
+<td>User / Password</td>
+<td>同一账号</td>
+<td>注意用户名<strong>不要有空格</strong>（<code>root</code> ≠ <code>root </code>）</td>
+</tr>
+<tr>
+<td>Database</td>
+<td><code>pms</code> 或留空</td>
+<td>一致即可</td>
+</tr>
+<tr>
+<td>URL 模板</td>
+<td>用变量 <code>{host}</code></td>
+<td><strong>不要</strong>把 IP 写死在驱动 Class 里</td>
+</tr>
+</tbody>
+</table>
+<h3 id="22-数据源-amysql-驱动">2.2 数据源 A：MySQL 驱动</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>驱动</td>
+<td>MySQL（8.x）</td>
+</tr>
+<tr>
+<td>Driver Class</td>
+<td><code>com.mysql.cj.jdbc.Driver</code></td>
+</tr>
+<tr>
+<td>URL 模板</td>
+<td><code>jdbc:mysql://{host}:{port}/{database}</code></td>
+</tr>
+<tr>
+<td>依赖</td>
+<td>DataGrip 自带或 Maven <code>mysql:mysql-connector-java</code></td>
+</tr>
+</tbody>
+</table>
+<p><strong>可选 URL 参数（减少元数据干扰）：</strong></p>
+<pre><code class="language-text">jdbc:mysql://{host}:9030/pms?useSSL=false&amp;serverTimezone=Asia/Shanghai
+</code></pre>
+<h3 id="23-数据源-bstarrocks-官方驱动">2.3 数据源 B：StarRocks 官方驱动</h3>
+<table>
+<thead>
+<tr>
+<th>项</th>
+<th>值</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>驱动</td>
+<td>自定义 / StarRocks</td>
+</tr>
+<tr>
+<td>Driver Class</td>
+<td><code>com.starrocks.jdbc.Driver</code></td>
+</tr>
+<tr>
+<td>URL 模板</td>
+<td><code>jdbc:starrocks://{host}:{port}/{database}</code></td>
+</tr>
+<tr>
+<td>Maven 坐标</td>
+<td><code>com.starrocks:starrocks-connector-j:1.1.1</code>（以 Maven Central 为准）</td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p>若列表里没有 StarRocks，在 Driver 设置里 <strong>+</strong> 添加，从 Maven 下载 jar。</p>
+</blockquote>
+<h3 id="24-连接成功标志">2.4 连接成功标志</h3>
+<p>Test Connection 应显示类似：</p>
+<pre><code class="language-text">DBMS: StarRocks 4.0.9-ee   （StarRocks 驱动，最理想）
+DBMS: MySQL 8.x            （MySQL 驱动，也常见）
+</code></pre>
+<p>若显示 <strong><code>MySQL (无版本)</code></strong> 且伴随 JVM <code>errno=1455</code>，多半是 <strong>本机 DataGrip 内存/页面文件不足</strong>，与驱动无关——先把 <code>-Xmx4096m</code> 改为 <code>-Xmx2048m</code> 并重启 DataGrip。</p>
+<hr>
+<h2 id="三-对比什么不对比什么">三、对比什么？不对比什么？</h2>
+<h3 id="31-适合对比的维度">3.1 适合对比的维度</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>MySQL 驱动</th>
+<th>StarRocks 驱动</th>
+<th>预期</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>分析 SQL 执行耗时</strong>（服务端为主）</td>
+<td>客户端计时</td>
+<td>同左</td>
+<td><strong>几乎相同</strong></td>
+</tr>
+<tr>
+<td><strong><code>EXPLAIN ANALYZE</code> 耗时</strong></td>
+<td>与驱动无关</td>
+<td>同左</td>
+<td><strong>完全相同</strong></td>
+</tr>
+<tr>
+<td><strong>大结果集拉回</strong>（无 LIMIT / 导出行多）</td>
+<td>受 <code>fetchSize</code> 影响</td>
+<td>类型映射更贴合</td>
+<td>StarRocks 驱动<strong>可能略好</strong></td>
+</tr>
+<tr>
+<td><strong>元数据浏览</strong>（表结构、列类型）</td>
+<td>按 MySQL 解析，偶有偏差</td>
+<td>更贴近 StarRocks</td>
+<td>StarRocks 驱动<strong>更准</strong></td>
+</tr>
+<tr>
+<td><strong>SQL 编辑器标红/补全</strong></td>
+<td><code>DUPLICATE KEY</code> 等常误报</td>
+<td>误报较少</td>
+<td><strong>体验差异</strong>，不影响已执行 SQL 的速度</td>
+</tr>
+<tr>
+<td><strong>StarRocks 特有语法</strong></td>
+<td>可能不识别</td>
+<td>更好</td>
+<td>属兼容性，非性能</td>
+</tr>
+</tbody>
+</table>
+<h3 id="32-不要用来对比的">3.2 不要用来对比的</h3>
+<ul>
+<li><strong>IDE 语法检查是否标红</strong> → 不是执行性能</li>
+<li><strong>第一次冷启动连接</strong> → 受 JVM 预热、DNS 影响，波动大</li>
+<li><strong>不同 Host/Port/账号</strong> → 不是驱动差异</li>
+</ul>
+<hr>
+<h2 id="四-公平对比实验设计推荐流程">四、公平对比实验设计（推荐流程）</h2>
+<h3 id="41-实验原则">4.1 实验原则</h3>
+<ol>
+<li><strong>控制变量</strong>：同机、同 DataGrip 版本、同 FE、同 SQL、同账号、同时间段（低峰）</li>
+<li><strong>预热</strong>：每条 SQL <strong>第 1 遍丢弃</strong>，<strong>第 2 遍记时</strong>（避免 Page Cache 干扰）</li>
+<li><strong>拆清两段耗时</strong>：
+<ul>
+<li><strong>服务端</strong>：<code>EXPLAIN ANALYZE</code> 的 TotalTime</li>
+<li><strong>端到端</strong>：DataGrip 执行面板显示的时间</li>
+</ul>
+</li>
+<li><strong>分场景</strong>：小结果集 / 中结果集 / 大结果集，驱动差异在不同场景表现不同</li>
+</ol>
+<h3 id="42-实验记录表可直接在-typora-datagrip-中填写">4.2 实验记录表（可直接在 Typora / DataGrip 中填写）</h3>
+<p><strong>环境信息</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>填写内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>StarRocks 版本</td>
+<td>4.0.9-ee</td>
+</tr>
+<tr>
+<td>表行数</td>
+<td>4968583</td>
+</tr>
+<tr>
+<td>客户端</td>
+<td>DataGrip</td>
+</tr>
+<tr>
+<td>本机内存</td>
+<td>64 GB</td>
+</tr>
+</tbody>
+</table>
+<p><strong>实测数据</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">场景</th>
+<th>SQL 编号</th>
+<th>驱动</th>
+<th style="text-align:right">第 2 次 (s)</th>
+<th style="text-align:right">EXPLAIN (ms)</th>
+<th style="text-align:right">返回行数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">S1</td>
+<td>Q1 轻量聚合</td>
+<td>MySQL</td>
+<td style="text-align:right">29ms</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td style="text-align:center">S1</td>
+<td>Q1</td>
+<td>StarRocks</td>
+<td style="text-align:right">33ms</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">2</td>
+</tr>
+<tr>
+<td style="text-align:center">S2</td>
+<td>Q2 复杂分析</td>
+<td>MySQL</td>
+<td style="text-align:right">552ms</td>
+<td style="text-align:right"></td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td style="text-align:center">S2</td>
+<td>Q2</td>
+<td>StarRocks</td>
+<td style="text-align:right">509ms</td>
+<td style="text-align:right">同左</td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td style="text-align:center">S3</td>
+<td>Q3 大结果集</td>
+<td>MySQL</td>
+<td style="text-align:right"></td>
+<td style="text-align:right">—</td>
+<td style="text-align:right"></td>
+</tr>
+<tr>
+<td style="text-align:center">S3</td>
+<td>Q3</td>
+<td>StarRocks</td>
+<td style="text-align:right"></td>
+<td style="text-align:right">—</td>
+<td style="text-align:right"></td>
+</tr>
+</tbody>
+</table>
+<blockquote>
+<p><strong>填表说明</strong></p>
+<ul>
+<li><strong>第 2 次 (s)</strong>：每条 SQL 预热 1 遍后，第 2 遍 DataGrip 显示的耗时。</li>
+<li><strong>EXPLAIN (ms)</strong>：仅对 <strong>Q2</strong> 执行一次 <code>EXPLAIN ANALYZE</code>，取 TotalTime；与驱动无关，两行填同一数值即可。</li>
+<li><strong>返回行数</strong>：Q1 看实际行数；Q2 为 <strong>5000</strong>；Q3 为 <strong>100000</strong>。</li>
+<li>Q1、Q3 的 EXPLAIN 列填 <strong>—</strong> 即可。</li>
+</ul>
+</blockquote>
+<p><strong>结论摘要</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>填写示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>服务端 EXPLAIN ANALYZE（Q2）</td>
+<td>约 ____ ms，与 JDBC 驱动无关</td>
+</tr>
+<tr>
+<td>客户端端到端（Q2）</td>
+<td>MySQL ____ s vs StarRocks ____ s，相差 ____ %</td>
+</tr>
+<tr>
+<td>大结果集（Q3）</td>
+<td>MySQL ____ s vs StarRocks ____ s；差异主要在 ____________</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论要点（可选勾选）</strong></p>
+<ul class="contains-task-list">
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-7680754"> Q1 / Q2 两种驱动第 2 次耗时相差 &lt;<label class="task-list-item-label" for="task-item-7680754"> Q1 / Q2 两种驱动第 2 次耗时相差 &lt; 5%，可认为基本相同</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-3113639"> Q2 的 <code>EXPLAIN ANALYZE</code><label class="task-list-item-label" for="task-item-3113639"> Q2 的 `EXPLAIN ANALYZE` 与驱动无关，瓶颈在 StarRocks 服务端</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-6497374"><label class="task-list-item-label" for="task-item-6497374"> Q3 若存在明显差异，主要在结果集传输与客户端渲染</label></li>
+<li class="task-list-item"><input class="task-list-item-checkbox" disabled="" type="checkbox" id="task-item-2621069"><label class="task-list-item-label" for="task-item-2621069"> 写 DDL / MV 更推荐 StarRocks 官方驱动（IDE 误报更少）</label></li>
+</ul>
+<h3 id="43-操作步骤datagrip">4.3 操作步骤（DataGrip）</h3>
+<ol>
+<li>复制 <strong>第五节</strong> 三条 SQL 到两个数据源各执行一遍（预热）</li>
+<li>切换数据源，对 <strong>Q1 → Q2 → Q3</strong> 各执行第 2 遍并记时</li>
+<li>对 Q2 在前面加 <code>EXPLAIN ANALYZE</code>，记录 TotalTime（<strong>两个驱动应一致</strong>）</li>
+<li>填表写结论</li>
+</ol>
+<hr>
+<h2 id="五-对比用-sql三档由易到难">五、对比用 SQL（三档，由易到难）</h2>
+<blockquote>
+<p>表：<code>pms.worktime</code>。执行前：<code>USE pms;</code><br>
+压测前确认：<code>SELECT COUNT(*) FROM worktime;</code></p>
+</blockquote>
+<h3 id="q1-轻量聚合验证连通-基线服务端差异应极小">Q1 · 轻量聚合（验证连通 + 基线，服务端差异应极小）</h3>
+<pre><code class="language-sql">SELECT time_class, COUNT(*) AS cnt, SUM(normal_hour) AS total_normal
+FROM worktime
+GROUP BY time_class;
+</code></pre>
+<pre><code>## StarRicks 驱动
+[2026-06-25 14:23:09] default_catalog.pms&gt; SELECT time_class, COUNT(*) AS cnt, SUM(normal_hour) AS total_normal
+                                           FROM worktime
+                                           GROUP BY time_class
+[2026-06-25 14:23:09] 在 386 ms (execution: 33 ms, fetching: 353 ms) 内检索到从 1 开始的 2 行
+[2026-06-25 14:23:27] default_catalog.pms&gt; SELECT time_class, COUNT(*) AS cnt, SUM(normal_hour) AS total_normal
+                                           FROM worktime
+                                           GROUP BY time_class
+[2026-06-25 14:23:27] 在 374 ms (execution: 33 ms, fetching: 341 ms) 内检索到从 1 开始的 2 行
+</code></pre>
+<pre><code>## Mysql 驱动
+[2026-06-25 14:24:00] pms&gt; SELECT time_class, COUNT(*) AS cnt, SUM(normal_hour) AS total_normal
+                           FROM worktime
+                           GROUP BY time_class
+[2026-06-25 14:24:00] 在 442 ms (execution: 32 ms, fetching: 410 ms) 内检索到从 1 开始的 2 行
+[2026-06-25 14:24:03] pms&gt; SELECT time_class, COUNT(*) AS cnt, SUM(normal_hour) AS total_normal
+                           FROM worktime
+                           GROUP BY time_class
+[2026-06-25 14:24:04] 在 355 ms (execution: 29 ms, execution: 326 ms) 内检索到从 1 开始的 2 行
+</code></pre>
+<ul>
+<li>返回行数：个位数～几十行</li>
+<li><strong>预期</strong>：两种驱动耗时几乎一样</li>
+</ul>
+<p><strong>PS：execution 和 execution 分别是什么</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">阶段</th>
+<th style="text-align:left">你的值</th>
+<th style="text-align:left">含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">execution</td>
+<td style="text-align:left">29 ms</td>
+<td style="text-align:left">SQL 在 StarRocks 服务端执行 的时间：解析、优化、Scan、聚合、排序等，直到结果开始/完成在服务端产出</td>
+</tr>
+<tr>
+<td style="text-align:left">fetching</td>
+<td style="text-align:left">326 ms</td>
+<td style="text-align:left">把结果从 StarRocks 拉回 DataGrip 的时间：网络传输 + JDBC 读结果集 + 客户端缓冲</td>
+</tr>
+<tr>
+<td style="text-align:left">合计</td>
+<td style="text-align:left">355 ms</td>
+<td style="text-align:left">DataGrip 显示的端到端时间（你表格里的「第 2 次 (s)」≈ 0.547 s）</td>
+</tr>
+</tbody>
+</table>
+<p>可以简单理解成：</p>
+<p>DataGrip 总时间 ≈ 服务端算（execution）+ 结果传回客户端（fetching）</p>
+<h3 id="q2-复杂分析主实验约-500-万行扫描最终-limit-5000">Q2 · 复杂分析（主实验，约 500 万行扫描，最终 LIMIT 5000）</h3>
+<p>用于对比「<strong>重查询 + 中等结果集</strong>」——最能代表日常看板 SQL。</p>
+<pre><code class="language-sql">WITH base AS (
+    SELECT
+        user_id, project_id, dept_id, time, time_class, item_id,
+        normal_hour,
+        COALESCE(adjust_hour, 0) AS adjust_hour,
+        COALESCE(added_hour, 0) AS added_hour,
+        normal_hour + COALESCE(adjust_hour, 0) + COALESCE(added_hour, 0) AS total_hour
+    FROM worktime
+),
+daily AS (
+    SELECT
+        user_id, project_id, dept_id, time, time_class,
+        COUNT(*) AS line_cnt,
+        COUNT(DISTINCT item_id) AS item_cnt,
+        SUM(total_hour) AS sum_total
+    FROM base
+    GROUP BY user_id, project_id, dept_id, time, time_class
+),
+monthly AS (
+    SELECT
+        user_id,
+        DATE_TRUNC('month', time) AS month_key,
+        COUNT(DISTINCT project_id) AS project_cnt,
+        SUM(line_cnt) AS record_cnt,
+        SUM(sum_total) AS month_total_hours,
+        MAX(dept_id) AS dept_id
+    FROM daily
+    GROUP BY user_id, DATE_TRUNC('month', time)
+),
+ranked AS (
+    SELECT
+        *,
+        ROW_NUMBER() OVER (PARTITION BY month_key ORDER BY month_total_hours DESC) AS hrs_rank,
+        LAG(month_total_hours) OVER (PARTITION BY user_id ORDER BY month_key) AS prev_hrs
+    FROM monthly
+)
+SELECT
+    user_id, month_key, dept_id, project_cnt, record_cnt,
+    ROUND(month_total_hours, 2) AS month_total_hours,
+    hrs_rank,
+    ROUND(month_total_hours - prev_hrs, 2) AS mom_delta
+FROM ranked
+WHERE hrs_rank &lt;= 200
+ORDER BY month_key DESC, month_total_hours DESC
+LIMIT 5000;
+</code></pre>
+<pre><code>## StarRicks 驱动
+[2026-06-25 14:28:19] default_catalog.pms&gt; WITH base AS (
+										   ******
+                                           ORDER BY month_key DESC, month_total_hours DESC
+                                           LIMIT 5000
+[2026-06-25 14:28:20] 在 607 ms (execution: 189 ms, fetching: 418 ms) 内检索到从 1 开始的 5,000 行
+[2026-06-25 14:28:45] default_catalog.pms&gt; WITH base AS (
+										   ******
+                                           LIMIT 5000
+[2026-06-25 14:28:45] 在 571 ms (execution: 176 ms, fetching: 395 ms) 内检索到从 1 开始的 500 行
+[2026-06-25 14:28:48] default_catalog.pms&gt; WITH base AS (
+										   ******
+                                           LIMIT 5000
+[2026-06-25 14:28:49] 在 509 ms (execution: 138 ms, fetching: 371 ms) 内检索到从 1 开始的 5,000 行
+</code></pre>
+<pre><code>## Mysql 驱动
+[2026-06-25 14:30:58] pms&gt; WITH base AS (
+						   ******
+                           LIMIT 5000
+[2026-06-25 14:30:58] 在 539 ms (execution: 151 ms, fetching: 388 ms) 内检索到从 1 开始的 5,000 行
+[2026-06-25 14:31:06] pms&gt; WITH base AS (
+						   ******
+                           LIMIT 5000
+[2026-06-25 14:31:07] 在 569 ms (execution: 155 ms, fetching: 414 ms) 内检索到从 1 开始的 500 行
+[2026-06-25 14:31:09] pms&gt; WITH base AS (
+						   ******
+                           LIMIT 5000
+[2026-06-25 14:31:10] 在 552 ms (execution: 150 ms, fetching: 402 ms) 内检索到从 1 开始的 5,000 行
+</code></pre>
+<ul>
+<li><strong>预期</strong>：<code>EXPLAIN ANALYZE</code> 两次完全相同；DataGrip 端到端时间 <strong>接近</strong></li>
+</ul>
+<h3 id="q3-大结果集拉回观察驱动差异最明显的一档">Q3 · 大结果集拉回（观察驱动差异最明显的一档）</h3>
+<p>测试十万行</p>
+<pre><code class="language-sql">SELECT
+    user_id,
+    project_id,
+    time,
+    time_class,
+    normal_hour,
+    adjust_hour,
+    added_hour,
+    approve_status
+FROM worktime
+WHERE time &gt;= '2024-01-01'
+ORDER BY time, user_id
+LIMIT 100000;
+</code></pre>
+<pre><code>## StarRicks 驱动
+[2026-06-25 15:27:35] default_catalog.pms&gt; SELECT
+                                               user_id,
+                                               project_id,
+                                               time,
+                                               time_class,
+                                               normal_hour,
+                                               adjust_hour,
+                                               added_hour,
+                                               approve_status
+                                           FROM worktime
+                                           WHERE time &gt;= '2024-01-01'
+                                           ORDER BY time, user_id
+                                           LIMIT 100000
+[2026-06-25 15:27:36] 在 1 s 663 ms (execution: 163 ms, fetching: 1 s 500 ms) 内检索到从 1 开始的 100,000 行
+
+</code></pre>
+<pre><code>## Mysql 驱动
+[2026-06-25 15:28:45] pms&gt; SELECT
+                               user_id,
+                               project_id,
+                               time,
+                               time_class,
+                               normal_hour,
+                               adjust_hour,
+                               added_hour,
+                               approve_status
+                           FROM worktime
+                           WHERE time &gt;= '2024-01-01'
+                           ORDER BY time, user_id
+                           LIMIT 100000
+[2026-06-25 15:28:47] 在 2 s 398 ms (execution: 101 ms, fetching: 2 s 297 ms) 内检索到从 1 开始的 100,000 行
+</code></pre>
+<ul>
+<li>返回 <strong>10 万行</strong>，端到端时间可能明显长于 Q2</li>
+<li><strong>预期</strong>：StarRocks 驱动在类型转换、<code>fetchSize</code> 默认行为上<strong>可能略优</strong>；差距是否明显取决于网络和本机</li>
+</ul>
+<p>测试300万行</p>
+<pre><code class="language-sql">SELECT
+    user_id,
+    project_id,
+    time,
+    time_class,
+    normal_hour,
+    adjust_hour,
+    added_hour,
+    approve_status
+FROM worktime
+WHERE time &gt;= '2024-01-01'
+ORDER BY time, user_id
+LIMIT 3000000;
+</code></pre>
+<pre><code>## StarRicks 驱动
+[2026-06-25 15:36:34] default_catalog.pms&gt; SELECT
+                                               user_id,
+                                               project_id,
+                                               time,
+                                               time_class,
+                                               normal_hour,
+                                               adjust_hour,
+                                               added_hour,
+                                               approve_status
+                                           FROM worktime
+                                           WHERE time &gt;= '2024-01-01'
+                                           ORDER BY time, user_id
+                                           LIMIT 3000000
+[2026-06-25 15:37:05] 在 30 s 987 ms (execution: 2 s 627 ms, fetching: 28 s 360 ms) 内检索到从 1 开始的 3,000,000 行
+[2026-06-25 15:40:46] default_catalog.pms&gt; SELECT
+                                               user_id,
+                                               project_id,
+                                               time,
+                                               time_class,
+                                               normal_hour,
+                                               adjust_hour,
+                                               added_hour,
+                                               approve_status
+                                           FROM worktime
+                                           WHERE time &gt;= '2024-01-01'
+                                           ORDER BY time, user_id
+                                           LIMIT 3000000
+[2026-06-25 15:41:20] 在 33 s 894 ms (execution: 2 s 242 ms, fetching: 31 s 652 ms) 内检索到从 1 开始的 3,000,000 行
+</code></pre>
+<pre><code>## Mysql 驱动
+[2026-06-25 15:57:10] pms&gt; SELECT
+                               user_id,
+                               project_id,
+                               time,
+                               time_class,
+                               normal_hour,
+                               adjust_hour,
+                               added_hour,
+                               approve_status
+                           FROM worktime
+                           WHERE time &gt;= '2024-01-01'
+                           ORDER BY time, user_id
+                           LIMIT 3000000
+[2026-06-25 15:58:18] 在 1 m 8 s 11 ms (execution: 129 ms, fetching: 1 m 7 s 882 ms) 内检索到从 1 开始的 3,000,000 行
+</code></pre>
+<blockquote>
+<p>若只想测服务端、排除拉取：把 Q3 改成 <code>SELECT COUNT(*) FROM worktime WHERE ...</code>，两种驱动应再次接近。</p>
+</blockquote>
+<hr>
+<h2 id="六-如何读数别把两件事混在一起">六、如何读数：别把两件事混在一起</h2>
+<table>
+<thead>
+<tr>
+<th>计时方式</th>
+<th>量的是什么</th>
+<th>驱动是否影响</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>DataGrip 右下角耗时</td>
+<td>提交 SQL → 结果展示完毕（<strong>端到端</strong>）</td>
+<td><strong>会</strong>（尤其大结果集）</td>
+</tr>
+<tr>
+<td><code>EXPLAIN ANALYZE</code></td>
+<td>StarRocks 集群内执行</td>
+<td><strong>不会</strong></td>
+</tr>
+<tr>
+<td><code>EXPLAIN</code>（无 ANALYZE）</td>
+<td>只看计划，几乎不跑全量数据</td>
+<td><strong>不会</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>写文章时的推荐表述：</strong></p>
+<blockquote>
+<p>在相同 SQL、相同集群下，MySQL JDBC 与 StarRocks JDBC 的 <strong>EXPLAIN ANALYZE 耗时一致</strong>，说明性能瓶颈在 StarRocks 服务端；客户端显示的差异主要来自 <strong>结果集传输与 JDBC 反序列化</strong>，在返回行数较少时可以忽略。</p>
+</blockquote>
+<hr>
+<h2 id="七-实测结论模板可直接贴进文章">七、实测结论模板（可直接贴进文章）</h2>
+<p>根据实验设计，典型结论如下（你测完把数字填进 <strong>4.2 实验记录表</strong>）。</p>
+<h3 id="71-填表示例数字为示意请换成实测">7.1 填表示例（数字为示意，请换成实测）</h3>
+<p><strong>环境信息</strong></p>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>示例</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>日期</td>
+<td>2026-05-29</td>
+</tr>
+<tr>
+<td>FE 地址</td>
+<td>10.1.2.3:9030</td>
+</tr>
+<tr>
+<td>本机内存</td>
+<td>16 GB</td>
+</tr>
+</tbody>
+</table>
+<p><strong>实测数据</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:center">场景</th>
+<th>SQL 编号</th>
+<th>驱动</th>
+<th style="text-align:right">第 2 次 (s)</th>
+<th style="text-align:right">EXPLAIN (ms)</th>
+<th style="text-align:right">返回行数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:center">S1</td>
+<td>Q1 轻量聚合</td>
+<td>MySQL</td>
+<td style="text-align:right">0.6</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">12</td>
+</tr>
+<tr>
+<td style="text-align:center">S1</td>
+<td>Q1</td>
+<td>StarRocks</td>
+<td style="text-align:right">0.5</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">12</td>
+</tr>
+<tr>
+<td style="text-align:center">S2</td>
+<td>Q2 复杂分析</td>
+<td>MySQL</td>
+<td style="text-align:right">18.2</td>
+<td style="text-align:right">17500</td>
+<td style="text-align:right">5000</td>
+</tr>
+<tr>
+<td style="text-align:center">S2</td>
+<td>Q2</td>
+<td>StarRocks</td>
+<td style="text-align:right">17.9</td>
+<td style="text-align:right">17500</td>
+<td style="text-align:right">5000</td>
+</tr>
+<tr>
+<td style="text-align:center">S3</td>
+<td>Q3 大结果集</td>
+<td>MySQL</td>
+<td style="text-align:right">45.3</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">100000</td>
+</tr>
+<tr>
+<td style="text-align:center">S3</td>
+<td>Q3</td>
+<td>StarRocks</td>
+<td style="text-align:right">41.8</td>
+<td style="text-align:right">—</td>
+<td style="text-align:right">100000</td>
+</tr>
+</tbody>
+</table>
+<p><strong>结论摘要</strong></p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>示例写法</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>服务端 EXPLAIN ANALYZE（Q2）</td>
+<td>约 17500 ms，与 JDBC 驱动无关</td>
+</tr>
+<tr>
+<td>客户端端到端（Q2）</td>
+<td>MySQL 18.2 s vs StarRocks 17.9 s，相差约 1.6%，基本相同</td>
+</tr>
+<tr>
+<td>大结果集（Q3）</td>
+<td>StarRocks 略快；差异主要在 10 万行结果传输与客户端展示</td>
+</tr>
+</tbody>
+</table>
+<h3 id="72-执行性能">7.2 执行性能</h3>
+<ul>
+<li>Q1 / Q2：<strong>两种驱动第 2 次耗时相差 &lt; 5%</strong>（填实测）</li>
+<li><code>EXPLAIN ANALYZE</code>（Q2）：MySQL 与 StarRocks 数据源各执行一次，<strong>TotalTime 相同</strong></li>
+<li><strong>结论</strong>：换驱动<strong>不能</strong>替代 SQL / 分区 / MV 优化</li>
+</ul>
+<h3 id="73-开发与运维体验">7.3 开发与运维体验</h3>
+<table>
+<thead>
+<tr>
+<th>项目</th>
+<th>推荐</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>日常查数、跑报表</td>
+<td>两种均可；已配 MySQL 可不急着换</td>
+</tr>
+<tr>
+<td>写 DDL、MV、<code>DUPLICATE KEY</code></td>
+<td><strong>优先 StarRocks 驱动</strong>（少误报）</td>
+</tr>
+<tr>
+<td>新项目、JDBC 编程</td>
+<td><strong>优先 StarRocks 官方驱动</strong></td>
+</tr>
+<tr>
+<td>仅连接测试</td>
+<td>以 <code>Test Connection</code> 能否识别版本为准</td>
+</tr>
+</tbody>
+</table>
+<h3 id="74-选型建议一句话">7.4 选型建议（一句话）</h3>
+<ul>
+<li><strong>比执行速度</strong>：优先优化 SQL 和表设计；驱动选型影响次要</li>
+<li><strong>比开发体验</strong>：StarRocks 驱动更省心</li>
+<li><strong>比兼容成本</strong>：MySQL 驱动零改造成本最高</li>
+</ul>
+<hr>
+<h2 id="八-常见问题写进文章-faq">八、常见问题（写进文章 FAQ）</h2>
+<h3 id="q1两种驱动查同一条-sql速度会一样吗">Q1：两种驱动查同一条 SQL，速度会一样吗？</h3>
+<p><strong>大多数情况：一样或几乎一样。</strong><br>
+只有「返回行数巨大」「频繁拉元数据」时，端到端时间可能有可见差别。</p>
+<h3 id="q2为什么-mysql-驱动下-duplicate-key-标红">Q2：为什么 MySQL 驱动下 <code>DUPLICATE KEY</code> 标红？</h3>
+<p>DataGrip 用 MySQL 语法检查器解析 StarRocks DDL，<strong>标红不等于不能执行</strong>。这是 IDE 体验问题，不是 StarRocks 报错。</p>
+<h3 id="q3生产环境用哪个驱动">Q3：生产环境用哪个驱动？</h3>
+<ul>
+<li><strong>应用代码</strong>：StarRocks 官方 JDBC</li>
+<li><strong>DBA 桌面工具</strong>：StarRocks 驱动更佳；MySQL 驱动可继续用</li>
+</ul>
+<hr>
+<h2 id="九-附录实验表结构worktime">九、附录：实验表结构（worktime）</h2>
+<table>
+<thead>
+<tr>
+<th>字段</th>
+<th>类型</th>
+<th>实验中的用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>user_id</code> / <code>project_id</code> / <code>dept_id</code></td>
+<td>BIGINT</td>
+<td>维度聚合</td>
+</tr>
+<tr>
+<td><code>time</code></td>
+<td>DATE</td>
+<td>分区过滤、<code>DATE_TRUNC</code></td>
+</tr>
+<tr>
+<td><code>normal_hour</code> 等</td>
+<td>DECIMAL</td>
+<td>度量聚合</td>
+</tr>
+<tr>
+<td><code>time_class</code></td>
+<td>SMALLINT</td>
+<td>低基数 GROUP BY（Q1）</td>
+</tr>
+</tbody>
+</table>
+<pre><code class="language-sql">-- 实验前检查
+USE pms;
+SELECT COUNT(*) AS rows FROM worktime;
+SELECT MIN(time), MAX(time) FROM worktime;
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%A4%A7%E6%95%B0%E6%8D%AE" class="tag js-tag-link" data-tag-name="大数据">
+                    大数据
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-catalog/">
+                      <div class="related-left">
+                        <div class="related-post-title">打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问</div>
+                        <div class="related-meta">2026-04-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/04/25/gk2N/StarRocks-Catalog.jpg" alt="打通数据孤岛：StarRocks Catalog 如何实现内外部数据的无缝访问" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/">
+                  <h3 class="post-title">
+                    AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

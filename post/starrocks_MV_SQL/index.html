@@ -1,0 +1,2597 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>StarRocks 智能物化视图 SQL 手册 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="StarRocks 智能物化视图 SQL 手册 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="覆盖生产环境中 95% 以上的物化视图场景。 适用版本：StarRocks v4.0+（本手册按 4.0.9-ee 环境编写；部分特性仍标注最低版本） 命名约定：本手册中所有新建的表、逻辑视图、物化视图均统一以 TestMV_ 为前缀（...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png">
+
+<meta name="keywords" content="机器学习,StarRocks">
+
+
+<meta property="article:published_time" content="2026-06-25T21:42:21+08:00">
+<meta property="article:modified_time" content="2026-06-25T21:42:21+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="机器学习">
+
+<meta property="article:tag" content="StarRocks">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="StarRocks 智能物化视图 SQL 手册 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="覆盖生产环境中 95% 以上的物化视图场景。 适用版本：StarRocks v4.0+（本手册按 4.0.9-ee 环境编写；部分特性仍标注最低版本） 命名约定：本手册中所有新建的表、逻辑视图、物化视图均统一以 TestMV_ 为前缀（...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/"
+      },
+      "headline": "StarRocks 智能物化视图 SQL 手册",
+      "description": "覆盖生产环境中 95% 以上的物化视图场景。 适用版本：StarRocks v4.0+（本手册按 4.0.9-ee 环境编写；部分特性仍标注最低版本） 命名约定：本手册中所有新建的表、逻辑视图、物化视图均统一以 TestMV_ 为前缀（...",
+      "image": "https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png",
+      "url": "https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-06-25T21:42:21+08:00",
+      "dateModified": "2026-06-25T21:42:21+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "机器学习",
+        "StarRocks"
+      ],
+      "keywords": "机器学习,StarRocks",
+      "wordCount": 39419
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "机器学习",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "StarRocks 智能物化视图 SQL 手册",
+          "item": "https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E7%9B%AE%E5%BD%95">目录</a></li>
+<li><a href="#%E4%B8%80-%E7%8E%AF%E5%A2%83%E4%B8%8E%E5%BB%BA%E8%A1%A8">一、环境与建表</a>
+<ul>
+<li><a href="#11-%E5%88%9B%E5%BB%BA%E7%BB%83%E4%B9%A0%E5%BA%93">1.1 创建练习库</a></li>
+<li><a href="#111-%E9%9B%B6%E5%9F%BA%E7%A1%80%E5%85%88%E7%9C%8B%E5%B8%B8%E8%A7%81-sql-%E5%85%B3%E9%94%AE%E5%AD%97%E7%99%BD%E8%AF%9D%E8%A7%A3%E9%87%8A">1.1.1 零基础先看：常见 SQL 关键字白话解释</a></li>
+<li><a href="#12-%E8%AE%A2%E5%8D%95%E4%BA%8B%E5%AE%9E%E8%A1%A8-testmv_orders%E5%88%86%E5%8C%BA%E8%A1%A8%E6%A0%B8%E5%BF%83%E5%9F%BA%E8%A1%A8">1.2 订单事实表 TestMV_orders（分区表，核心基表）</a></li>
+<li><a href="#13-%E7%94%A8%E6%88%B7%E7%BB%B4%E5%BA%A6%E8%A1%A8-testmv_users">1.3 用户维度表 TestMV_users</a></li>
+<li><a href="#14-%E5%95%86%E5%93%81%E7%BB%B4%E5%BA%A6%E8%A1%A8-testmv_product_dim%E6%85%A2%E5%8F%98%E7%BB%B4%E5%BA%A6%E6%B5%8B%E8%AF%95-excluded_trigger_tables">1.4 商品维度表 TestMV_product_dim（慢变维度，测试 excluded_trigger_tables）</a></li>
+<li><a href="#15-%E5%90%8C%E6%AD%A5-mv-%E6%BC%94%E7%A4%BA%E8%A1%A8-testmv_duplicate_table">1.5 同步 MV 演示表 TestMV_duplicate_table</a></li>
+<li><a href="#16-%E7%AC%AC%E4%BA%8C%E5%BC%A0%E5%88%86%E5%8C%BA%E4%BA%8B%E5%AE%9E%E8%A1%A8-testmv_orders_archive%E5%A4%9A%E5%9F%BA%E8%A1%A8%E5%88%86%E5%8C%BA%E5%AF%B9%E9%BD%90%E6%BC%94%E7%BB%83">1.6 第二张分区事实表 TestMV_orders_archive（多基表分区对齐演练）</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%8C-%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE-insert">二、初始化测试数据 INSERT</a>
+<ul>
+<li><a href="#21-%E7%94%A8%E6%88%B7%E7%BB%B4%E5%BA%A6%E6%95%B0%E6%8D%AE">2.1 用户维度数据</a></li>
+<li><a href="#22-%E5%95%86%E5%93%81%E7%BB%B4%E5%BA%A6%E6%95%B0%E6%8D%AE">2.2 商品维度数据</a></li>
+<li><a href="#23-%E8%AE%A2%E5%8D%95%E4%BA%8B%E5%AE%9E%E6%95%B0%E6%8D%AE%E7%AC%AC%E4%B8%80%E6%89%B95-%E5%A4%A9-%E5%A4%9A%E5%93%81%E7%B1%BB">2.3 订单事实数据（第一批：5 天 × 多品类）</a></li>
+<li><a href="#24-%E5%90%8C%E6%AD%A5-mv-%E6%BC%94%E7%A4%BA%E8%A1%A8%E6%95%B0%E6%8D%AE">2.4 同步 MV 演示表数据</a></li>
+<li><a href="#25-%E5%BD%92%E6%A1%A3%E8%A1%A8%E6%95%B0%E6%8D%AE">2.5 归档表数据</a></li>
+<li><a href="#26-%E9%AA%8C%E8%AF%81%E5%9F%BA%E8%A1%A8%E6%95%B0%E6%8D%AE">2.6 验证基表数据</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E5%90%8C%E6%AD%A5%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BErollup">三、同步物化视图（Rollup）</a>
+<ul>
+<li><a href="#31-%E8%AF%AD%E6%B3%95%E6%A8%A1%E6%9D%BF">3.1 语法模板</a></li>
+<li><a href="#32-%E5%88%97%E8%A3%81%E5%89%AA">3.2 列裁剪</a></li>
+<li><a href="#33-%E6%8E%92%E5%BA%8F%E9%94%AE">3.3 排序键</a></li>
+<li><a href="#34-%E8%81%9A%E5%90%88%E9%A2%84%E8%AE%A1%E7%AE%97">3.4 聚合预计算</a></li>
+<li><a href="#35-%E5%8E%BB%E9%87%8D">3.5 去重</a></li>
+<li><a href="#36-%E9%AA%8C%E8%AF%81%E5%90%8C%E6%AD%A5-mv-%E6%9E%84%E5%BB%BA%E4%B8%8E%E6%94%B9%E5%86%99">3.6 验证同步 MV 构建与改写</a>
+<ul>
+<li><a href="#361-_sync_mv_-%E6%98%AF%E4%BB%80%E4%B9%88%E4%B8%BA%E4%BB%80%E4%B9%88%E8%A6%81%E5%86%99%E5%9C%A8%E8%A1%A8%E5%90%8D%E5%90%8E">3.6.1 <code>[_SYNC_MV_]</code> 是什么？为什么要写在表名后</a></li>
+<li><a href="#362-hint-%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D%E9%9B%B6%E5%9F%BA%E7%A1%80%E7%89%88">3.6.2 hint 是什么意思（零基础版）</a></li>
+</ul>
+</li>
+<li><a href="#37-%E5%90%8C%E6%AD%A5-mv-%E6%95%B0%E6%8D%AE%E5%8F%98%E6%9B%B4%E6%B5%8B%E8%AF%95">3.7 同步 MV 数据变更测试</a></li>
+<li><a href="#38-%E5%88%A0%E9%99%A4%E5%90%8C%E6%AD%A5-mv">3.8 删除同步 MV</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-%E5%BC%82%E6%AD%A5%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE-create">四、异步物化视图 CREATE</a>
+<ul>
+<li><a href="#41-%E5%AE%8C%E6%95%B4%E8%AF%AD%E6%B3%95">4.1 完整语法</a></li>
+<li><a href="#42-lab-%E4%B8%BB-mv%E5%88%86%E5%8C%BA-%E6%89%8B%E5%8A%A8%E5%88%B7%E6%96%B0%E6%8E%A8%E8%8D%90%E5%85%88%E7%BB%83%E8%BF%99%E4%B8%AA">4.2 【Lab 主 MV】分区 + 手动刷新（推荐先练这个）</a></li>
+<li><a href="#43-%E8%87%AA%E5%8A%A8%E5%88%B7%E6%96%B0-async">4.3 自动刷新 ASYNC</a></li>
+<li><a href="#44-%E5%AE%9A%E6%97%B6%E5%88%B7%E6%96%B0-schedule40-%E6%8E%A8%E8%8D%90%E5%86%99%E6%B3%95">4.4 定时刷新 SCHEDULE（4.0 推荐写法）</a></li>
+<li><a href="#45-%E5%BB%B6%E8%BF%9F%E9%A6%96%E6%AC%A1%E5%88%B7%E6%96%B0-deferred">4.5 延迟首次刷新 DEFERRED</a></li>
+<li><a href="#46-date_trunc-%E7%B2%97%E7%B2%92%E5%BA%A6%E5%88%86%E5%8C%BA%E6%9C%88">4.6 date_trunc 粗粒度分区（月）</a></li>
+<li><a href="#47-%E5%A4%9A%E8%A1%A8-join%E6%97%A0%E8%81%9A%E5%90%88">4.7 多表 JOIN（无聚合）</a></li>
+<li><a href="#48-%E5%A4%9A%E8%A1%A8-join-%E8%81%9A%E5%90%88">4.8 多表 JOIN + 聚合</a></li>
+<li><a href="#49-join-%E7%BB%B4%E5%BA%A6%E8%A1%A8-excluded_trigger_tables%E7%94%9F%E4%BA%A7%E5%B8%B8%E8%A7%81">4.9 JOIN 维度表 + excluded_trigger_tables（生产常见）</a></li>
+<li><a href="#410-%E5%B5%8C%E5%A5%97-mv%E5%88%86%E5%B1%82%E8%81%9A%E5%90%88">4.10 嵌套 MV（分层聚合）</a></li>
+<li><a href="#411-%E5%9F%BA%E4%BA%8E%E9%80%BB%E8%BE%91%E8%A7%86%E5%9B%BE%E5%88%9B%E5%BB%BAv31">4.11 基于逻辑视图创建（v3.1+）</a></li>
+<li><a href="#412-%E5%86%B7%E7%83%AD%E5%88%86%E7%A6%BB-union-%E6%94%B9%E5%86%99v35-40">4.12 冷热分离 + Union 改写（v3.5+ / 4.0）</a></li>
+<li><a href="#413-%E5%A4%9A%E5%9F%BA%E8%A1%A8%E5%88%86%E5%8C%BA%E5%AF%B9%E9%BD%90-joinv33">4.13 多基表分区对齐 JOIN（v3.3+）</a></li>
+<li><a href="#414-view-delta-join-%E7%BA%A6%E6%9D%9Fv30%E7%94%9F%E4%BA%A7%E9%AB%98%E7%BA%A7%E5%9C%BA%E6%99%AF">4.14 View Delta Join + 约束（v3.0+，生产高级场景）</a></li>
+<li><a href="#415-cte-%E5%AE%9A%E4%B9%89-mvv316">4.15 CTE 定义 MV（v3.1.6+）</a></li>
+<li><a href="#416-%E5%B8%B8%E7%94%A8-properties-%E5%85%A8%E9%9B%86">4.16 常用 PROPERTIES 全集</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-%E5%88%B7%E6%96%B0-refresh">五、刷新 REFRESH</a>
+<ul>
+<li><a href="#51-%E8%AF%AD%E6%B3%95">5.1 语法</a></li>
+<li><a href="#52-%E5%85%A8%E9%87%8F%E5%88%B7%E6%96%B0">5.2 全量刷新</a></li>
+<li><a href="#521-with-sync-mode-%E6%98%AF%E4%BB%80%E4%B9%88%E6%84%8F%E6%80%9D%E9%9B%B6%E5%9F%BA%E7%A1%80">5.2.1 <code>WITH SYNC MODE</code> 是什么意思？（零基础）</a>
+<ul>
+<li><a href="#sync-%E4%B8%8E-async-%E5%AF%B9%E6%AF%94">SYNC 与 ASYNC 对比</a></li>
+<li><a href="#%E5%A6%82%E4%BD%95%E7%A1%AE%E8%AE%A4-sync-%E5%88%B7%E6%96%B0%E6%98%AF%E5%90%A6%E6%88%90%E5%8A%9F">如何确认 SYNC 刷新是否成功</a></li>
+<li><a href="#%E5%B8%B8%E8%A7%81%E8%AF%AF%E5%8C%BA">常见误区</a></li>
+</ul>
+</li>
+<li><a href="#53-%E6%8C%87%E5%AE%9A%E5%88%86%E5%8C%BA%E5%88%B7%E6%96%B0%E7%94%9F%E4%BA%A7%E5%A2%9E%E9%87%8F%E5%9C%BA%E6%99%AF%E6%A0%B8%E5%BF%83">5.3 指定分区刷新（生产增量场景核心）</a></li>
+<li><a href="#54-%E5%BC%BA%E5%88%B6%E5%88%B7%E6%96%B0%E4%B8%8D%E5%9B%9E%E6%BA%AF%E5%8F%98%E6%9B%B4%E6%A3%80%E6%B5%8B">5.4 强制刷新（不回溯变更检测）</a></li>
+<li><a href="#55-%E5%8F%96%E6%B6%88%E5%88%B7%E6%96%B0">5.5 取消刷新</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E5%8F%98%E6%9B%B4-alter">六、变更 ALTER</a></li>
+<li><a href="#%E4%B8%83-%E5%88%A0%E9%99%A4-drop">七、删除 DROP</a></li>
+<li><a href="#%E5%85%AB-%E6%9F%A5%E8%AF%A2%E4%B8%8E%E5%85%83%E6%95%B0%E6%8D%AE-show">八、查询与元数据 SHOW</a></li>
+<li><a href="#%E4%B9%9D-%E6%9F%A5%E8%AF%A2%E6%94%B9%E5%86%99%E9%AA%8C%E8%AF%81">九、查询改写验证</a></li>
+<li><a href="#%E5%8D%81-%E4%BC%9A%E8%AF%9D%E5%8F%98%E9%87%8F%E4%B8%8E%E6%94%B9%E5%86%99%E6%8E%A7%E5%88%B6">十、会话变量与改写控制</a></li>
+<li><a href="#%E5%8D%81%E4%B8%80-%E7%B4%A2%E5%BC%95%E7%AE%A1%E7%90%86">十一、索引管理</a></li>
+<li><a href="#%E5%8D%81%E4%BA%8C-%E7%94%9F%E4%BA%A7%E5%9C%BA%E6%99%AF%E4%B8%93%E9%A2%98">十二、生产场景专题</a>
+<ul>
+<li><a href="#121-%E5%9C%BA%E6%99%AF%E4%BA%8B%E5%AE%9E%E8%A1%A8%E8%BF%BD%E5%8A%A0%E6%95%B0%E6%8D%AE%E5%90%8E-mv-%E6%9B%B4%E6%96%B0">12.1 场景：事实表追加数据后 MV 更新</a></li>
+<li><a href="#122-%E5%9C%BA%E6%99%AF%E6%96%B0%E5%A2%9E%E5%88%86%E5%8C%BA%E5%8A%A8%E6%80%81%E5%88%86%E5%8C%BA-%E6%89%8B%E5%B7%A5-add-partition">12.2 场景：新增分区（动态分区 / 手工 ADD PARTITION）</a></li>
+<li><a href="#123-%E5%9C%BA%E6%99%AF%E5%9F%BA%E8%A1%A8-schema-%E5%8F%98%E6%9B%B4-mv-inactive">12.3 场景：基表 Schema 变更 → MV INACTIVE</a></li>
+<li><a href="#124-%E5%9C%BA%E6%99%AFmv-%E9%9B%B6%E5%81%9C%E6%9C%BA%E4%B8%8A%E7%BA%BFswap">12.4 场景：MV 零停机上线（SWAP）</a></li>
+<li><a href="#125-%E5%9C%BA%E6%99%AF%E5%88%B7%E6%96%B0%E5%A4%B1%E8%B4%A5%E6%8E%92%E6%9F%A5%E4%B8%8E%E9%87%8D%E8%AF%95">12.5 场景：刷新失败排查与重试</a></li>
+<li><a href="#126-%E5%9C%BA%E6%99%AFpartition_ttl-%E5%86%B7%E7%83%AD%E5%88%86%E7%A6%BB%E6%9F%A5%E8%AF%A2">12.6 场景：partition_ttl 冷热分离查询</a></li>
+<li><a href="#127-%E5%9C%BA%E6%99%AF%E5%A4%9A-mv-%E5%85%B1%E5%AD%98%E5%90%8C%E4%B8%80%E5%9F%BA%E8%A1%A8">12.7 场景：多 MV 共存同一基表</a></li>
+<li><a href="#128-%E5%9C%BA%E6%99%AF%E7%BB%B4%E5%BA%A6%E8%A1%A8%E5%8F%98%E6%9B%B4%E4%BD%86%E4%B8%8D%E8%A7%A6%E5%8F%91%E5%88%B7%E6%96%B0">12.8 场景：维度表变更但不触发刷新</a></li>
+<li><a href="#129-%E5%9C%BA%E6%99%AF%E6%9D%83%E9%99%90%E7%AE%A1%E7%90%86%E7%94%9F%E4%BA%A7%E9%83%A8%E7%BD%B2">12.9 场景：权限管理（生产部署）</a></li>
+<li><a href="#1210-%E5%9C%BA%E6%99%AF%E8%B5%84%E6%BA%90%E7%BB%84%E9%9A%94%E7%A6%BB%E5%A4%A7-mv-%E5%88%B7%E6%96%B0%E4%B8%8D%E5%BD%B1%E5%93%8D%E6%9F%A5%E8%AF%A2">12.10 场景：资源组隔离（大 MV 刷新不影响查询）</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E4%B8%89-%E5%AE%8C%E6%95%B4%E5%AE%9E%E6%93%8D%E6%BC%94%E7%BB%83-lab">十三、完整实操演练 Lab</a>
+<ul>
+<li><a href="#lab-0%E7%8E%AF%E5%A2%83%E5%88%9D%E5%A7%8B%E5%8C%96%E5%BF%85%E5%81%9A">Lab 0：环境初始化（必做）</a></li>
+<li><a href="#lab-1%E5%88%9B%E5%BB%BA-mv-%E9%A6%96%E6%AC%A1%E5%88%B7%E6%96%B0-%E6%95%B0%E6%8D%AE%E6%A0%B8%E5%AF%B9">Lab 1：创建 MV + 首次刷新 + 数据核对</a></li>
+<li><a href="#lab-2%E5%9F%BA%E8%A1%A8-insert-%E5%88%86%E5%8C%BA%E5%88%B7%E6%96%B0-mv-%E6%9B%B4%E6%96%B0%E6%A0%B8%E5%BF%83">Lab 2：基表 INSERT → 分区刷新 → MV 更新（核心）</a></li>
+<li><a href="#lab-3%E6%9F%A5%E8%AF%A2%E9%80%8F%E6%98%8E%E6%94%B9%E5%86%99%E9%AA%8C%E8%AF%81">Lab 3：查询透明改写验证</a></li>
+<li><a href="#lab-4async-%E8%87%AA%E5%8A%A8%E5%88%B7%E6%96%B0%E8%A7%82%E5%AF%9F">Lab 4：ASYNC 自动刷新观察</a></li>
+<li><a href="#lab-5mv-inactive-active-%E6%81%A2%E5%A4%8D">Lab 5：MV INACTIVE → ACTIVE 恢复</a></li>
+<li><a href="#lab-6swap-%E9%9B%B6%E5%81%9C%E6%9C%BA%E5%88%87%E6%8D%A2">Lab 6：SWAP 零停机切换</a></li>
+<li><a href="#lab-7%E5%B5%8C%E5%A5%97-mv-%E5%88%86%E5%B1%82%E5%88%B7%E6%96%B0">Lab 7：嵌套 MV 分层刷新</a></li>
+<li><a href="#lab-8%E5%88%B7%E6%96%B0%E4%BB%BB%E5%8A%A1%E7%9B%91%E6%8E%A7%E4%B8%8E%E5%8F%96%E6%B6%88">Lab 8：刷新任务监控与取消</a></li>
+<li><a href="#lab-%E9%99%84%E7%BB%9F%E4%B8%80%E6%95%B0%E6%8D%AE%E5%AF%B9%E6%AF%94%E5%B7%A5%E5%85%B7-sql">Lab 附：统一数据对比工具 SQL</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E5%9B%9B-%E8%BF%90%E7%BB%B4%E7%9B%91%E6%8E%A7%E4%B8%8E%E6%95%85%E9%9A%9C%E6%8E%92%E6%9F%A5">十四、运维监控与故障排查</a>
+<ul>
+<li><a href="#141-%E6%97%A5%E5%B8%B8%E5%B7%A1%E6%A3%80-sql">14.1 日常巡检 SQL</a></li>
+<li><a href="#142-%E6%94%B9%E5%86%99%E5%A4%B1%E8%B4%A5%E6%8E%92%E6%9F%A5%E6%B8%85%E5%8D%95">14.2 改写失败排查清单</a></li>
+<li><a href="#143-%E5%B8%B8%E8%A7%81-error_message-%E4%B8%8E%E5%A4%84%E7%90%86">14.3 常见 ERROR_MESSAGE 与处理</a></li>
+</ul>
+</li>
+<li><a href="#%E5%8D%81%E4%BA%94-%E5%9C%BA%E6%99%AF%E9%80%9F%E6%9F%A5%E8%A1%A8">十五、场景速查表</a></li>
+<li><a href="#%E9%99%84%E5%BD%95-a%E6%B8%85%E7%90%86%E7%BB%83%E4%B9%A0%E7%8E%AF%E5%A2%83">附录 A：清理练习环境</a></li>
+<li><a href="#%E9%99%84%E5%BD%95-b%E5%90%8C%E6%AD%A5-mv-vs-%E5%BC%82%E6%AD%A5-mv-%E5%AF%B9%E7%85%A7">附录 B：同步 MV vs 异步 MV 对照</a></li>
+<li><a href="#%E9%99%84%E5%BD%95-cstarrocks-%E5%B8%B8%E8%A7%81-hint%E8%AF%8A%E6%96%AD%E8%AF%AD%E5%8F%A5%E9%80%9F%E6%9F%A5">附录 C：StarRocks 常见 hint/诊断语句速查</a>
+<ul>
+<li><a href="#c1-%E9%AB%98%E9%A2%91%E6%8E%92%E9%9A%9C%E7%BB%84%E5%90%88%E5%BB%BA%E8%AE%AE%E7%9B%B4%E6%8E%A5%E5%A4%8D%E5%88%B6">C.1 高频排障组合（建议直接复制）</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">StarRocks 智能物化视图 SQL 手册</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-06-25 21:42
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                135 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png" alt="StarRocks 智能物化视图 SQL 手册">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>覆盖生产环境中 95% 以上的物化视图场景。</p>
+<!-- more -->
+<p>适用版本：<strong>StarRocks v4.0+</strong>（本手册按 <strong>4.0.9-ee</strong> 环境编写；部分特性仍标注最低版本）</p>
+<blockquote>
+<p><strong>命名约定</strong>：本手册中<strong>所有新建的表、逻辑视图、物化视图</strong>均统一以 <code>TestMV_</code> 为前缀（如 <code>TestMV_orders</code>、<code>TestMV_users</code>、<code>TestMV_v_order_user</code>、<code>TestMV_mv_order_daily_sales</code>），与环境中已有对象区分。练习库 <code>mv_lab</code> 保持不变。</p>
+</blockquote>
+<hr>
+<h2 id="目录">目录</h2>
+<ol>
+<li><a href="#%E4%B8%80%E7%8E%AF%E5%A2%83%E4%B8%8E%E5%BB%BA%E8%A1%A8">环境与建表</a></li>
+<li><a href="#%E4%BA%8C%E5%88%9D%E5%A7%8B%E5%8C%96%E6%B5%8B%E8%AF%95%E6%95%B0%E6%8D%AE-insert">初始化测试数据 INSERT</a></li>
+<li><a href="#%E4%B8%89%E5%90%8C%E6%AD%A5%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BErollup">同步物化视图（Rollup）</a></li>
+<li><a href="#%E5%9B%9B%E5%BC%82%E6%AD%A5%E7%89%A9%E5%8C%96%E8%A7%86%E5%9B%BE-create">异步物化视图 CREATE</a></li>
+<li><a href="#%E4%BA%94%E5%88%B7%E6%96%B0-refresh">刷新 REFRESH</a></li>
+<li><a href="#%E5%85%AD%E5%8F%98%E6%9B%B4-alter">变更 ALTER</a></li>
+<li><a href="#%E4%B8%83%E5%88%A0%E9%99%A4-drop">删除 DROP</a></li>
+<li><a href="#%E5%85%AB%E6%9F%A5%E8%AF%A2%E4%B8%8E%E5%85%83%E6%95%B0%E6%8D%AE-show">查询与元数据 SHOW</a></li>
+<li><a href="#%E4%B9%9D%E6%9F%A5%E8%AF%A2%E6%94%B9%E5%86%99%E9%AA%8C%E8%AF%81">查询改写验证</a></li>
+<li><a href="#%E5%8D%81%E4%BC%9A%E8%AF%9D%E5%8F%98%E9%87%8F%E4%B8%8E%E6%94%B9%E5%86%99%E6%8E%A7%E5%88%B6">会话变量与改写控制</a></li>
+<li><a href="#%E5%8D%81%E4%B8%80%E7%B4%A2%E5%BC%95%E7%AE%A1%E7%90%86">索引管理</a></li>
+<li><a href="#%E5%8D%81%E4%BA%8C%E7%94%9F%E4%BA%A7%E5%9C%BA%E6%99%AF%E4%B8%93%E9%A2%98">生产场景专题</a></li>
+<li><a href="#%E5%8D%81%E4%B8%89%E5%AE%8C%E6%95%B4%E5%AE%9E%E6%93%8D%E6%BC%94%E7%BB%83-lab">完整实操演练 Lab</a></li>
+<li><a href="#%E5%8D%81%E5%9B%9B%E8%BF%90%E7%BB%B4%E7%9B%91%E6%8E%A7%E4%B8%8E%E6%95%85%E9%9A%9C%E6%8E%92%E6%9F%A5">运维监控与故障排查</a></li>
+<li><a href="#%E5%8D%81%E4%BA%94%E5%9C%BA%E6%99%AF%E9%80%9F%E6%9F%A5%E8%A1%A8">场景速查表</a></li>
+<li><a href="#%E9%99%84%E5%BD%95-cstarrocks-%E5%B8%B8%E8%A7%81-hint%E8%AF%8A%E6%96%AD%E8%AF%AD%E5%8F%A5%E9%80%9F%E6%9F%A5">附录 C：StarRocks 常见 hint/诊断语句速查</a></li>
+</ol>
+<hr>
+<h2 id="一-环境与建表">一、环境与建表</h2>
+<h3 id="11-创建练习库">1.1 创建练习库</h3>
+<pre><code class="language-sql">-- 建议单独建库，避免污染生产库；全文示例均在此库执行
+CREATE DATABASE IF NOT EXISTS mv_lab;
+USE mv_lab;
+</code></pre>
+<h3 id="111-零基础先看常见-sql-关键字白话解释">1.1.1 零基础先看：常见 SQL 关键字白话解释</h3>
+<blockquote>
+<p>这一节建议先读一遍，再往下执行建表 SQL。</p>
+</blockquote>
+<ul>
+<li><code>CREATE TABLE</code>：创建一张“实体表”，数据会真正存储在这张表里。</li>
+<li><code>IF NOT EXISTS</code>：如果表已经存在，就不报错，直接跳过创建。</li>
+<li><code>NOT NULL</code>：这一列不允许为空（必须有值）。</li>
+<li><code>COMMENT '...'</code>：给表/字段加说明，方便后续维护。</li>
+<li><code>DUPLICATE KEY(col1, col2)</code>：<strong>明细模型</strong>。同一个 key 可以出现多行，不会自动去重。
+<ul>
+<li>适合订单明细、行为日志等“保留原始记录”的场景。</li>
+<li>例如 <code>DUPLICATE KEY(dt, order_id)</code> 不是主键约束，只是声明数据组织键。</li>
+</ul>
+</li>
+<li><code>PARTITION BY RANGE(dt)</code>：按时间把大表切成多个“分区小块”。
+<ul>
+<li>好处：查询和刷新可只扫描相关分区，速度快、资源省。</li>
+<li>例如查 <code>2024-01-03</code> 时，只读对应分区，不读全部历史数据。</li>
+</ul>
+</li>
+<li><code>PARTITION p20240101 VALUES [('2024-01-01'), ('2024-01-02'))</code>：定义分区范围，通常是左闭右开。</li>
+<li><code>DISTRIBUTED BY HASH(order_id)</code>：把数据按 <code>order_id</code> 哈希打散到多个 Tablet（可理解为分片）。
+<ul>
+<li>目标：并行计算更充分，避免单机热点。</li>
+<li>经验：常选高基数、查询常用过滤/关联列。</li>
+</ul>
+</li>
+<li><code>PROPERTIES (&quot;replication_num&quot; = &quot;1&quot;)</code>：副本数。
+<ul>
+<li>学习环境用 <code>1</code> 省资源；生产通常 <code>3</code> 提高可用性。</li>
+</ul>
+</li>
+<li><code>DECIMAL(18, 4)</code>：定点小数，总位数 18、小数位 4，适合金额字段避免浮点误差。</li>
+<li><code>TINYINT</code>：很小的整型，常用来表示状态码（如 0/1/2）。</li>
+</ul>
+<h3 id="12-订单事实表-testmv_orders分区表核心基表">1.2 订单事实表 TestMV_orders（分区表，核心基表）</h3>
+<pre><code class="language-sql">-- ============================================================
+-- 订单明细表：DUPLICATE KEY + RANGE 分区
+-- 生产中最常见的异步 MV 基表形态
+-- ============================================================
+CREATE TABLE IF NOT EXISTS TestMV_orders (
+    dt              DATE            NOT NULL COMMENT '订单日期，分区键',
+    order_id        BIGINT          NOT NULL COMMENT '订单 ID',
+    user_id         INT             NOT NULL COMMENT '用户 ID',
+    product_type    VARCHAR(32)     NOT NULL COMMENT '商品品类：Electronics/Clothing/Food',
+    sales_amount    DECIMAL(18, 4)  NOT NULL COMMENT '销售额',
+    order_status    TINYINT         NOT NULL COMMENT '0=取消 1=完成 2=退款'
+)
+DUPLICATE KEY(dt, order_id)            -- 明细模型：允许重复 key，不会自动去重
+COMMENT '订单事实表'                     -- 表注释，便于元数据管理
+PARTITION BY RANGE(dt) (
+    -- 分区命名可自定义，这里按日期命名，便于识别
+    -- 每个分区是一个时间范围，查询可按分区裁剪
+    PARTITION p20240101 VALUES [('2024-01-01'), ('2024-01-02')),
+    PARTITION p20240102 VALUES [('2024-01-02'), ('2024-01-03')),
+    PARTITION p20240103 VALUES [('2024-01-03'), ('2024-01-04')),
+    PARTITION p20240104 VALUES [('2024-01-04'), ('2024-01-05')),
+    PARTITION p20240105 VALUES [('2024-01-05'), ('2024-01-06'))
+)
+DISTRIBUTED BY HASH(order_id)           -- 按 order_id 打散分布，提升并行度
+PROPERTIES (&quot;replication_num&quot; = &quot;1&quot;);   -- 副本数：学习环境 1；生产建议 3
+</code></pre>
+<h3 id="13-用户维度表-testmv_users">1.3 用户维度表 TestMV_users</h3>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS TestMV_users (
+    user_id     INT             NOT NULL COMMENT '用户 ID',
+    user_name   VARCHAR(64)     NOT NULL COMMENT '用户名',
+    city        VARCHAR(32)     NOT NULL COMMENT '城市',
+    vip_level   TINYINT         NOT NULL COMMENT 'VIP 等级 1-5'
+)
+DUPLICATE KEY(user_id)                  -- 维度表也可用 DUPLICATE KEY，便于简单演示
+COMMENT '用户维度表'
+DISTRIBUTED BY HASH(user_id)            -- 常用 join 键做 hash 分布
+PROPERTIES (&quot;replication_num&quot; = &quot;1&quot;);
+</code></pre>
+<h3 id="14-商品维度表-testmv_product_dim慢变维度测试-excluded_trigger_tables">1.4 商品维度表 TestMV_product_dim（慢变维度，测试 excluded_trigger_tables）</h3>
+<pre><code class="language-sql">-- 维度表通常不分区；事实表变更频繁，维度表变更少
+-- 生产场景：维度变更不应每次都触发 MV 全量刷新
+CREATE TABLE IF NOT EXISTS TestMV_product_dim (
+    product_type    VARCHAR(32)     NOT NULL COMMENT '品类',
+    category_name   VARCHAR(64)     NOT NULL COMMENT '大类名称',
+    profit_rate     DECIMAL(5, 2)   NOT NULL COMMENT '利润率'
+)
+DUPLICATE KEY(product_type)             -- 演示用：允许同品类多版本写入
+COMMENT '商品维度表'
+DISTRIBUTED BY HASH(product_type)       -- 按品类分布，便于和事实表按品类关联
+PROPERTIES (&quot;replication_num&quot; = &quot;1&quot;);
+</code></pre>
+<h3 id="15-同步-mv-演示表-testmv_duplicate_table">1.5 同步 MV 演示表 TestMV_duplicate_table</h3>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS TestMV_duplicate_table (
+    k1  INT,
+    k2  INT,
+    k3  BIGINT,
+    k4  BIGINT
+)
+DUPLICATE KEY(k1, k2)                   -- 用于演示同步 MV 聚合/排序
+DISTRIBUTED BY HASH(k1)                 -- 简化分布策略，便于本地练习
+PROPERTIES (&quot;replication_num&quot; = &quot;1&quot;);
+</code></pre>
+<h3 id="16-第二张分区事实表-testmv_orders_archive多基表分区对齐演练">1.6 第二张分区事实表 TestMV_orders_archive（多基表分区对齐演练）</h3>
+<pre><code class="language-sql">CREATE TABLE IF NOT EXISTS TestMV_orders_archive (
+    dt              DATE            NOT NULL,
+    region          VARCHAR(16)     NOT NULL COMMENT '区域',
+    backup_amount   DECIMAL(18, 4)  NOT NULL COMMENT '归档金额'
+)
+DUPLICATE KEY(dt, region)               -- 归档事实明细，允许同日同区域多条
+PARTITION BY RANGE(dt) (
+    PARTITION p20240101 VALUES [('2024-01-01'), ('2024-01-02')),
+    PARTITION p20240102 VALUES [('2024-01-02'), ('2024-01-03')),
+    PARTITION p20240103 VALUES [('2024-01-03'), ('2024-01-04')),
+    PARTITION p20240104 VALUES [('2024-01-04'), ('2024-01-05')),
+    PARTITION p20240105 VALUES [('2024-01-05'), ('2024-01-06'))
+)
+DISTRIBUTED BY HASH(region)             -- 按区域打散，适合区域维度分析
+PROPERTIES (&quot;replication_num&quot; = &quot;1&quot;);
+</code></pre>
+<hr>
+<h2 id="二-初始化测试数据-insert">二、初始化测试数据 INSERT</h2>
+<blockquote>
+<p><strong>重要</strong>：没有基表数据就无法观察「基表变更 → MV 刷新 → 查询改写」的完整链路。<br>
+建议按顺序执行以下 INSERT，作为后续所有 Lab 的数据基础。</p>
+</blockquote>
+<h3 id="21-用户维度数据">2.1 用户维度数据</h3>
+<pre><code class="language-sql">INSERT INTO TestMV_users (user_id, user_name, city, vip_level) VALUES
+(1001, 'Alice',   'Beijing',  3),
+(1002, 'Bob',     'Shanghai', 2),
+(1003, 'Charlie', 'Beijing',  5),
+(1004, 'Diana',   'Guangzhou',1),
+(1005, 'Eve',     'Shanghai', 4);
+</code></pre>
+<h3 id="22-商品维度数据">2.2 商品维度数据</h3>
+<pre><code class="language-sql">INSERT INTO TestMV_product_dim (product_type, category_name, profit_rate) VALUES
+('Electronics', '数码3C', 0.15),
+('Clothing',    '服饰',   0.30),
+('Food',        '食品',   0.08);
+</code></pre>
+<h3 id="23-订单事实数据第一批5-天-多品类">2.3 订单事实数据（第一批：5 天 × 多品类）</h3>
+<pre><code class="language-sql">-- 2024-01-01：3 笔订单
+INSERT INTO TestMV_orders VALUES
+('2024-01-01', 10001, 1001, 'Electronics', 999.0000,  1),
+('2024-01-01', 10002, 1002, 'Clothing',    299.5000,  1),
+('2024-01-01', 10003, 1003, 'Food',         59.9000,  1);
+
+-- 2024-01-02：4 笔订单
+INSERT INTO TestMV_orders VALUES
+('2024-01-02', 10004, 1001, 'Electronics', 1299.0000, 1),
+('2024-01-02', 10005, 1004, 'Clothing',    199.0000,  1),
+('2024-01-02', 10006, 1005, 'Food',         88.0000,  1),
+('2024-01-02', 10007, 1002, 'Electronics',  599.0000,  0);  -- 取消订单
+
+-- 2024-01-03：3 笔订单
+INSERT INTO TestMV_orders VALUES
+('2024-01-03', 10008, 1003, 'Electronics', 2199.0000, 1),
+('2024-01-03', 10009, 1001, 'Clothing',    399.0000,  1),
+('2024-01-03', 10010, 1005, 'Food',        128.5000,  1);
+
+-- 2024-01-04：2 笔订单
+INSERT INTO TestMV_orders VALUES
+('2024-01-04', 10011, 1002, 'Electronics',  899.0000, 1),
+('2024-01-04', 10012, 1004, 'Food',          45.0000, 1);
+
+-- 2024-01-05：2 笔订单
+INSERT INTO TestMV_orders VALUES
+('2024-01-05', 10013, 1003, 'Clothing',    599.0000,  1),
+('2024-01-05', 10014, 1001, 'Food',         66.0000,  1);
+</code></pre>
+<h3 id="24-同步-mv-演示表数据">2.4 同步 MV 演示表数据</h3>
+<pre><code class="language-sql">INSERT INTO TestMV_duplicate_table VALUES
+(1, 10, 100, 1000),
+(1, 10, 200, 2000),   -- 同 k1,k2 多行，测试聚合
+(1, 20, 150, 1500),
+(2, 10, 300, 3000),
+(2, 20, 250, 2500),
+(3, 30, 400, 4000);
+</code></pre>
+<h3 id="25-归档表数据">2.5 归档表数据</h3>
+<pre><code class="language-sql">INSERT INTO TestMV_orders_archive VALUES
+('2024-01-01', 'North', 500.0000),
+('2024-01-02', 'North', 800.0000),
+('2024-01-03', 'South', 1200.0000),
+('2024-01-04', 'South', 600.0000),
+('2024-01-05', 'East',  900.0000);
+</code></pre>
+<h3 id="26-验证基表数据">2.6 验证基表数据</h3>
+<pre><code class="language-sql">-- 各天订单量
+SELECT dt, COUNT(*) AS cnt, SUM(sales_amount) AS total
+FROM TestMV_orders
+GROUP BY dt
+ORDER BY dt;
+
+-- 各品类销售额（后续 MV 真值对照用）
+SELECT dt, product_type, SUM(sales_amount) AS total_sales, COUNT(*) AS cnt
+FROM TestMV_orders
+WHERE order_status = 1          -- 仅统计完成订单（生产常见过滤）
+GROUP BY dt, product_type
+ORDER BY dt, product_type;
+</code></pre>
+<p><strong>期望结果摘要（order_status=1）</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>dt</th>
+<th>product_type</th>
+<th>total_sales</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2024-01-01</td>
+<td>Clothing</td>
+<td>299.5000</td>
+</tr>
+<tr>
+<td>2024-01-01</td>
+<td>Electronics</td>
+<td>999.0000</td>
+</tr>
+<tr>
+<td>2024-01-01</td>
+<td>Food</td>
+<td>59.9000</td>
+</tr>
+<tr>
+<td>...</td>
+<td>...</td>
+<td>...</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="三-同步物化视图rollup">三、同步物化视图（Rollup）</h2>
+<p>同步 MV = 基表上的<strong>加速索引</strong>，导入时<strong>同步刷新</strong>，仅 <strong>单表 + Default Catalog</strong>。</p>
+<h3 id="31-语法模板">3.1 语法模板</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW [IF NOT EXISTS] mv_name
+[COMMENT &quot;说明&quot;]
+AS
+SELECT ... FROM single_table [WHERE ...] [GROUP BY ...] [ORDER BY ...];
+</code></pre>
+<h3 id="32-列裁剪">3.2 列裁剪</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_k1_k2
+AS SELECT k1, k2 FROM TestMV_duplicate_table;
+</code></pre>
+<h3 id="33-排序键">3.3 排序键</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_k2_order
+AS SELECT k2, k1 FROM TestMV_duplicate_table ORDER BY k2;
+</code></pre>
+<h3 id="34-聚合预计算">3.4 聚合预计算</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_k1_k2_sumk3
+AS SELECT k1, k2, SUM(k3) AS sum_k3 FROM TestMV_duplicate_table GROUP BY k1, k2;
+</code></pre>
+<h3 id="35-去重">3.5 去重</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_deduplicate
+AS SELECT k1, k2, k3, k4 FROM TestMV_duplicate_table GROUP BY k1, k2, k3, k4;
+</code></pre>
+<h3 id="36-验证同步-mv-构建与改写">3.6 验证同步 MV 构建与改写</h3>
+<pre><code class="language-sql">-- 查看 Rollup 构建进度，等待 State = FINISHED
+SHOW ALTER MATERIALIZED VIEW;
+
+-- hint 直接扫 MV
+SELECT * FROM TestMV_mv_k1_k2_sumk3 [_SYNC_MV_];
+
+-- 业务 SQL 自动改写（无需 hint）
+EXPLAIN
+SELECT k1, k2, SUM(k3) FROM TestMV_duplicate_table GROUP BY k1, k2;
+-- 成功标志：计划中出现 TestMV_mv_k1_k2_sumk3
+</code></pre>
+<h4 id="361-_sync_mv_-是什么为什么要写在表名后">3.6.1 <code>[_SYNC_MV_]</code> 是什么？为什么要写在表名后</h4>
+<ul>
+<li><code>[_SYNC_MV_]</code> 是 StarRocks 的 <strong>hint（提示）</strong>，用于“直接读取同步物化视图（Rollup）”。</li>
+<li>同步 MV 本质是基表上的加速索引，不是普通独立表；因此直接 <code>SELECT * FROM 同步MV名</code> 可能报 <code>Unknown table</code>。</li>
+<li>正确写法是把 hint 放在同步 MV 名后：</li>
+</ul>
+<pre><code class="language-sql">SELECT * FROM TestMV_mv_k1_k2_sumk3 [_SYNC_MV_];
+</code></pre>
+<ul>
+<li>这属于固定写法（针对“直接查同步 MV”这个场景）。</li>
+<li>如果你是查基表（不是查同步 MV 名），通常<strong>不需要写</strong> <code>[_SYNC_MV_]</code>，优化器会自动改写。</li>
+</ul>
+<h4 id="362-hint-是什么意思零基础版">3.6.2 hint 是什么意思（零基础版）</h4>
+<ul>
+<li>hint 可以理解为“你给优化器的执行建议”。</li>
+<li>不写 hint 时：优化器自动选执行计划。</li>
+<li>写 hint 时：你告诉优化器“优先按这个路径执行”。</li>
+<li>在本手册里，<code>[_SYNC_MV_]</code> 就是一个典型 hint：提示引擎按同步 MV 方式读取。</li>
+</ul>
+<h3 id="37-同步-mv-数据变更测试">3.7 同步 MV 数据变更测试</h3>
+<pre><code class="language-sql">-- ① 插入新数据到基表
+INSERT INTO TestMV_duplicate_table VALUES (1, 10, 500, 5000);
+
+-- ② 同步 MV 随导入自动更新，直接查聚合结果
+SELECT k1, k2, SUM(k3) AS sum_k3
+FROM TestMV_duplicate_table
+WHERE k1 = 1 AND k2 = 10
+GROUP BY k1, k2;
+-- 期望 sum_k3 = 100+200+500 = 800
+
+-- ③ 通过 hint 看 MV 物理数据
+SELECT * FROM TestMV_mv_k1_k2_sumk3 [_SYNC_MV_] WHERE k1 = 1 AND k2 = 10;
+</code></pre>
+<h3 id="38-删除同步-mv">3.8 删除同步 MV</h3>
+<pre><code class="language-sql">DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_k1_k2;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_k2_order;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_k1_k2_sumk3 FORCE;  -- 构建卡住时用 FORCE
+</code></pre>
+<hr>
+<h2 id="四-异步物化视图-create">四、异步物化视图 CREATE</h2>
+<h3 id="41-完整语法">4.1 完整语法</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW [IF NOT EXISTS] [db.]mv_name
+[COMMENT &quot;说明&quot;]
+[DISTRIBUTED BY HASH(col) [BUCKETS n]]     -- 与 REFRESH 至少指定其一
+[REFRESH [IMMEDIATE|DEFERRED] [ASYNC | SCHEDULE [START(...)] EVERY(...)|MANUAL]]
+[PARTITION BY col | date_trunc(...) | str2date(...)]
+[ORDER BY (sort_col)]                       -- MV 排序键，非 query 内 ORDER BY
+[PROPERTIES (&quot;key&quot;=&quot;value&quot;, ...)]
+AS SELECT ...;
+</code></pre>
+<hr>
+<h3 id="42-lab-主-mv分区-手动刷新推荐先练这个">4.2 【Lab 主 MV】分区 + 手动刷新（推荐先练这个）</h3>
+<pre><code class="language-sql">-- 生产最常用模式：分区对齐 + MANUAL 精确控制 + 分批刷分区
+CREATE MATERIALIZED VIEW TestMV_mv_order_daily_sales
+COMMENT '按天按品类预聚合销售额（Lab 主练习 MV）'
+PARTITION BY dt                              -- 与 TestMV_orders.dt 一一对齐
+DISTRIBUTED BY HASH(product_type)
+REFRESH MANUAL                               -- 手动刷新，Lab 可控
+PROPERTIES (
+    &quot;replication_num&quot; = &quot;1&quot;,
+    &quot;partition_refresh_number&quot; = &quot;1&quot;          -- 每次最多刷 1 个分区
+)
+AS
+SELECT
+    dt,
+    product_type,
+    SUM(sales_amount)  AS total_sales,       -- 预聚合：销售额
+    COUNT(*)           AS order_cnt,         -- 预聚合：订单数
+    SUM(CASE WHEN order_status = 1 THEN sales_amount ELSE 0 END) AS valid_sales
+FROM TestMV_orders
+GROUP BY dt, product_type;
+-- 创建后立即首次刷新（MANUAL 模式需手动触发）
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;
+</code></pre>
+<hr>
+<h3 id="43-自动刷新-async">4.3 自动刷新 ASYNC</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_order_async
+PARTITION BY dt
+DISTRIBUTED BY HASH(user_id)
+REFRESH ASYNC                                -- 基表分区数据变更后自动触发刷新
+AS
+SELECT dt, user_id, SUM(sales_amount) AS total_sales
+FROM TestMV_orders
+GROUP BY dt, user_id;
+-- 生产说明：导入/Stream Load 完成后系统自动调度，无需手动 REFRESH
+-- Lab 说明：自动刷新有延迟（秒~分钟级），验证时需查 task_runs 或稍等
+</code></pre>
+<hr>
+<h3 id="44-定时刷新-schedule40-推荐写法">4.4 定时刷新 SCHEDULE（4.0 推荐写法）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_order_schedule
+PARTITION BY dt
+DISTRIBUTED BY HASH(order_id)
+REFRESH ASYNC START('2025-01-01 01:00:00') EVERY (INTERVAL 1 DAY)
+AS
+SELECT dt, order_id, user_id, SUM(sales_amount) AS total_amount
+FROM TestMV_orders
+GROUP BY dt, order_id, user_id;
+-- 适合 T+1 报表：按固定周期调度刷新
+-- 4.0 中 SHOW CREATE MATERIALIZED VIEW 会展示 SCHEDULE 形式
+-- 旧写法 REFRESH ASYNC START(...) EVERY(...) 仍兼容，但不作为首选
+</code></pre>
+<p><strong>与 4.3 的区别</strong>：</p>
+<table>
+<thead>
+<tr>
+<th>写法</th>
+<th>触发方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REFRESH ASYNC</code>（无 SCHEDULE/EVERY）</td>
+<td>基表分区数据变更后<strong>自动</strong>触发刷新</td>
+</tr>
+<tr>
+<td><code>REFRESH SCHEDULE START(...) EVERY(...)</code></td>
+<td><strong>定时</strong>触发刷新（如每日凌晨），适合 T+1</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="45-延迟首次刷新-deferred">4.5 延迟首次刷新 DEFERRED</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_order_deferred
+DISTRIBUTED BY HASH(order_id)
+REFRESH DEFERRED MANUAL                       -- 创建后不立即刷，等首次手动 REFRESH
+AS
+SELECT dt, order_id, SUM(sales_amount) AS total_sales
+FROM TestMV_orders GROUP BY dt, order_id;
+</code></pre>
+<hr>
+<h3 id="46-date_trunc-粗粒度分区月">4.6 date_trunc 粗粒度分区（月）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_order_monthly
+PARTITION BY date_trunc('month', dt)          -- 按自然月分区
+DISTRIBUTED BY HASH(product_type)
+REFRESH MANUAL
+AS
+SELECT dt, product_type, SUM(sales_amount) AS total_sales
+FROM TestMV_orders
+GROUP BY dt, product_type;
+</code></pre>
+<hr>
+<h3 id="47-多表-join无聚合">4.7 多表 JOIN（无聚合）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_order_user_flat
+DISTRIBUTED BY HASH(order_id)
+REFRESH MANUAL
+AS
+SELECT
+    o.dt, o.order_id, o.user_id, o.product_type, o.sales_amount, o.order_status,
+    u.user_name, u.city, u.vip_level
+FROM TestMV_orders o
+INNER JOIN TestMV_users u ON o.user_id = u.user_id;
+</code></pre>
+<hr>
+<h3 id="48-多表-join-聚合">4.8 多表 JOIN + 聚合</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_city_sales
+PARTITION BY dt
+DISTRIBUTED BY HASH(city)
+REFRESH MANUAL
+AS
+SELECT
+    o.dt,
+    u.city,
+    o.product_type,
+    SUM(o.sales_amount)              AS total_sales,
+    COUNT(DISTINCT o.user_id)        AS buyer_cnt,
+    AVG(o.sales_amount)              AS avg_order_amount
+FROM TestMV_orders o
+INNER JOIN TestMV_users u ON o.user_id = u.user_id
+WHERE o.order_status = 1
+GROUP BY o.dt, u.city, o.product_type;
+-- 注意：AVG 改写依赖 MV 中存 sum+count，StarRocks 优化器会自动 rollup
+</code></pre>
+<hr>
+<h3 id="49-join-维度表-excluded_trigger_tables生产常见">4.9 JOIN 维度表 + excluded_trigger_tables（生产常见）</h3>
+<pre><code class="language-sql">-- 场景：事实表 TestMV_orders 频繁导入，维度表 TestMV_product_dim 偶尔更新
+-- 需求：事实变更触发刷新，维度变更不触发（避免无效刷新）
+CREATE MATERIALIZED VIEW TestMV_mv_sales_with_dim
+PARTITION BY dt
+DISTRIBUTED BY HASH(product_type)
+REFRESH ASYNC
+PROPERTIES (
+    &quot;excluded_trigger_tables&quot; = &quot;mv_lab.TestMV_product_dim&quot;
+    -- 维度表变更不触发刷新；但 facts 变更触发的刷新仍会 JOIN 最新维度
+)
+AS
+SELECT
+    o.dt,
+    o.product_type,
+    d.category_name,
+    SUM(o.sales_amount) AS total_sales
+FROM TestMV_orders o
+INNER JOIN TestMV_product_dim d ON o.product_type = d.product_type
+GROUP BY o.dt, o.product_type, d.category_name;
+</code></pre>
+<hr>
+<h3 id="410-嵌套-mv分层聚合">4.10 嵌套 MV（分层聚合）</h3>
+<pre><code class="language-sql">-- L1：天+品类
+CREATE MATERIALIZED VIEW TestMV_mv_l1_daily
+PARTITION BY dt
+REFRESH MANUAL
+AS
+SELECT dt, product_type, SUM(sales_amount) AS daily_sales, COUNT(*) AS cnt
+FROM TestMV_orders GROUP BY dt, product_type;
+
+-- L2：仅品类（跨天汇总），基于 L1
+CREATE MATERIALIZED VIEW TestMV_mv_l2_category
+REFRESH MANUAL
+AS
+SELECT product_type, SUM(daily_sales) AS total_sales, SUM(cnt) AS total_cnt
+FROM TestMV_mv_l1_daily
+GROUP BY product_type;
+
+REFRESH MATERIALIZED VIEW TestMV_mv_l1_daily WITH SYNC MODE;
+REFRESH MATERIALIZED VIEW TestMV_mv_l2_category WITH SYNC MODE;
+</code></pre>
+<hr>
+<h3 id="411-基于逻辑视图创建v31">4.11 基于逻辑视图创建（v3.1+）</h3>
+<pre><code class="language-sql">CREATE VIEW TestMV_v_order_user AS
+SELECT o.dt, o.order_id, o.sales_amount, o.order_status, u.city
+FROM TestMV_orders o INNER JOIN TestMV_users u ON o.user_id = u.user_id;
+
+CREATE MATERIALIZED VIEW TestMV_mv_from_view
+PARTITION BY dt
+REFRESH MANUAL
+AS
+SELECT dt, city, SUM(sales_amount) AS total_sales
+FROM TestMV_v_order_user
+WHERE order_status = 1
+GROUP BY dt, city;
+</code></pre>
+<hr>
+<h3 id="412-冷热分离-union-改写v35-40">4.12 冷热分离 + Union 改写（v3.5+ / 4.0）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_hot_orders
+PARTITION BY dt
+REFRESH MANUAL
+PROPERTIES (
+    &quot;partition_ttl_number&quot; = &quot;3&quot;,            -- 仅保留最近 3 个分区
+    &quot;query_rewrite_consistency&quot; = &quot;force_mv&quot; -- TTL 内强制 MV，TTL 外 Union 基表（4.0 支持）
+)
+AS
+SELECT dt, product_type, SUM(sales_amount) AS total_sales
+FROM TestMV_orders
+GROUP BY dt, product_type;
+-- 官方 Example 6 也可用 partition_retention_condition + force_mv，语义更精细
+</code></pre>
+<blockquote>
+<p><strong>4.0 增强（可选）</strong>：表达式 TTL + <code>force_mv</code>（与官方文档一致）<br>
+<code>&quot;partition_retention_condition&quot; = &quot;dt &gt;= CURRENT_DATE() - INTERVAL 3 DAY&quot;</code><br>
+<code>&quot;query_rewrite_consistency&quot; = &quot;force_mv&quot;</code></p>
+</blockquote>
+<hr>
+<h3 id="413-多基表分区对齐-joinv33">4.13 多基表分区对齐 JOIN（v3.3+）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_multi_table
+PARTITION BY dt
+REFRESH MANUAL
+AS
+SELECT
+    o.dt,
+    o.product_type,
+    SUM(o.sales_amount)  AS order_sales,
+    SUM(a.backup_amount) AS archive_amount
+FROM TestMV_orders o
+JOIN TestMV_orders_archive a ON o.dt = a.dt
+GROUP BY o.dt, o.product_type;
+-- 任一基表对应分区变更，均触发该分区刷新
+</code></pre>
+<hr>
+<h3 id="414-view-delta-join-约束v30生产高级场景">4.14 View Delta Join + 约束（v3.0+，生产高级场景）</h3>
+<pre><code class="language-sql">-- 场景：MV 含 TestMV_orders JOIN TestMV_users，查询仅查 TestMV_orders 聚合（不含 TestMV_users 列）
+-- 需声明主外键约束，优化器才允许 View Delta 改写
+CREATE MATERIALIZED VIEW TestMV_mv_view_delta
+DISTRIBUTED BY HASH(user_id)
+REFRESH MANUAL
+PROPERTIES (
+    &quot;unique_constraints&quot; = &quot;TestMV_users(user_id)&quot;,
+    &quot;foreign_key_constraints&quot; = &quot;(TestMV_orders.user_id) REFERENCES TestMV_users(user_id)&quot;
+)
+AS
+SELECT o.dt, o.user_id, u.city, SUM(o.sales_amount) AS total_sales
+FROM TestMV_orders o
+INNER JOIN TestMV_users u ON o.user_id = u.user_id
+GROUP BY o.dt, o.user_id, u.city;
+
+-- 可被改写的查询（不含 TestMV_users 表）：
+-- SELECT dt, user_id, SUM(sales_amount) FROM TestMV_orders GROUP BY dt, user_id;
+</code></pre>
+<hr>
+<h3 id="415-cte-定义-mvv316">4.15 CTE 定义 MV（v3.1.6+）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_with_cte
+REFRESH MANUAL
+AS
+WITH valid_orders AS (
+    SELECT * FROM TestMV_orders WHERE order_status = 1
+)
+SELECT dt, product_type, SUM(sales_amount) AS total_sales
+FROM valid_orders
+GROUP BY dt, product_type;
+</code></pre>
+<hr>
+<h3 id="416-常用-properties-全集">4.16 常用 PROPERTIES 全集</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_props_demo
+PARTITION BY dt
+DISTRIBUTED BY HASH(order_id)
+REFRESH ASYNC
+PROPERTIES (
+    -- 存储
+    &quot;replication_num&quot; = &quot;1&quot;,
+    &quot;storage_medium&quot; = &quot;SSD&quot;,
+    &quot;storage_cooldown_time&quot; = &quot;2099-12-31 23:59:59&quot;,
+
+    -- 分区刷新
+    &quot;partition_refresh_number&quot; = &quot;1&quot;,
+    &quot;partition_refresh_strategy&quot; = &quot;adaptive&quot;,     -- strict | adaptive
+    &quot;auto_refresh_partitions_limit&quot; = &quot;7&quot;,
+
+    -- TTL
+    &quot;partition_ttl&quot; = &quot;30 DAY&quot;,
+    &quot;partition_ttl_number&quot; = &quot;30&quot;,
+    &quot;partition_retention_condition&quot; = &quot;dt &gt;= CURRENT_DATE() - INTERVAL 30 DAY&quot;,
+
+    -- 触发控制
+    &quot;excluded_trigger_tables&quot; = &quot;mv_lab.TestMV_product_dim&quot;,
+    &quot;excluded_refresh_tables&quot; = &quot;&quot;,
+
+    -- 改写
+    &quot;query_rewrite_consistency&quot; = &quot;checked&quot;,       -- disable|loose|checked|nocheck|force_mv（4.0）
+    &quot;mv_rewrite_staleness_second&quot; = &quot;3600&quot;,
+    &quot;enable_query_rewrite&quot; = &quot;true&quot;,
+    &quot;force_external_table_query_rewrite&quot; = &quot;true&quot;,
+    &quot;transparent_mv_rewrite_mode&quot; = &quot;false&quot;,
+
+    -- 资源
+    &quot;resource_group&quot; = &quot;default_mv_wg&quot;,
+    &quot;colocate_with&quot; = &quot;group_orders&quot;,
+    &quot;bloom_filter_columns&quot; = &quot;order_id,user_id&quot;,
+
+    -- 增量模式（v4.1+ Iceberg）
+    &quot;refresh_mode&quot; = &quot;PCT&quot;                         -- PCT | INCREMENTAL
+)
+AS SELECT dt, order_id, SUM(sales_amount) AS total FROM TestMV_orders GROUP BY dt, order_id;
+</code></pre>
+<hr>
+<h2 id="五-刷新-refresh">五、刷新 REFRESH</h2>
+<h3 id="51-语法">5.1 语法</h3>
+<pre><code class="language-sql">REFRESH MATERIALIZED VIEW [db.]mv_name
+    [PARTITION START (&quot;date&quot;) END (&quot;date&quot;)]
+    [FORCE]
+    [WITH { SYNC | ASYNC } MODE];
+</code></pre>
+<h3 id="52-全量刷新">5.2 全量刷新</h3>
+<pre><code class="language-sql">REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales;                    -- 异步
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;     -- 同步等待
+</code></pre>
+<h3 id="521-with-sync-mode-是什么意思零基础">5.2.1 <code>WITH SYNC MODE</code> 是什么意思？（零基础）</h3>
+<p>以这条语句为例：</p>
+<pre><code class="language-sql">REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;
+</code></pre>
+<p>可以拆成两部分理解：</p>
+<table>
+<thead>
+<tr>
+<th>部分</th>
+<th>含义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales</code></td>
+<td><strong>手动刷新</strong>这个异步物化视图，把基表最新数据重新计算并写入 MV</td>
+</tr>
+<tr>
+<td><code>WITH SYNC MODE</code></td>
+<td><strong>同步调用</strong>：当前 SQL 会<strong>一直等到</strong>刷新任务成功或失败后才返回结果</td>
+</tr>
+</tbody>
+</table>
+<h4 id="sync-与-async-对比">SYNC 与 ASYNC 对比</h4>
+<pre><code class="language-sql">-- 写法 1：默认异步（多数客户端等价于 WITH ASYNC MODE）
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales;
+-- 任务提交后很快返回，刷新在后台执行；是否完成需查 task_runs 或 SHOW MATERIALIZED VIEWS
+
+-- 写法 2：同步等待
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;
+-- 阻塞当前会话，直到刷新结束才返回；适合刷完立刻做 SELECT 对账
+</code></pre>
+<table>
+<thead>
+<tr>
+<th>模式</th>
+<th>返回时机</th>
+<th>典型用途</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ASYNC</strong>（默认）</td>
+<td>提交刷新任务后即返回</td>
+<td>生产调度、大批量刷新、不阻塞连接</td>
+</tr>
+<tr>
+<td><strong>SYNC</strong></td>
+<td>刷新成功或失败后才返回</td>
+<td>练习 Lab、脚本对账、刷完马上验证数据</td>
+</tr>
+</tbody>
+</table>
+<h4 id="如何确认-sync-刷新是否成功">如何确认 SYNC 刷新是否成功</h4>
+<pre><code class="language-sql">-- 1) 语句无报错且正常结束，通常表示刷新成功
+
+-- 2) 查看 MV 最近刷新状态
+SHOW MATERIALIZED VIEWS WHERE NAME = 'TestMV_mv_order_daily_sales';
+-- 关注：last_refresh_state（SUCCESS / FAILED / RUNNING）
+
+-- 3) 查看刷新任务明细
+SELECT TASK_NAME, CREATE_TIME, FINISH_TIME, STATE, ERROR_MESSAGE
+FROM information_schema.task_runs
+ORDER BY CREATE_TIME DESC
+LIMIT 5;
+</code></pre>
+<h4 id="常见误区">常见误区</h4>
+<ul>
+<li><code>REFRESH ... WITH SYNC MODE</code> 只适用于<strong>异步物化视图</strong>（建表时写了 <code>REFRESH MANUAL / ASYNC / SCHEDULE</code> 等）。</li>
+<li>**同步物化视图（Rollup）**没有 <code>REFRESH</code> 语句，数据随基表导入自动更新，不需要也不能写 <code>WITH SYNC MODE</code>。</li>
+<li><code>WITH SYNC MODE</code> 不是「同步物化视图」的意思，而是「<strong>同步等待刷新任务完成</strong>」。</li>
+</ul>
+<blockquote>
+<p><strong>一句话记忆</strong>：前面是「刷新这个 MV」；<code>WITH SYNC MODE</code> 是「我等它刷完再继续」。</p>
+</blockquote>
+<h3 id="53-指定分区刷新生产增量场景核心">5.3 指定分区刷新（生产增量场景核心）</h3>
+<pre><code class="language-sql">-- 仅刷新 2024-01-03 所在分区（及范围内分区）
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales
+PARTITION START (&quot;2024-01-03&quot;) END (&quot;2024-01-04&quot;)
+WITH SYNC MODE;
+</code></pre>
+<h3 id="54-强制刷新不回溯变更检测">5.4 强制刷新（不回溯变更检测）</h3>
+<pre><code class="language-sql">REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales
+PARTITION START (&quot;2024-01-01&quot;) END (&quot;2024-01-06&quot;)
+FORCE WITH SYNC MODE;
+</code></pre>
+<h3 id="55-取消刷新">5.5 取消刷新</h3>
+<pre><code class="language-sql">CANCEL REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales;
+CANCEL REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales FORCE;
+</code></pre>
+<hr>
+<h2 id="六-变更-alter">六、变更 ALTER</h2>
+<pre><code class="language-sql">-- 改刷新策略
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales REFRESH ASYNC;
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales REFRESH SCHEDULE EVERY (INTERVAL 1 HOUR);
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales REFRESH MANUAL;
+
+-- 激活 / 停用
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales ACTIVE;
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales INACTIVE;
+
+-- 重命名
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales RENAME TestMV_mv_order_daily_sales_v2;
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales_v2 RENAME TestMV_mv_order_daily_sales;  -- 改回
+
+-- 零停机原子替换（v3.1+）
+-- 先建好 TestMV_mv_order_daily_sales_new，验证后：
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SWAP WITH TestMV_mv_order_daily_sales_new;
+
+-- 修改属性
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SET (&quot;partition_ttl_number&quot; = &quot;7&quot;);
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SET (&quot;query_rewrite_consistency&quot; = &quot;loose&quot;);
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SET (&quot;session.insert_timeout&quot; = &quot;600&quot;);
+</code></pre>
+<hr>
+<h2 id="七-删除-drop">七、删除 DROP</h2>
+<pre><code class="language-sql">DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_async;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_l2_category;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_l1_daily;
+-- 按依赖倒序删：先删上层嵌套 MV，再删下层
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_daily_sales;
+</code></pre>
+<hr>
+<h2 id="八-查询与元数据-show">八、查询与元数据 SHOW</h2>
+<pre><code class="language-sql">SHOW MATERIALIZED VIEWS;
+SHOW MATERIALIZED VIEWS FROM mv_lab WHERE NAME = 'TestMV_mv_order_daily_sales';
+SHOW CREATE MATERIALIZED VIEW TestMV_mv_order_daily_sales;
+
+SELECT TABLE_NAME, IS_ACTIVE, REFRESH_TYPE, LAST_REFRESH_STATE, LAST_REFRESH_ERROR_MESSAGE
+FROM information_schema.materialized_views
+WHERE TABLE_SCHEMA = 'mv_lab';
+
+SELECT TASK_NAME, CREATE_TIME, FINISH_TIME, STATE, ERROR_MESSAGE, EXTRA_MESSAGE
+FROM information_schema.task_runs
+WHERE TASK_NAME LIKE 'mv-%'
+ORDER BY CREATE_TIME DESC LIMIT 10;
+
+SELECT * FROM sys.object_dependencies
+WHERE REFERENCED_OBJECT_NAME = 'TestMV_orders';
+</code></pre>
+<hr>
+<h2 id="九-查询改写验证">九、查询改写验证</h2>
+<pre><code class="language-sql">-- ① 执行计划
+EXPLAIN
+SELECT product_type, SUM(sales_amount)
+FROM TestMV_orders
+WHERE dt &gt;= '2024-01-01' AND order_status = 1
+GROUP BY product_type;
+
+-- ② 简洁诊断（推荐）
+TRACE REASON MV
+SELECT product_type, SUM(sales_amount)
+FROM TestMV_orders
+WHERE dt &gt;= '2024-01-01' AND order_status = 1
+GROUP BY product_type;
+
+-- ③ 详细日志
+TRACE LOGS MV
+SELECT product_type, SUM(sales_amount)
+FROM TestMV_orders
+WHERE dt &gt;= '2024-01-01'
+GROUP BY product_type;
+
+-- ④ 对比：关闭改写
+SET enable_materialized_view_rewrite = false;
+EXPLAIN SELECT product_type, SUM(sales_amount) FROM TestMV_orders WHERE dt &gt;= '2024-01-01' GROUP BY product_type;
+SET enable_materialized_view_rewrite = true;
+</code></pre>
+<p><strong>改写成功标志</strong>：<code>EXPLAIN</code> 输出中 <code>OlapScanNode</code> 的 <code>TABLE: TestMV_mv_order_daily_sales</code>。</p>
+<hr>
+<h2 id="十-会话变量与改写控制">十、会话变量与改写控制</h2>
+<pre><code class="language-sql">SET GLOBAL enable_materialized_view_rewrite = false;  -- 全局关
+SET GLOBAL enable_materialized_view_rewrite = true;
+
+SET enable_materialized_view_rewrite = false;           -- 当前会话关
+SET enable_materialized_view_text_match_rewrite = true; -- v3.3+ 文本改写
+SET transparent_mv_rewrite_mode = 'true';               -- 直接查 MV 表时透明补全
+SET enable_mv_optimizer_trace_log = true;               -- 输出详细 trace 日志
+</code></pre>
+<hr>
+<h2 id="十一-索引管理">十一、索引管理</h2>
+<pre><code class="language-sql">CREATE INDEX idx_city ON TestMV_mv_city_sales (city) USING BITMAP;
+SHOW ALTER TABLE COLUMN;
+SHOW INDEXES FROM TestMV_mv_city_sales;
+DROP INDEX idx_city ON TestMV_mv_city_sales;
+
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SET (&quot;bloom_filter_columns&quot; = &quot;order_id&quot;);
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SET (&quot;bloom_filter_columns&quot; = &quot;&quot;);
+</code></pre>
+<hr>
+<h2 id="十二-生产场景专题">十二、生产场景专题</h2>
+<h3 id="121-场景事实表追加数据后-mv-更新">12.1 场景：事实表追加数据后 MV 更新</h3>
+<pre><code class="language-sql">-- 【生产操作】Stream Load / INSERT 完成后
+
+-- Step 1：追加事实数据
+INSERT INTO TestMV_orders VALUES
+('2024-01-03', 10015, 1002, 'Electronics', 1500.0000, 1);  -- 追加到已有分区
+
+-- Step 2a：MANUAL 模式 — 手动刷对应分区
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales
+PARTITION START (&quot;2024-01-03&quot;) END (&quot;2024-01-04&quot;)
+WITH SYNC MODE;
+
+-- Step 2b：ASYNC 模式 — 等待自动刷新，查 task_runs
+-- SELECT STATE, EXTRA_MESSAGE FROM information_schema.task_runs WHERE ... ORDER BY CREATE_TIME DESC LIMIT 1;
+
+-- Step 3：验证 MV 与基表一致
+SELECT dt, product_type, SUM(sales_amount) AS base_total
+FROM TestMV_orders WHERE dt = '2024-01-03' AND product_type = 'Electronics' GROUP BY dt, product_type;
+
+SELECT dt, product_type, total_sales AS mv_total
+FROM TestMV_mv_order_daily_sales WHERE dt = '2024-01-03' AND product_type = 'Electronics';
+-- 期望 base_total = mv_total = 2199+1500 = 3699
+</code></pre>
+<h3 id="122-场景新增分区动态分区-手工-add-partition">12.2 场景：新增分区（动态分区 / 手工 ADD PARTITION）</h3>
+<pre><code class="language-sql">-- 新日期数据到来，需先确保基表有对应分区
+ALTER TABLE TestMV_orders ADD PARTITION p20240106 VALUES [('2024-01-06'), ('2024-01-07'));
+
+INSERT INTO TestMV_orders VALUES
+('2024-01-06', 10016, 1003, 'Electronics', 888.0000, 1);
+
+-- 刷新 MV 新分区
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales
+PARTITION START (&quot;2024-01-06&quot;) END (&quot;2024-01-07&quot;)
+WITH SYNC MODE;
+
+SELECT * FROM TestMV_mv_order_daily_sales WHERE dt = '2024-01-06';
+</code></pre>
+<h3 id="123-场景基表-schema-变更-mv-inactive">12.3 场景：基表 Schema 变更 → MV INACTIVE</h3>
+<pre><code class="language-sql">-- 模拟：删除并重建基表（生产常见误操作或 DDL 变更）
+-- 实际生产应用 ALTER TABLE ADD COLUMN，同样可能触发 INACTIVE
+
+-- 查看 MV 状态
+SHOW MATERIALIZED VIEWS WHERE NAME = 'TestMV_mv_order_daily_sales';
+-- is_active 可能变为 false
+
+-- 修复：确认 MV 定义仍合法后激活
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales ACTIVE;
+
+-- 全量重新刷新
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales FORCE WITH SYNC MODE;
+</code></pre>
+<h3 id="124-场景mv-零停机上线swap">12.4 场景：MV 零停机上线（SWAP）</h3>
+<pre><code class="language-sql">-- ① 建新 MV（定义变更，如新增指标列）
+CREATE MATERIALIZED VIEW TestMV_mv_order_daily_sales_new
+PARTITION BY dt
+DISTRIBUTED BY HASH(product_type)
+REFRESH MANUAL
+AS
+SELECT
+    dt, product_type,
+    SUM(sales_amount) AS total_sales,
+    COUNT(*) AS order_cnt,
+    MAX(sales_amount) AS max_single_order   -- 新增指标
+FROM TestMV_orders
+GROUP BY dt, product_type;
+
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales_new WITH SYNC MODE;
+
+-- ② 验证新 MV 数据正确
+SELECT dt, product_type, total_sales FROM TestMV_mv_order_daily_sales_new ORDER BY dt, product_type LIMIT 20;
+
+-- ③ 原子切换（秒级，查询改写指向新 MV）
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SWAP WITH TestMV_mv_order_daily_sales_new;
+
+-- ④ 确认
+SHOW MATERIALIZED VIEWS WHERE NAME LIKE 'TestMV_mv_order_daily_sales%';
+</code></pre>
+<h3 id="125-场景刷新失败排查与重试">12.5 场景：刷新失败排查与重试</h3>
+<pre><code class="language-sql">-- 查最近失败任务
+SELECT TASK_NAME, STATE, ERROR_CODE, ERROR_MESSAGE, EXTRA_MESSAGE
+FROM information_schema.task_runs
+WHERE STATE = 'FAILED'
+ORDER BY CREATE_TIME DESC LIMIT 5;
+
+-- 常见原因：基表不存在、SQL 语义错误、资源不足、外部 Catalog 超时
+-- 修复后重试
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales FORCE WITH SYNC MODE;
+</code></pre>
+<h3 id="126-场景partition_ttl-冷热分离查询">12.6 场景：partition_ttl 冷热分离查询</h3>
+<pre><code class="language-sql">-- TestMV_mv_hot_orders 仅保留 3 个分区（4.12，含 force_mv）
+REFRESH MATERIALIZED VIEW TestMV_mv_hot_orders WITH SYNC MODE;
+
+SHOW VARIABLES LIKE 'enable_materialized_view_union_rewrite';
+
+-- 查「热」分区（在 TTL 内）→ 应走 MV 改写
+EXPLAIN
+SELECT product_type, SUM(sales_amount) FROM TestMV_orders
+WHERE dt = '2024-01-05' GROUP BY product_type;
+
+-- 查「冷」分区（TTL 外，已被 MV 删除）→ Union 补偿走基表
+EXPLAIN
+SELECT product_type, SUM(sales_amount) FROM TestMV_orders
+WHERE dt = '2024-01-01' GROUP BY product_type;
+</code></pre>
+<h3 id="127-场景多-mv-共存同一基表">12.7 场景：多 MV 共存同一基表</h3>
+<pre><code class="language-sql">-- 同一基表可建多个 MV，优化器选择代价最低的
+CREATE MATERIALIZED VIEW TestMV_mv_by_user
+PARTITION BY dt REFRESH MANUAL
+AS SELECT dt, user_id, SUM(sales_amount) AS total FROM TestMV_orders GROUP BY dt, user_id;
+
+CREATE MATERIALIZED VIEW TestMV_mv_by_product
+PARTITION BY dt REFRESH MANUAL
+AS SELECT dt, product_type, SUM(sales_amount) AS total FROM TestMV_orders GROUP BY dt, product_type;
+
+REFRESH MATERIALIZED VIEW TestMV_mv_by_user WITH SYNC MODE;
+REFRESH MATERIALIZED VIEW TestMV_mv_by_product WITH SYNC MODE;
+
+-- 按 user 查 → 命中 TestMV_mv_by_user；按 product 查 → 命中 TestMV_mv_by_product
+TRACE REASON MV SELECT user_id, SUM(sales_amount) FROM TestMV_orders GROUP BY user_id;
+TRACE REASON MV SELECT product_type, SUM(sales_amount) FROM TestMV_orders GROUP BY product_type;
+</code></pre>
+<h3 id="128-场景维度表变更但不触发刷新">12.8 场景：维度表变更但不触发刷新</h3>
+<pre><code class="language-sql">-- TestMV_mv_sales_with_dim 设置了 excluded_trigger_tables = TestMV_product_dim
+
+-- 修改维度（不应触发 MV 刷新任务）
+UPDATE TestMV_product_dim SET profit_rate = 0.20 WHERE product_type = 'Electronics';
+-- 注：StarRocks DUPLICATE 表 UPDATE 支持取决于版本；也可用 INSERT 覆盖
+
+INSERT INTO TestMV_product_dim VALUES ('Electronics', '数码3C-升级版', 0.20);
+
+-- 事实表变更才触发
+INSERT INTO TestMV_orders VALUES ('2024-01-05', 10017, 1001, 'Electronics', 777.0000, 1);
+-- ASYNC 模式会自动刷；MANUAL 需手动 REFRESH
+</code></pre>
+<h3 id="129-场景权限管理生产部署">12.9 场景：权限管理（生产部署）</h3>
+<pre><code class="language-sql">-- 创建 MV 需要基表所在库的 CREATE MATERIALIZED VIEW 权限
+-- 手动刷新需要 REFRESH 权限
+-- 删除需要 DROP 权限
+
+GRANT CREATE MATERIALIZED VIEW ON DATABASE mv_lab TO USER 'analyst'@'%';
+GRANT REFRESH ON MATERIALIZED VIEW TestMV_mv_order_daily_sales TO USER 'analyst'@'%';
+GRANT SELECT ON MATERIALIZED VIEW TestMV_mv_order_daily_sales TO USER 'analyst'@'%';
+GRANT DROP ON MATERIALIZED VIEW TestMV_mv_order_daily_sales TO USER 'dba'@'%';
+</code></pre>
+<h3 id="1210-场景资源组隔离大-mv-刷新不影响查询">12.10 场景：资源组隔离（大 MV 刷新不影响查询）</h3>
+<pre><code class="language-sql">CREATE MATERIALIZED VIEW TestMV_mv_heavy_refresh
+PARTITION BY dt
+REFRESH MANUAL
+PROPERTIES (&quot;resource_group&quot; = &quot;default_mv_wg&quot;)   -- 刷新走独立资源组
+AS
+SELECT dt, product_type, SUM(sales_amount) AS total
+FROM TestMV_orders GROUP BY dt, product_type;
+</code></pre>
+<hr>
+<h2 id="十三-完整实操演练-lab">十三、完整实操演练 Lab</h2>
+<blockquote>
+<p><strong>建议按 Lab 0 → Lab 8 顺序执行</strong>，每 Lab 含「操作 → 验证 → 期望结果」。</p>
+</blockquote>
+<hr>
+<h3 id="lab-0环境初始化必做">Lab 0：环境初始化（必做）</h3>
+<pre><code class="language-sql">USE mv_lab;
+-- 执行第一章建表 + 第二章 INSERT
+-- 验证：
+SELECT COUNT(*) FROM TestMV_orders;   -- 期望 14
+SELECT COUNT(*) FROM TestMV_users;    -- 期望 5
+</code></pre>
+<hr>
+<h3 id="lab-1创建-mv-首次刷新-数据核对">Lab 1：创建 MV + 首次刷新 + 数据核对</h3>
+<pre><code class="language-sql">-- 1. 创建主练习 MV（见 4.2 节）
+CREATE MATERIALIZED VIEW TestMV_mv_order_daily_sales ... ;  -- 完整 DDL 见 4.2
+
+-- 2. 首次全量刷新
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;
+
+-- 3. 基表真值
+SELECT dt, product_type, SUM(sales_amount) AS base_total, COUNT(*) AS base_cnt
+FROM TestMV_orders
+GROUP BY dt, product_type
+ORDER BY dt, product_type;
+
+-- 4. MV 数据
+SELECT dt, product_type, total_sales, order_cnt
+FROM TestMV_mv_order_daily_sales
+ORDER BY dt, product_type;
+
+-- 5. 差异对比（有差异说明刷新未完成或 MV 定义不一致）
+SELECT
+    b.dt, b.product_type,
+    b.base_total, m.total_sales,
+    b.base_total - m.total_sales AS diff
+FROM (
+    SELECT dt, product_type, SUM(sales_amount) AS base_total
+    FROM TestMV_orders GROUP BY dt, product_type
+) b
+LEFT JOIN TestMV_mv_order_daily_sales m
+    ON b.dt = m.dt AND b.product_type = m.product_type
+WHERE ABS(b.base_total - IFNULL(m.total_sales, 0)) &gt; 0.001
+   OR m.total_sales IS NULL;
+-- 期望：0 行
+</code></pre>
+<hr>
+<h3 id="lab-2基表-insert-分区刷新-mv-更新核心">Lab 2：基表 INSERT → 分区刷新 → MV 更新（核心）</h3>
+<pre><code class="language-sql">-- 【Before】记录刷新前 MV 值
+SELECT dt, product_type, total_sales, order_cnt
+FROM TestMV_mv_order_daily_sales
+WHERE dt = '2024-01-03' AND product_type = 'Electronics';
+-- 期望 total_sales = 2199.0000
+
+-- 【操作】向基表追加数据（同一分区 2024-01-03）
+INSERT INTO TestMV_orders VALUES
+('2024-01-03', 10015, 1002, 'Electronics', 1500.0000, 1);
+
+-- 【操作】仅刷新变更分区
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales
+PARTITION START (&quot;2024-01-03&quot;) END (&quot;2024-01-04&quot;)
+WITH SYNC MODE;
+
+-- 【After】验证 MV 已更新
+SELECT dt, product_type, total_sales, order_cnt
+FROM TestMV_mv_order_daily_sales
+WHERE dt = '2024-01-03' AND product_type = 'Electronics';
+-- 期望 total_sales = 3699.0000（2199+1500），order_cnt = 2
+
+-- 【验证】基表与 MV 一致
+SELECT SUM(sales_amount) FROM TestMV_orders
+WHERE dt = '2024-01-03' AND product_type = 'Electronics';
+-- 期望 3699.0000
+</code></pre>
+<hr>
+<h3 id="lab-3查询透明改写验证">Lab 3：查询透明改写验证</h3>
+<pre><code class="language-sql">-- 1. 开启改写（默认 true）
+SET enable_materialized_view_rewrite = true;
+
+-- 2. 业务 SQL（不改写任何代码）
+EXPLAIN
+SELECT product_type, SUM(sales_amount) AS total
+FROM TestMV_orders
+WHERE dt BETWEEN '2024-01-01' AND '2024-01-05'
+GROUP BY product_type;
+
+-- 3. 成功标志
+-- OlapScanNode 中 TABLE: TestMV_mv_order_daily_sales
+
+-- 4. 执行并对比性能（可选）
+SELECT product_type, SUM(sales_amount) AS total
+FROM TestMV_orders
+WHERE dt BETWEEN '2024-01-01' AND '2024-01-05'
+GROUP BY product_type;
+
+-- 5. 改写失败诊断
+TRACE REASON MV
+SELECT product_type, SUM(sales_amount) AS total
+FROM TestMV_orders
+WHERE dt BETWEEN '2024-01-01' AND '2024-01-05'
+GROUP BY product_type;
+</code></pre>
+<hr>
+<h3 id="lab-4async-自动刷新观察">Lab 4：ASYNC 自动刷新观察</h3>
+<pre><code class="language-sql">-- 1. 创建 ASYNC MV（见 4.3）
+CREATE MATERIALIZED VIEW TestMV_mv_order_async ... ;
+REFRESH MATERIALIZED VIEW TestMV_mv_order_async WITH SYNC MODE;  -- 先做一次初始刷
+
+-- 2. 插入数据
+INSERT INTO TestMV_orders VALUES ('2024-01-04', 10018, 1005, 'Clothing', 350.0000, 1);
+
+-- 3. 轮询 task_runs（ASYNC 有延迟，通常数秒~数十秒）
+SELECT TASK_NAME, CREATE_TIME, FINISH_TIME, STATE, EXTRA_MESSAGE
+FROM information_schema.task_runs
+WHERE TASK_NAME = (SELECT task_name FROM information_schema.materialized_views
+                   WHERE TABLE_NAME = 'TestMV_mv_order_async' AND TABLE_SCHEMA = 'mv_lab')
+ORDER BY CREATE_TIME DESC LIMIT 5;
+
+-- 4. 刷新完成后验证
+SELECT dt, user_id, total_sales FROM TestMV_mv_order_async
+WHERE dt = '2024-01-04' AND user_id = 1005;
+</code></pre>
+<hr>
+<h3 id="lab-5mv-inactive-active-恢复">Lab 5：MV INACTIVE → ACTIVE 恢复</h3>
+<pre><code class="language-sql">-- 1. 手动停用
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales INACTIVE;
+
+-- 2. 验证不可改写
+TRACE REASON MV
+SELECT product_type, SUM(sales_amount) FROM TestMV_orders WHERE dt = '2024-01-01' GROUP BY product_type;
+-- 期望出现 inactive 相关失败原因
+
+-- 3. 重新激活 + 刷新
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales ACTIVE;
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;
+
+-- 4. 验证改写恢复
+EXPLAIN SELECT product_type, SUM(sales_amount) FROM TestMV_orders WHERE dt = '2024-01-01' GROUP BY product_type;
+</code></pre>
+<hr>
+<h3 id="lab-6swap-零停机切换">Lab 6：SWAP 零停机切换</h3>
+<pre><code class="language-sql">-- 完整步骤见 12.4 节，此处为精简版
+
+CREATE MATERIALIZED VIEW TestMV_mv_order_daily_sales_new
+PARTITION BY dt DISTRIBUTED BY HASH(product_type) REFRESH MANUAL
+AS SELECT dt, product_type, SUM(sales_amount) AS total_sales, COUNT(*) AS order_cnt,
+          MAX(sales_amount) AS max_order
+   FROM TestMV_orders GROUP BY dt, product_type;
+
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales_new WITH SYNC MODE;
+
+ALTER MATERIALIZED VIEW TestMV_mv_order_daily_sales SWAP WITH TestMV_mv_order_daily_sales_new;
+
+-- 验证：原名称现在指向新定义（含 max_order 列）
+DESC TestMV_mv_order_daily_sales;
+</code></pre>
+<hr>
+<h3 id="lab-7嵌套-mv-分层刷新">Lab 7：嵌套 MV 分层刷新</h3>
+<pre><code class="language-sql">-- 1. 创建 L1/L2（见 4.10）
+-- 2. 追加 TestMV_orders 数据
+INSERT INTO TestMV_orders VALUES ('2024-01-05', 10019, 1004, 'Electronics', 2000.0000, 1);
+
+-- 3. 先刷 L1（下层）
+REFRESH MATERIALIZED VIEW TestMV_mv_l1_daily
+PARTITION START (&quot;2024-01-05&quot;) END (&quot;2024-01-06&quot;) WITH SYNC MODE;
+
+-- 4. 再刷 L2（上层，依赖 L1 新数据）
+REFRESH MATERIALIZED VIEW TestMV_mv_l2_category WITH SYNC MODE;
+
+-- 5. 验证 L2
+SELECT * FROM TestMV_mv_l2_category WHERE product_type = 'Electronics';
+</code></pre>
+<hr>
+<h3 id="lab-8刷新任务监控与取消">Lab 8：刷新任务监控与取消</h3>
+<pre><code class="language-sql">-- 1. 提交异步大刷
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH ASYNC MODE;
+
+-- 2. 查看 RUNNING 状态
+SELECT TASK_NAME, STATE, CREATE_TIME FROM information_schema.task_runs
+WHERE STATE IN ('RUNNING', 'PENDING') ORDER BY CREATE_TIME DESC;
+
+-- 3. 必要时取消
+CANCEL REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales;
+
+-- 4. 重新同步刷
+REFRESH MATERIALIZED VIEW TestMV_mv_order_daily_sales WITH SYNC MODE;
+</code></pre>
+<hr>
+<h3 id="lab-附统一数据对比工具-sql">Lab 附：统一数据对比工具 SQL</h3>
+<pre><code class="language-sql">-- ============================================================
+-- 通用：对比任意 MV 与基表聚合是否一致（替换 MV 名和 GROUP BY 列）
+-- ============================================================
+SELECT
+    COALESCE(b.dt, m.dt) AS dt,
+    COALESCE(b.product_type, m.product_type) AS product_type,
+    b.base_total,
+    m.mv_total,
+    IFNULL(b.base_total, 0) - IFNULL(m.mv_total, 0) AS diff
+FROM (
+    SELECT dt, product_type, SUM(sales_amount) AS base_total
+    FROM TestMV_orders GROUP BY dt, product_type
+) b
+FULL OUTER JOIN (
+    SELECT dt, product_type, total_sales AS mv_total
+    FROM TestMV_mv_order_daily_sales
+) m ON b.dt = m.dt AND b.product_type = m.product_type
+WHERE ABS(IFNULL(b.base_total, 0) - IFNULL(m.mv_total, 0)) &gt; 0.001
+   OR b.dt IS NULL OR m.dt IS NULL;
+-- 期望：0 行 = 完全一致
+</code></pre>
+<hr>
+<h2 id="十四-运维监控与故障排查">十四、运维监控与故障排查</h2>
+<h3 id="141-日常巡检-sql">14.1 日常巡检 SQL</h3>
+<pre><code class="language-sql">-- ① 非 ACTIVE 的 MV（需处理）
+SELECT TABLE_SCHEMA, TABLE_NAME, IS_ACTIVE, LAST_REFRESH_STATE, LAST_REFRESH_ERROR_MESSAGE
+FROM information_schema.materialized_views
+WHERE IS_ACTIVE = 'false' OR LAST_REFRESH_STATE = 'FAILED';
+
+-- ② 最近 24h 刷新失败
+SELECT TASK_NAME, CREATE_TIME, ERROR_MESSAGE
+FROM information_schema.task_runs
+WHERE STATE = 'FAILED'
+  AND CREATE_TIME &gt;= DATE_SUB(NOW(), INTERVAL 1 DAY)
+ORDER BY CREATE_TIME DESC;
+
+-- ③ 刷新耗时过长（&gt; 300 秒）
+SELECT TABLE_NAME, LAST_REFRESH_DURATION, LAST_REFRESH_START_TIME
+FROM information_schema.materialized_views
+WHERE LAST_REFRESH_DURATION &gt; 300
+ORDER BY LAST_REFRESH_DURATION DESC;
+
+-- ④ MV 占用的存储行数
+SELECT TABLE_NAME, TABLE_ROWS
+FROM information_schema.tables
+WHERE TABLE_SCHEMA = 'mv_lab' AND TABLE_NAME LIKE 'TestMV_%';
+</code></pre>
+<h3 id="142-改写失败排查清单">14.2 改写失败排查清单</h3>
+<table>
+<thead>
+<tr>
+<th>步骤</th>
+<th>SQL / 操作</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1. MV 是否 ACTIVE</td>
+<td><code>SHOW MATERIALIZED VIEWS WHERE NAME = 'xxx'</code></td>
+</tr>
+<tr>
+<td>2. 是否过期</td>
+<td><code>REFRESH MATERIALIZED VIEW xxx WITH SYNC MODE</code></td>
+</tr>
+<tr>
+<td>3. 改写诊断</td>
+<td><code>TRACE REASON MV SELECT ...</code></td>
+</tr>
+<tr>
+<td>4. 详细日志</td>
+<td><code>TRACE LOGS MV SELECT ...</code></td>
+</tr>
+<tr>
+<td>5. 对比关闭改写</td>
+<td><code>SET enable_materialized_view_rewrite = false</code></td>
+</tr>
+<tr>
+<td>6. 查 Profile</td>
+<td><code>EXPLAIN ANALYZE SELECT ...</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="143-常见-error_message-与处理">14.3 常见 ERROR_MESSAGE 与处理</h3>
+<table>
+<thead>
+<tr>
+<th>错误现象</th>
+<th>可能原因</th>
+<th>处理</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>MV is outdated</td>
+<td>基表已变更，MV 未刷</td>
+<td><code>REFRESH ... FORCE</code></td>
+</tr>
+<tr>
+<td>inactive</td>
+<td>基表 Schema 变更</td>
+<td><code>ALTER MV ACTIVE</code> + 全量刷</td>
+</tr>
+<tr>
+<td>Rewrite aggregate rollup failed</td>
+<td>查询聚合粒度与 MV 不匹配</td>
+<td>调整 MV GROUP BY 或查询</td>
+</tr>
+<tr>
+<td>partitionNamesToRefresh</td>
+<td>对应分区过期</td>
+<td>刷指定分区</td>
+</tr>
+<tr>
+<td>外部 Catalog 超时</td>
+<td>外部表网络/元数据慢</td>
+<td>改 <code>SCHEDULE</code> 错峰刷</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="十五-场景速查表">十五、场景速查表</h2>
+<table>
+<thead>
+<tr>
+<th>生产场景</th>
+<th>关键 SQL</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>首次上线 MV</td>
+<td><code>CREATE MV ... REFRESH MANUAL</code> → <code>REFRESH ... SYNC</code> → 对比验证</td>
+</tr>
+<tr>
+<td>事实表追加</td>
+<td><code>INSERT</code> → <code>REFRESH MV PARTITION START/END</code></td>
+</tr>
+<tr>
+<td>新分区数据</td>
+<td><code>ALTER TABLE ADD PARTITION</code> → <code>INSERT</code> → <code>REFRESH MV</code></td>
+</tr>
+<tr>
+<td>T+1 定时</td>
+<td><code>REFRESH SCHEDULE EVERY (INTERVAL 1 DAY)</code></td>
+</tr>
+<tr>
+<td>实时近线</td>
+<td><code>REFRESH ASYNC</code></td>
+</tr>
+<tr>
+<td>分区增量</td>
+<td><code>PARTITION BY dt</code> + <code>partition_refresh_number=1</code></td>
+</tr>
+<tr>
+<td>热数据 N 天</td>
+<td><code>partition_ttl_number</code> / <code>partition_retention_condition</code></td>
+</tr>
+<tr>
+<td>维度不触发刷</td>
+<td><code>excluded_trigger_tables</code></td>
+</tr>
+<tr>
+<td>多表 JOIN</td>
+<td>MV 定义含 JOIN + 分区对齐</td>
+</tr>
+<tr>
+<td>嵌套分层</td>
+<td>L2 MV 基表 = L1 MV</td>
+</tr>
+<tr>
+<td>零停机变更</td>
+<td>建新 MV → 验证 → <code>SWAP WITH</code></td>
+</tr>
+<tr>
+<td>Schema 变更</td>
+<td><code>ALTER MV ACTIVE</code> + <code>REFRESH FORCE</code></td>
+</tr>
+<tr>
+<td>验证改写</td>
+<td><code>EXPLAIN</code> / <code>TRACE REASON MV</code></td>
+</tr>
+<tr>
+<td>数据一致性</td>
+<td>Lab 附「统一对比 SQL」</td>
+</tr>
+<tr>
+<td>刷新失败</td>
+<td>查 <code>task_runs</code> → 修复 → <code>REFRESH FORCE</code></td>
+</tr>
+<tr>
+<td>取消长任务</td>
+<td><code>CANCEL REFRESH MV</code></td>
+</tr>
+<tr>
+<td>同步 MV</td>
+<td>无 REFRESH，导入自动更新，查询加 <code>[_SYNC_MV_]</code></td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="附录-a清理练习环境">附录 A：清理练习环境</h2>
+<pre><code class="language-sql">USE mv_lab;
+
+-- 按依赖倒序删除 MV（同步 Rollup + 异步 MV）
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_k1_k2;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_k2_order;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_k1_k2_sumk3;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_deduplicate;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_props_demo;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_l2_category;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_l1_daily;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_daily_sales;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_daily_sales_new;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_async;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_schedule;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_deferred;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_monthly;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_order_user_flat;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_city_sales;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_sales_with_dim;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_from_view;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_hot_orders;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_multi_table;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_view_delta;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_with_cte;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_by_user;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_by_product;
+DROP MATERIALIZED VIEW IF EXISTS TestMV_mv_heavy_refresh;
+
+DROP VIEW IF EXISTS TestMV_v_order_user;
+
+DROP TABLE IF EXISTS TestMV_orders;
+DROP TABLE IF EXISTS TestMV_users;
+DROP TABLE IF EXISTS TestMV_product_dim;
+DROP TABLE IF EXISTS TestMV_duplicate_table;
+DROP TABLE IF EXISTS TestMV_orders_archive;
+
+-- DROP DATABASE mv_lab;  -- 可选：彻底删除练习库
+</code></pre>
+<hr>
+<h2 id="附录-b同步-mv-vs-异步-mv-对照">附录 B：同步 MV vs 异步 MV 对照</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>同步 MV（Rollup）</th>
+<th>异步 MV</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基表</td>
+<td>单表，Default Catalog</td>
+<td>多表/外表/视图/嵌套 MV</td>
+</tr>
+<tr>
+<td>刷新</td>
+<td>导入时同步</td>
+<td>ASYNC / SCHEDULE / MANUAL</td>
+</tr>
+<tr>
+<td>分区</td>
+<td>不支持</td>
+<td>支持，增量刷分区</td>
+</tr>
+<tr>
+<td>物理形态</td>
+<td>基表索引</td>
+<td>独立物理表</td>
+</tr>
+<tr>
+<td>直接查询</td>
+<td>需 <code>[_SYNC_MV_]</code> hint</td>
+<td>可直接 SELECT</td>
+</tr>
+<tr>
+<td>生产选型</td>
+<td>单表简单聚合、实时</td>
+<td>复杂 JOIN/聚合/多源</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<blockquote>
+<p><strong>练习路径建议</strong>：</p>
+<ol>
+<li>第一章建表 → 第二章 INSERT → Lab 0 验证数据；</li>
+<li>Lab 1~3（CREATE + REFRESH + 改写）—— <strong>核心必做</strong>；</li>
+<li>Lab 4~8 + 第十二章生产专题 —— 按岗位需要选做；</li>
+<li>用「附录 A」清理环境后可重复练习。</li>
+</ol>
+</blockquote>
+<hr>
+<h2 id="附录-cstarrocks-常见-hint诊断语句速查">附录 C：StarRocks 常见 hint/诊断语句速查</h2>
+<blockquote>
+<p>这份速查以“物化视图学习和排障”为主，按使用频率排序。</p>
+</blockquote>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>语句</th>
+<th>用途</th>
+<th>结果怎么看</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>hint</td>
+<td><code>SELECT * FROM TestMV_mv_k1_k2_sumk3 [_SYNC_MV_];</code></td>
+<td>直接读取同步 MV（Rollup）</td>
+<td>能返回结果表示同步 MV 可直接访问；若报错先看是否为同步 MV、是否构建完成</td>
+</tr>
+<tr>
+<td>计划诊断</td>
+<td><code>EXPLAIN SELECT ...;</code></td>
+<td>看优化器是否命中 MV 改写</td>
+<td>关注 <code>OlapScanNode</code> 的 <code>TABLE</code> 是否为 <code>TestMV_mv_xxx</code></td>
+</tr>
+<tr>
+<td>计划诊断</td>
+<td><code>EXPLAIN COSTS SELECT ...;</code></td>
+<td>看候选计划成本</td>
+<td>对比不同路径 cost，理解为何没选某个 MV</td>
+</tr>
+<tr>
+<td>执行诊断</td>
+<td><code>EXPLAIN ANALYZE SELECT ...;</code></td>
+<td>真执行并输出运行期信息</td>
+<td>看耗时热点、扫描行数、Profile 中的 Reason</td>
+</tr>
+<tr>
+<td>MV 改写诊断</td>
+<td><code>TRACE REASON MV SELECT ...;</code></td>
+<td>输出“改写失败的简洁原因”</td>
+<td>日常首选，定位快，如 <code>MV is outdated</code>、<code>inactive</code></td>
+</tr>
+<tr>
+<td>MV 改写诊断</td>
+<td><code>TRACE LOGS MV SELECT ...;</code></td>
+<td>输出改写过程详细日志</td>
+<td>深度排查用，信息量大</td>
+</tr>
+<tr>
+<td>状态诊断</td>
+<td><code>SHOW MATERIALIZED VIEWS;</code></td>
+<td>查看异步 MV 状态</td>
+<td>看 <code>is_active</code>、<code>last_refresh_state</code>、错误信息</td>
+</tr>
+<tr>
+<td>DDL 诊断</td>
+<td><code>SHOW CREATE MATERIALIZED VIEW mv_name;</code></td>
+<td>查看 MV 最终生效 DDL</td>
+<td>用于确认 <code>REFRESH</code>、<code>PROPERTIES</code> 是否符合预期</td>
+</tr>
+<tr>
+<td>刷新任务诊断</td>
+<td><code>SELECT * FROM information_schema.task_runs ...;</code></td>
+<td>查刷新任务历史与失败原因</td>
+<td>看 <code>STATE</code>、<code>ERROR_MESSAGE</code>、<code>EXTRA_MESSAGE</code></td>
+</tr>
+<tr>
+<td>同步 MV 构建诊断</td>
+<td><code>SHOW ALTER MATERIALIZED VIEW;</code></td>
+<td>看同步 MV（Rollup）构建任务状态</td>
+<td><code>FINISHED</code> 才算构建完成，可用于改写/读取</td>
+</tr>
+</tbody>
+</table>
+<h3 id="c1-高频排障组合建议直接复制">C.1 高频排障组合（建议直接复制）</h3>
+<pre><code class="language-sql">-- 1) 先看是否命中 MV
+EXPLAIN
+SELECT product_type, SUM(sales_amount)
+FROM TestMV_orders
+GROUP BY product_type;
+
+-- 2) 没命中就看原因（首选）
+TRACE REASON MV
+SELECT product_type, SUM(sales_amount)
+FROM TestMV_orders
+GROUP BY product_type;
+
+-- 3) 再看 MV 状态和刷新情况
+SHOW MATERIALIZED VIEWS;
+
+SELECT TASK_NAME, CREATE_TIME, FINISH_TIME, STATE, ERROR_MESSAGE, EXTRA_MESSAGE
+FROM information_schema.task_runs
+ORDER BY CREATE_TIME DESC
+LIMIT 20;
+</code></pre>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                    机器学习
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=StarRocks" class="tag js-tag-link" data-tag-name="StarRocks">
+                    StarRocks
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC</div>
+                        <div class="related-meta">2026-06-23</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/wd8H/StarRocks-MySQL-JDBC-vs-StarRock.png" alt="StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-deploy/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用</div>
+                        <div class="related-meta">2026-05-16</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/16/sC2j/StarRocks.png" alt="StarRocks 存算一体集群部署实战：Linux 环境 3FE + 4BE 从 0 到可用" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-storage/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 数据存储说明</div>
+                        <div class="related-meta">2026-05-14</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/14/Jr6e/StarRocks.png" alt="StarRocks 数据存储说明" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks-partitioning-bucketing/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 分区与分桶深度解析：从原理到最佳实践</div>
+                        <div class="related-meta">2026-05-13</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/13/zm2C/StarRocks.png" alt="StarRocks 分区与分桶深度解析：从原理到最佳实践" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/Mysql_StarRocks_Jar/">
+                  <h3 class="post-title">
+                    StarRocks 连接驱动对比：MySQL JDBC vs StarRocks JDBC
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

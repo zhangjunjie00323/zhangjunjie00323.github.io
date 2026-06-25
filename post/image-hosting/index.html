@@ -1,0 +1,1200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>图床完全指南：从入门到自建 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/image-hosting/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="图床完全指南：从入门到自建 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="一份覆盖图床选型、部署、集成与避坑的完整手册 一、什么是图床，为什么你需要一个 图床（Image Hosting）本质上是一台专门托管图片的服务器。你在 Markdown 里写下 ![](https://img.example.com/p...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/image-hosting/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/05/06/qC9x/Image-Hosting.png">
+
+<meta name="keywords" content="工具">
+
+
+<meta property="article:published_time" content="2026-05-05T21:24:31+08:00">
+<meta property="article:modified_time" content="2026-05-05T21:24:31+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="工具">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="图床完全指南：从入门到自建 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="一份覆盖图床选型、部署、集成与避坑的完整手册 一、什么是图床，为什么你需要一个 图床（Image Hosting）本质上是一台专门托管图片的服务器。你在 Markdown 里写下 ![](https://img.example.com/p...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/05/06/qC9x/Image-Hosting.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/image-hosting/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/image-hosting/"
+      },
+      "headline": "图床完全指南：从入门到自建",
+      "description": "一份覆盖图床选型、部署、集成与避坑的完整手册 一、什么是图床，为什么你需要一个 图床（Image Hosting）本质上是一台专门托管图片的服务器。你在 Markdown 里写下 ![](https://img.example.com/p...",
+      "image": "https://files.seeusercontent.com/2026/05/06/qC9x/Image-Hosting.png",
+      "url": "https://zhangjunjie00323.github.io/post/image-hosting/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-05-05T21:24:31+08:00",
+      "dateModified": "2026-05-05T21:24:31+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "工具"
+      ],
+      "keywords": "工具",
+      "wordCount": 5926
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/image-hosting/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "工具",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E5%B7%A5%E5%85%B7"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "图床完全指南：从入门到自建",
+          "item": "https://zhangjunjie00323.github.io/post/image-hosting/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E4%BB%80%E4%B9%88%E6%98%AF%E5%9B%BE%E5%BA%8A%E4%B8%BA%E4%BB%80%E4%B9%88%E4%BD%A0%E9%9C%80%E8%A6%81%E4%B8%80%E4%B8%AA">一、什么是图床，为什么你需要一个</a></li>
+<li><a href="#%E4%BA%8C-%E5%9B%BE%E5%BA%8A%E6%96%B9%E6%A1%88%E5%85%A8%E6%99%AF%E5%AF%B9%E6%AF%94">二、图床方案全景对比</a>
+<ul>
+<li><a href="#21-%E5%85%AC%E5%85%B1%E5%85%8D%E8%B4%B9%E5%9B%BE%E5%BA%8A">2.1 公共免费图床</a></li>
+<li><a href="#22-%E4%BA%91%E5%8E%82%E5%95%86%E5%AF%B9%E8%B1%A1%E5%AD%98%E5%82%A8">2.2 云厂商对象存储</a></li>
+<li><a href="#23-%E8%87%AA%E5%BB%BA%E5%9B%BE%E5%BA%8A">2.3 自建图床</a></li>
+<li><a href="#24-%E5%9B%BE%E5%BA%8A%E5%8D%B3%E6%9C%8D%E5%8A%A1">2.4 图床即服务</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E6%96%B9%E6%A1%88%E6%8E%A8%E8%8D%90%E6%8C%89%E5%9C%BA%E6%99%AF%E9%80%89%E6%8B%A9">三、方案推荐：按场景选择</a>
+<ul>
+<li><a href="#%E6%83%85%E6%99%AF%E4%B8%80%E5%88%9A%E5%BC%80%E5%A7%8B%E5%86%99%E5%8D%9A%E5%AE%A2%E4%B8%8D%E6%83%B3%E6%8A%98%E8%85%BE">情景一：刚开始写博客，不想折腾</a></li>
+<li><a href="#%E6%83%85%E6%99%AF%E4%BA%8C%E6%9C%89%E4%B8%80%E5%AE%9A%E6%B5%81%E9%87%8F%E8%BF%BD%E6%B1%82%E4%B8%93%E4%B8%9A">情景二：有一定流量，追求专业</a></li>
+<li><a href="#%E6%83%85%E6%99%AF%E4%B8%89%E5%9B%BD%E5%86%85%E7%94%A8%E6%88%B7%E6%B5%81%E9%87%8F%E8%BE%83%E5%A4%A7">情景三：国内用户，流量较大</a></li>
+<li><a href="#%E6%83%85%E6%99%AF%E5%9B%9B%E5%AF%B9%E6%95%B0%E6%8D%AE%E6%9C%89%E5%AE%8C%E5%85%A8%E6%8E%A7%E5%88%B6%E6%AC%B2">情景四：对数据有完全控制欲</a></li>
+</ul>
+</li>
+<li><a href="#%E5%9B%9B-%E5%AE%9E%E6%88%98%E6%90%AD%E5%BB%BA-cloudflare-r2-%E5%9B%BE%E5%BA%8A-piclist-%E4%B8%8A%E4%BC%A0">四、实战：搭建 Cloudflare R2 图床 + PicList 上传</a>
+<ul>
+<li><a href="#41-%E5%88%9B%E5%BB%BA-r2-%E5%AD%98%E5%82%A8%E6%A1%B6">4.1 创建 R2 存储桶</a></li>
+<li><a href="#42-%E8%AE%BE%E7%BD%AE%E5%85%AC%E5%BC%80%E8%AE%BF%E9%97%AE">4.2 设置公开访问</a></li>
+<li><a href="#43-%E9%85%8D%E7%BD%AE-piclist">4.3 配置 PicList</a></li>
+<li><a href="#44-%E4%B8%8E-typora-%E9%9B%86%E6%88%90">4.4 与 Typora 集成</a></li>
+</ul>
+</li>
+<li><a href="#%E4%BA%94-%E8%BF%9B%E9%98%B6%E6%8A%80%E5%B7%A7">五、进阶技巧</a>
+<ul>
+<li><a href="#51-%E5%9B%BE%E7%89%87%E5%8E%8B%E7%BC%A9%E5%89%8D%E7%BD%AE">5.1 图片压缩前置</a></li>
+<li><a href="#52-cdn-%E4%B8%8E%E7%BC%93%E5%AD%98%E7%AD%96%E7%95%A5">5.2 CDN 与缓存策略</a></li>
+<li><a href="#53-%E5%A4%9A%E4%BB%BD%E5%A4%87%E4%BB%BD%E7%AD%96%E7%95%A5">5.3 多份备份策略</a></li>
+<li><a href="#54-%E9%98%B2%E7%9B%97%E9%93%BE">5.4 防盗链</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E9%81%BF%E5%9D%91%E6%B8%85%E5%8D%95">六、避坑清单</a></li>
+<li><a href="#%E4%B8%83-%E6%9C%AA%E6%9D%A5%E8%B6%8B%E5%8A%BF">七、未来趋势</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">图床完全指南：从入门到自建</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-05-05 21:24
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                24 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/05/06/qC9x/Image-Hosting.png" alt="图床完全指南：从入门到自建">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>一份覆盖图床选型、部署、集成与避坑的完整手册</p>
+<!-- more -->
+<h2 id="一-什么是图床为什么你需要一个">一、什么是图床，为什么你需要一个</h2>
+<p>图床（Image Hosting）本质上是一台专门托管图片的服务器。你在 Markdown 里写下 <code>![](https://img.example.com/photo.png)</code> 时，那个 <code>img.example.com</code> 所指向的服务，就是图床。</p>
+<p>和图床相对的概念是&quot;本地引用&quot;——图片和 Markdown 文件放在同一个文件夹里，用相对路径引用。这在小规模写作中完全够用，但一旦你开始跨平台发布、多设备同步、或者文章里图片超过十张，本地引用很快就会暴露出三个致命问题：</p>
+<p><strong>跨平台迁移的噩梦</strong>。你把文章从本地发到博客平台（如 Hexo、Hugo、WordPress），或者分享给同事，图片路径全部失效。你不得不逐张重新上传，或者手动替换所有路径。</p>
+<p><strong>版本管理的膨胀</strong>。Git 仓库里每张图片都是二进制文件，一次 <code>git clone</code> 可能拉下来几百 MB 的历史图片。Git LFS 能缓解，但不是根本方案。</p>
+<p><strong>协作的断裂</strong>。多人协作文档时，每个人的本地路径不同，图片引用变成乱码。即使你用云盘同步，路径的绝对性依然是个坑。</p>
+<p>图床解决的就是这个核心问题：<strong>把图片变成互联网上的独立资源</strong>，通过 URL 访问，不依赖任何特定的文件系统路径。你的 Markdown 文件因此变得纯粹——只有文字和一个 URL，可以自由地在任何平台、任何设备之间流动。</p>
+<hr>
+<h2 id="二-图床方案全景对比">二、图床方案全景对比</h2>
+<p>市面上的图床方案可以分成四大类，每一类有自己的适用场景。</p>
+<h3 id="21-公共免费图床">2.1 公共免费图床</h3>
+<table>
+<thead>
+<tr>
+<th>图床</th>
+<th>特点</th>
+<th>风险</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>SM.MS</td>
+<td>开源、API 友好、支持 5MB</td>
+<td>服务器在海外，国内访问慢；免费版每日 20 张限额</td>
+</tr>
+<tr>
+<td>imgur</td>
+<td>全球最大、API 完善</td>
+<td>2023 年开始清理 NSFW 和长期未访问图片，大陆访问不稳定</td>
+</tr>
+<tr>
+<td>路过图床</td>
+<td>国内访问快、免注册</td>
+<td>无 SLA 保障、随时可能关停</td>
+</tr>
+<tr>
+<td>聚合图床</td>
+<td>多接口聚合，支持微博/哔哩哔哩等</td>
+<td>依赖于第三方服务稳定性</td>
+</tr>
+</tbody>
+</table>
+<p><strong>适用场景</strong>：偶尔贴几张图到论坛或临时分享，对稳定性和持久性没有要求。</p>
+<p><strong>不适用场景</strong>：博客配图、技术文档、任何需要&quot;写完文章三年后图片还在&quot;的情况。</p>
+<p>一句话总结：免费图床可以用于测试，但不要用于正文。这不是偏见，是血泪教训——你永远不知道哪一天你的文章会变成满屏的裂图。</p>
+<h3 id="22-云厂商对象存储">2.2 云厂商对象存储</h3>
+<p>这是目前最主流、最可靠的选择。</p>
+<table>
+<thead>
+<tr>
+<th>厂商</th>
+<th>产品</th>
+<th>免费额度</th>
+<th>每 GB 存储</th>
+<th>每 GB 流量</th>
+<th>CDN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>阿里云</td>
+<td>OSS</td>
+<td>无</td>
+<td>¥0.12/GB/月</td>
+<td>¥0.25-0.50/GB</td>
+<td>自带 CDN（另付费）</td>
+</tr>
+<tr>
+<td>腾讯云</td>
+<td>COS</td>
+<td>50GB 免费 6 个月</td>
+<td>¥0.099/GB/月</td>
+<td>¥0.21-0.50/GB</td>
+<td>CDN 另计</td>
+</tr>
+<tr>
+<td>七牛云</td>
+<td>Kodo</td>
+<td>10GB 永久免费</td>
+<td>超出 ¥0.099/GB/月</td>
+<td>0.24-0.28/GB</td>
+<td>自带融合 CDN</td>
+</tr>
+<tr>
+<td>又拍云</td>
+<td>USS</td>
+<td>加入联盟每月 10GB 免费</td>
+<td>¥0.0043/GB/天</td>
+<td>¥0.33-0.50/GB</td>
+<td>自带 CDN</td>
+</tr>
+<tr>
+<td>AWS</td>
+<td>S3</td>
+<td>5GB 免费 12 个月</td>
+<td>$0.023/GB/月</td>
+<td>$0.09/GB</td>
+<td>CloudFront 另计</td>
+</tr>
+<tr>
+<td>Cloudflare</td>
+<td>R2</td>
+<td>10GB 永久免费</td>
+<td>$0.015/GB/月</td>
+<td><strong>零流量费</strong></td>
+<td>天然走 Cloudflare CDN</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Cloudflare R2 是一个值得单独拿出来说的选项</strong>。它最大的优势是免流量费——对象存储最贵的部分不是存储，而是下行流量。如果你博客日访问量上千，S3 或 OSS 的流量账单会让你肉疼，R2 直接把这个成本抹掉了。唯一的代价是数据必须走 Cloudflare 网络，但考虑到大多数个人博客本来就在用 Cloudflare 做 DNS 和 CDN，这几乎不算代价。</p>
+<p><strong>适用场景</strong>：个人博客、技术文档站、所有需要长期可靠性的场景。</p>
+<h3 id="23-自建图床">2.3 自建图床</h3>
+<p>适合有 NAS、云服务器或者对数据主权有执念的用户。</p>
+<table>
+<thead>
+<tr>
+<th>方案</th>
+<th>架构</th>
+<th>优势</th>
+<th>劣势</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Chevereto</td>
+<td>PHP + MySQL</td>
+<td>功能完整（相册、API、多用户）、社区版免费</td>
+<td>需要 VPS/NAS、维护成本高</td>
+</tr>
+<tr>
+<td>Lsky Pro（兰空图床）</td>
+<td>PHP + MySQL/PostgreSQL</td>
+<td>国产开源、界面美观、支持多种存储驱动（本地/S3/OSS/COS）</td>
+<td>需要 PHP 环境</td>
+</tr>
+<tr>
+<td>PicList + S3 兼容存储</td>
+<td>Electron 桌面端 + S3 API</td>
+<td>无需服务端、直接上传到对象存储</td>
+<td>功能不如完整图床丰富</td>
+</tr>
+<tr>
+<td>MinIO + Nginx</td>
+<td>Go 编写的对象存储</td>
+<td>完全兼容 S3 API、轻量、可靠</td>
+<td>需要自己处理 HTTPS 和外网访问</td>
+</tr>
+</tbody>
+</table>
+<p><strong>自建图床的一个新思路</strong>：用 Lsky Pro 作为管理后台，后端挂在 Cloudflare R2 上。这样做到了管理便利性和零流量成本的兼得，是目前个人自建的最优解之一。</p>
+<h3 id="24-图床即服务">2.4 图床即服务</h3>
+<p>一些写作和笔记工具本身内置了图床能力：</p>
+<table>
+<thead>
+<tr>
+<th>工具</th>
+<th>图床方式</th>
+<th>特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Typora + PicGo/PicList</td>
+<td>上传时自动替换为远程 URL</td>
+<td>最流畅的 Markdown 写作体验，支持 SMMS/GitHub/OSS/S3 等</td>
+</tr>
+<tr>
+<td>Obsidian + Image Uploader 插件</td>
+<td>粘贴时自动上传</td>
+<td>社区插件丰富，但稳定性依赖插件维护者</td>
+</tr>
+<tr>
+<td>Notion</td>
+<td>自动上传到 Notion 服务器</td>
+<td>完全无感，但不能控制 URL，迁移困难</td>
+</tr>
+<tr>
+<td>语雀</td>
+<td>内置图床</td>
+<td>同上，导出时图片变为本地文件</td>
+</tr>
+<tr>
+<td>MWeb</td>
+<td>内置图床 + 多种存储后端</td>
+<td>macOS/iOS 生态优秀，跨平台弱</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="三-方案推荐按场景选择">三、方案推荐：按场景选择</h2>
+<h3 id="情景一刚开始写博客不想折腾">情景一：刚开始写博客，不想折腾</h3>
+<p><strong>推荐</strong>：PicGo/PicList（桌面端）+ GitHub 仓库作为图床。</p>
+<p>把图片推到 <code>username/assets</code> 仓库里，通过 <code>raw.githubusercontent.com</code> 或 JSDelivr CDN 加速访问。这方案的唯一缺点是 GitHub 仓库有大小限制（推荐保持在 1GB 以下），但对个人博客来说完全够用。国内访问需要借助 JSDelivr 或自备 CDN。</p>
+<p>JSDelivr 加速后的图片链接格式：</p>
+<pre><code>https://cdn.jsdelivr.net/gh/用户名/仓库名@版本号/图片路径
+</code></pre>
+<h3 id="情景二有一定流量追求专业">情景二：有一定流量，追求专业</h3>
+<p><strong>推荐</strong>：Cloudflare R2 + PicList 上传。</p>
+<p>零流量费的诱惑太大。配合 PicList（PicGo 的增强 fork），配置好 S3 兼容 API 后粘贴图片自动上传、自动替换 URL，写文章时完全无感。</p>
+<h3 id="情景三国内用户流量较大">情景三：国内用户，流量较大</h3>
+<p><strong>推荐</strong>：阿里云 OSS 或腾讯云 COS + CDN + PicGo。</p>
+<p>国内对象存储在 CDN 上对大陆访问的优化远好于 Cloudflare。如果你读者主要在国内，多花一些流量费换来更快的加载速度是值得的。</p>
+<h3 id="情景四对数据有完全控制欲">情景四：对数据有完全控制欲</h3>
+<p><strong>推荐</strong>：MinIO + Nginx 反代 + Lsky Pro 管理面板。</p>
+<p>MinIO 部署在你的服务器或 NAS 上，Nginx 处理 HTTPS 和外部访问，Lsky Pro 提供上传和管理界面。这是最重但最自主的方案。</p>
+<hr>
+<h2 id="四-实战搭建-cloudflare-r2-图床-piclist-上传">四、实战：搭建 Cloudflare R2 图床 + PicList 上传</h2>
+<p>这是目前个人用户性价比最高的方案，完整步骤不超过 15 分钟。</p>
+<h3 id="41-创建-r2-存储桶">4.1 创建 R2 存储桶</h3>
+<ol>
+<li>登录 Cloudflare Dashboard，进入 R2 页面</li>
+<li>点击「Create bucket」，命名如 <code>my-images</code></li>
+<li>创建完成后，进入桶设置 → 「Manage R2 API Tokens」</li>
+<li>创建一个 API Token，权限选择「Object Read &amp; Write」</li>
+<li>记录下来三组信息：
+<ul>
+<li><strong>Account ID</strong>（在 R2 页面右上角）</li>
+<li><strong>Access Key ID</strong> 和 <strong>Secret Access Key</strong>（创建 Token 后显示）</li>
+<li><strong>Endpoint</strong>：格式为 <code>https://&lt;account_id&gt;.r2.cloudflarestorage.com</code></li>
+<li><strong>桶名</strong>：你创建的桶名（如 <code>my-images</code>）</li>
+</ul>
+</li>
+</ol>
+<h3 id="42-设置公开访问">4.2 设置公开访问</h3>
+<p>R2 默认桶是私有的。在桶设置中，将桶的公开访问与一个自定义域名绑定：</p>
+<ol>
+<li>在 Cloudflare 中添加一个 DNS 记录（如 <code>img.yourdomain.com</code>），指向任意 IP，开启橙色云朵代理</li>
+<li>进入 R2 桶的「Settings」→「Public Access」→「Custom Domains」</li>
+<li>绑定刚才的 <code>img.yourdomain.com</code></li>
+<li>此后桶内文件可以通过 <code>https://img.yourdomain.com/photo.png</code> 公开访问</li>
+</ol>
+<h3 id="43-配置-piclist">4.3 配置 PicList</h3>
+<p>PicList 是 PicGo 的增强版（GitHub 搜索 <code>Kuingsmile/PicList</code>），对 S3 兼容协议支持更好：</p>
+<ol>
+<li>下载 PicList 桌面客户端</li>
+<li>图床设置 → 找到「Amazon S3」或「S3 兼容」插件</li>
+<li>填入配置：
+<ul>
+<li><strong>AccessKey ID</strong>：R2 的 Access Key ID</li>
+<li><strong>Secret AccessKey</strong>：R2 的 Secret Key</li>
+<li><strong>自定义节点</strong>：<code>https://&lt;account_id&gt;.r2.cloudflarestorage.com</code></li>
+<li><strong>桶名</strong>：<code>my-images</code></li>
+<li><strong>自定义域名</strong>：<code>https://img.yourdomain.com</code></li>
+<li><strong>路径</strong>：<code>{year}/{month}/{filename}{extname}</code>（按年月归档）</li>
+</ul>
+</li>
+<li>测试上传，确认成功</li>
+</ol>
+<h3 id="44-与-typora-集成">4.4 与 Typora 集成</h3>
+<p>Typora → 偏好设置 → 图像 → 上传服务 → PicGo（或自定义命令）。</p>
+<p>配置好后，你在 Typora 中粘贴截图或拖入图片时，Typora 会自动调用 PicList 上传到 R2，然后把本地的 <code>![](image.png)</code> 替换为 <code>![](https://img.yourdomain.com/2026/05/screenshot.png)</code>。</p>
+<p>整个过程对写作完全无感，这是目前 Markdown 写作体验最顺滑的图床集成方案。</p>
+<hr>
+<h2 id="五-进阶技巧">五、进阶技巧</h2>
+<h3 id="51-图片压缩前置">5.1 图片压缩前置</h3>
+<p>在上传前自动压缩图片，既能节省存储和流量，也能大幅提升网页加载速度。PicList 内置了压缩插件，支持 TinyPNG API 和本地压缩。建议设置：</p>
+<ul>
+<li>JPEG 质量 80%，PNG 转为 JPEG（非透明图）</li>
+<li>最大宽度 1920px（4K 屏幕也不模糊）</li>
+<li>超过 2MB 的图片强制压缩</li>
+</ul>
+<h3 id="52-cdn-与缓存策略">5.2 CDN 与缓存策略</h3>
+<p>如果使用自己的域名挂在 Cloudflare 上，可以利用其缓存规则：</p>
+<pre><code># Cloudflare Cache Rule
+URL: img.yourdomain.com/*
+Cache Level: Cache Everything
+Edge TTL: 30 days
+Browser TTL: 7 days
+</code></pre>
+<p>图片是静态资源，URL 不变内容就不变，缓存时间设长一点完全没问题，还能大幅降低回源次数。</p>
+<h3 id="53-多份备份策略">5.3 多份备份策略</h3>
+<p>图床虽然可靠，但单点故障永远存在。建议叠加备份：</p>
+<ol>
+<li><strong>R2 作为主存储</strong>（和 CDN 一体）</li>
+<li><strong>GitHub 仓库作为备份</strong>：用 GitHub Actions 定时从 R2 同步图片到 <code>assets</code> 仓库</li>
+<li><strong>本地保留原始截图</strong>：PicList 设置中勾选「保留本地副本」</li>
+</ol>
+<p>这样即使某一天 R2 出了极端情况（概率极低，但不是零），你还有 GitHub 和本地的完整备份。</p>
+<h3 id="54-防盗链">5.4 防盗链</h3>
+<p>如果你的图床流量莫名其妙飙升，大概率是被第三方网站直接引用了图片链接。在 Cloudflare 中可以通过 Transform Rules 屏蔽非授权域名的 Referer：</p>
+<pre><code>http.referer contains &quot;evil-site.com&quot; → block
+</code></pre>
+<p>对于严格防盗，可以设置白名单：只允许自己的博客域名和本地开发环境访问。</p>
+<hr>
+<h2 id="六-避坑清单">六、避坑清单</h2>
+<p>在折腾图床这件事上，前人已经踩过足够多的坑。以下是经过验证的教训：</p>
+<p><strong>不要用微博/哔哩哔哩等社交平台做图床</strong>。虽然有人通过这些平台的图片上传接口间接实现免费图床，但这些接口不对第三方开放，随时可能被风控封禁。历史上有过多起大规模封号导致图片全部丢失的事件。</p>
+<p><strong>不要在对象存储上裸奔（无 CDN）</strong>。对象存储的默认外网下行流量费很高。即使你用 Cloudflare R2 免流量费，也建议套一层 CDN 来提升全球加载速度。</p>
+<p><strong>不要用太短的随机文件名</strong>。建议文件名格式：<code>{year}/{month}/{timestamp}_{random6}.{ext}</code>。这样既保证了唯一性，又方便按时间归档和排查。</p>
+<p><strong>不要忘记设置 CORS</strong>。如果你用图床的图片在前端做 Canvas 操作，需要在存储桶上配置 CORS 头，否则会报跨域错误。R2 中在桶设置的 CORS 部分添加允许的 Origin 即可。</p>
+<p><strong>不要忽略 HTTPS</strong>。所有现代浏览器对混合内容（HTTPS 页面引用 HTTP 图片）都有不同程度的拦截。确保你的图床域名全程 HTTPS，Cloudflare 默认提供免费 SSL 证书，不需要额外配置。</p>
+<hr>
+<h2 id="七-未来趋势">七、未来趋势</h2>
+<p>图床这个概念本身正在被更上层的方案所吸收：</p>
+<p><strong>AI 原生写作工具的图床集成</strong>。新一代 AI 写作工具（如 Notion AI、Cursor 等）在生成内容的同时，AI 生成的配图也自动托管在平台内置的图床上。用户不再需要手动管理图片存储——这可能是图床的终极形态：它变得如此透明，以至于你不再意识到它的存在。</p>
+<p><strong>边缘存储的普及</strong>。Cloudflare R2、Vercel Blob、Netlify Large Media 等产品正在把存储推到边缘节点，让图片离用户更近。未来的图床不会是一个中心化的服务器，而是一个分布在全球数百个节点的存储网络。</p>
+<p><strong>图片格式的进化</strong>。WebP 和 AVIF 正在取代 JPEG 和 PNG。下一代图床将自动在上传时转换为最优格式，并根据请求端的支持能力动态返回不同格式。类似 imgix 和 Cloudinary 这样的图像 CDN 服务就是把&quot;存储 + 格式转换 + 尺寸裁剪 + CDN&quot;做成了一站式方案，价格不菲但对于流量巨大的产品来说物有所值。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%B7%A5%E5%85%B7" class="tag js-tag-link" data-tag-name="工具">
+                    工具
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/">
+                      <div class="related-left">
+                        <div class="related-post-title">AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP</div>
+                        <div class="related-meta">2026-06-21</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/21/vCt7/PowerBI.png" alt="AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/tailscale/">
+                      <div class="related-left">
+                        <div class="related-post-title">Tailscale 深度解析：当每一台机器都成为网络的一部分</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/aQm6/Tailscale.png" alt="Tailscale 深度解析：当每一台机器都成为网络的一部分" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/starrocks-system-tables/">
+                  <h3 class="post-title">
+                    StarRocks 系统表完全指南：从元数据查询到集群监控
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

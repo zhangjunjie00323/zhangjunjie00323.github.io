@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>机器学习第一道坎：拟合、欠拟合与过拟合完全指南 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/overfitting-underfitting/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习第一道坎：拟合、欠拟合与过拟合完全指南 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="一条曲线，三个世界：欠拟合、好拟合与过拟合全景解析 引言：机器学习最容易被忽视的核心 你可能正在学习线性回归、决策树、神经网络，但有一个词在所有算法背后若隐若现，决定了你的模型是“能用”还是“废品”——拟合（Fitting）。 简单来说，...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/overfitting-underfitting/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/28/x8zB/88b6586.jpg">
+
+<meta name="keywords" content="机器学习">
+
+
+<meta property="article:published_time" content="2026-04-28T21:32:20+08:00">
+<meta property="article:modified_time" content="2026-04-28T21:32:20+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="机器学习">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="机器学习第一道坎：拟合、欠拟合与过拟合完全指南 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="一条曲线，三个世界：欠拟合、好拟合与过拟合全景解析 引言：机器学习最容易被忽视的核心 你可能正在学习线性回归、决策树、神经网络，但有一个词在所有算法背后若隐若现，决定了你的模型是“能用”还是“废品”——拟合（Fitting）。 简单来说，...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/28/x8zB/88b6586.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/overfitting-underfitting/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/overfitting-underfitting/"
+      },
+      "headline": "机器学习第一道坎：拟合、欠拟合与过拟合完全指南",
+      "description": "一条曲线，三个世界：欠拟合、好拟合与过拟合全景解析 引言：机器学习最容易被忽视的核心 你可能正在学习线性回归、决策树、神经网络，但有一个词在所有算法背后若隐若现，决定了你的模型是“能用”还是“废品”——拟合（Fitting）。 简单来说，...",
+      "image": "https://files.seeusercontent.com/2026/04/28/x8zB/88b6586.jpg",
+      "url": "https://zhangjunjie00323.github.io/post/overfitting-underfitting/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-04-28T21:32:20+08:00",
+      "dateModified": "2026-04-28T21:32:20+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "机器学习"
+      ],
+      "keywords": "机器学习",
+      "wordCount": 7996
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/overfitting-underfitting/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "机器学习",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "机器学习第一道坎：拟合、欠拟合与过拟合完全指南",
+          "item": "https://zhangjunjie00323.github.io/post/overfitting-underfitting/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%BC%95%E8%A8%80%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0%E6%9C%80%E5%AE%B9%E6%98%93%E8%A2%AB%E5%BF%BD%E8%A7%86%E7%9A%84%E6%A0%B8%E5%BF%83">引言：机器学习最容易被忽视的核心</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0%E4%BB%80%E4%B9%88%E6%98%AF%E6%8B%9F%E5%90%88%E5%BB%BA%E7%AB%8B%E6%A8%A1%E5%9E%8B%E7%9A%84%E6%9C%AC%E8%B4%A8">第一章：什么是拟合？——建立模型的本质</a>
+<ul>
+<li><a href="#11-%E4%B8%80%E4%B8%AA%E7%94%9F%E6%B4%BB%E5%8C%96%E7%9A%84%E6%AF%94%E5%96%BB">1.1 一个生活化的比喻</a></li>
+<li><a href="#12-%E6%8D%9F%E5%A4%B1%E5%87%BD%E6%95%B0%E6%8B%9F%E5%90%88%E7%A8%8B%E5%BA%A6%E7%9A%84%E6%A0%87%E5%B0%BA">1.2 损失函数：拟合程度的标尺</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E6%AC%A0%E6%8B%9F%E5%90%88%E6%9C%89%E5%BF%83%E6%97%A0%E5%8A%9B%E7%9A%84%E5%88%9D%E5%AD%A6%E8%80%85">第二章：欠拟合——有心无力的初学者</a>
+<ul>
+<li><a href="#21-%E4%BB%80%E4%B9%88%E6%98%AF%E6%AC%A0%E6%8B%9F%E5%90%88">2.1 什么是欠拟合？</a></li>
+<li><a href="#22-%E5%8F%AF%E8%A7%86%E5%8C%96%E8%A7%A3%E9%87%8A">2.2 可视化解释</a></li>
+<li><a href="#23-%E6%AC%A0%E6%8B%9F%E5%90%88%E7%9A%84%E5%85%B8%E5%9E%8B%E4%BF%A1%E5%8F%B7">2.3 欠拟合的典型信号</a></li>
+<li><a href="#24-%E6%AC%A0%E6%8B%9F%E5%90%88%E7%9A%84%E5%B8%B8%E8%A7%81%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3">2.4 欠拟合的常见原因及解决</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0%E8%BF%87%E6%8B%9F%E5%90%88%E8%B5%B0%E7%81%AB%E5%85%A5%E9%AD%94%E7%9A%84%E8%AE%B0%E5%BF%86%E5%A4%A7%E5%B8%88">第三章：过拟合——走火入魔的记忆大师</a>
+<ul>
+<li><a href="#31-%E4%BB%80%E4%B9%88%E6%98%AF%E8%BF%87%E6%8B%9F%E5%90%88">3.1 什么是过拟合？</a></li>
+<li><a href="#32-%E5%8F%AF%E8%A7%86%E5%8C%96%E8%A7%A3%E9%87%8A">3.2 可视化解释</a></li>
+<li><a href="#33-%E8%BF%87%E6%8B%9F%E5%90%88%E7%9A%84%E5%85%B8%E5%9E%8B%E4%BF%A1%E5%8F%B7">3.3 过拟合的典型信号</a></li>
+<li><a href="#34-%E8%BF%87%E6%8B%9F%E5%90%88%E7%9A%84%E5%B8%B8%E8%A7%81%E5%8E%9F%E5%9B%A0%E5%8F%8A%E8%A7%A3%E5%86%B3">3.4 过拟合的常见原因及解决</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E5%81%8F%E5%B7%AE%E4%B8%8E%E6%96%B9%E5%B7%AE%E8%BF%87%E6%8B%9F%E5%90%88%E7%9A%84%E6%95%B0%E5%AD%A6%E6%9C%AC%E8%B4%A8">第四章：偏差与方差——过拟合的数学本质</a>
+<ul>
+<li><a href="#41-%E6%B3%9B%E5%8C%96%E8%AF%AF%E5%B7%AE%E7%9A%84%E5%88%86%E8%A7%A3">4.1 泛化误差的分解</a></li>
+<li><a href="#42-%E5%81%8F%E5%B7%AE%E4%B8%8E%E6%96%B9%E5%B7%AE%E7%9A%84%E5%AF%B9%E7%AB%8B%E5%85%B3%E7%B3%BB">4.2 偏差与方差的对立关系</a></li>
+<li><a href="#43-%E7%94%A8%E6%89%93%E9%9D%B6%E5%9B%BE%E7%90%86%E8%A7%A3">4.3 用打靶图理解</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E8%AF%8A%E6%96%AD%E5%B7%A5%E5%85%B7%E7%AE%B1%E5%A6%82%E4%BD%95%E5%8F%91%E7%8E%B0%E6%8B%9F%E5%90%88%E9%97%AE%E9%A2%98">第五章：诊断工具箱——如何发现拟合问题</a>
+<ul>
+<li><a href="#51-%E5%AD%A6%E4%B9%A0%E6%9B%B2%E7%BA%BFlearning-curves">5.1 学习曲线（Learning Curves）</a></li>
+<li><a href="#52-%E9%AA%8C%E8%AF%81%E6%9B%B2%E7%BA%BFvalidation-curves">5.2 验证曲线（Validation Curves）</a></li>
+<li><a href="#53-%E4%BA%A4%E5%8F%89%E9%AA%8C%E8%AF%81%E6%9B%B4%E7%A8%B3%E5%81%A5%E7%9A%84%E6%B3%9B%E5%8C%96%E8%AF%84%E4%BC%B0">5.3 交叉验证：更稳健的泛化评估</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E5%AE%9E%E6%88%98%E6%BC%94%E7%A4%BA%E7%94%A8python%E4%BA%B2%E6%89%8B%E5%88%B6%E9%80%A0%E6%AC%A0%E6%8B%9F%E5%90%88%E5%92%8C%E8%BF%87%E6%8B%9F%E5%90%88">第六章：实战演示——用Python亲手制造欠拟合和过拟合</a>
+<ul>
+<li><a href="#61-%E7%BB%98%E5%88%B6%E5%AD%A6%E4%B9%A0%E6%9B%B2%E7%BA%BF">6.1 绘制学习曲线</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%83%E7%AB%A0%E6%AD%A3%E5%88%99%E5%8C%96%E7%BB%99%E6%A8%A1%E5%9E%8B%E6%88%B4%E4%B8%8A%E7%B4%A7%E7%AE%8D%E5%92%92">第七章：正则化——给模型戴上“紧箍咒”</a>
+<ul>
+<li><a href="#71-l2%E6%AD%A3%E5%88%99%E5%8C%96%E5%B2%AD%E5%9B%9E%E5%BD%92">7.1 L2正则化（岭回归）</a></li>
+<li><a href="#72-l1%E6%AD%A3%E5%88%99%E5%8C%96lasso">7.2 L1正则化（Lasso）</a></li>
+<li><a href="#73-dropout%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E4%B8%93%E5%B1%9E">7.3 Dropout（深度学习专属）</a></li>
+<li><a href="#74-%E6%97%A9%E5%81%9C%E6%B3%95early-stopping">7.4 早停法（Early Stopping）</a></li>
+<li><a href="#75-%E6%95%B0%E6%8D%AE%E5%A2%9E%E5%BC%BAdata-augmentation">7.5 数据增强（Data Augmentation）</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AB%E7%AB%A0%E5%AE%8C%E6%95%B4%E5%BA%94%E5%AF%B9%E7%AD%96%E7%95%A5%E9%80%9F%E6%9F%A5%E8%A1%A8">第八章：完整应对策略速查表</a></li>
+<li><a href="#%E6%80%BB%E7%BB%93%E6%8B%9F%E5%90%88%E6%98%AF%E4%B8%80%E9%97%A8%E5%B9%B3%E8%A1%A1%E7%9A%84%E8%89%BA%E6%9C%AF">总结：拟合是一门平衡的艺术</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">机器学习第一道坎：拟合、欠拟合与过拟合完全指南</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-28 21:32
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                97 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/28/x8zB/88b6586.jpg" alt="机器学习第一道坎：拟合、欠拟合与过拟合完全指南">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p>一条曲线，三个世界：欠拟合、好拟合与过拟合全景解析</p>
+<!-- more -->
+<h4 id="引言机器学习最容易被忽视的核心">引言：机器学习最容易被忽视的核心</h4>
+<p>你可能正在学习线性回归、决策树、神经网络，但有一个词在所有算法背后若隐若现，决定了你的模型是“能用”还是“废品”——<strong>拟合（Fitting）</strong>。</p>
+<p>简单来说，<strong>拟合就是模型从训练数据中学习规律的过程</strong>。但这个过程往往会出现两个极端：要么模型过于简单，连数据的基本规律都抓不住；要么模型过于复杂，把数据中的噪声和巧合都当成真理记住了。前者叫<strong>欠拟合（Underfitting）</strong>，后者叫<strong>过拟合（Overfitting）</strong>。</p>
+<p>找到两者之间完美的平衡点，得到<strong>良好拟合（Good Fitting）</strong>，是机器学习工程师毕生追求的目标。</p>
+<p>本文会从最直观的例子出发，一步步深入到数学根源、诊断工具和应对策略，并配有完整 Python 代码让你亲手复现这些现象。对于零基础的你，这将是你理解机器学习核心困境的第一块基石。</p>
+<h3 id="第一章什么是拟合建立模型的本质">第一章：什么是拟合？——建立模型的本质</h3>
+<h4 id="11-一个生活化的比喻">1.1 一个生活化的比喻</h4>
+<p>想象你是数学老师，要教一个学生（模型）学会“计算平方”。</p>
+<ul>
+<li><strong>训练阶段</strong>：你给学生看10道题目，<code>1 -&gt; 1</code>，<code>2 -&gt; 4</code>，<code>3 -&gt; 9</code>……同时告诉他正确答案。</li>
+<li><strong>学生做的事</strong>：他观察这些题目，自己动脑筋总结出一个内部规律（比如 $ f(x) = x^2 $）。</li>
+<li><strong>测试阶段</strong>：你给他一道从没见过的题目，比如 <code>4 -&gt; ?</code>，他根据自己学的规律给出 <code>16</code>。</li>
+</ul>
+<p>这个过程就是<strong>拟合</strong>：<strong>模型根据训练样本 <strong>$ (x_i, y_i) <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>∗</mo><mo>∗</mo><mi mathvariant="normal">找</mi><mi mathvariant="normal">到</mi><mi mathvariant="normal">一</mi><mi mathvariant="normal">个</mi><mi mathvariant="normal">函</mi><mi mathvariant="normal">数</mi><mo>∗</mo><mo>∗</mo></mrow><annotation encoding="application/x-tex">** 找到一个函数 **</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord cjk_fallback">找</span><span class="mord cjk_fallback">到</span><span class="mord cjk_fallback">一</span><span class="mord cjk_fallback">个</span><span class="mord cjk_fallback">函</span><span class="mord cjk_fallback">数</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span> f <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>∗</mo><mo>∗</mo><mi mathvariant="normal">，</mi><mi mathvariant="normal">使</mi><mi mathvariant="normal">得</mi><mo>∗</mo><mo>∗</mo></mrow><annotation encoding="application/x-tex">**，使得 **</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">使</span><span class="mord cjk_fallback">得</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span> f(x_i) <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>∗</mo><mo>∗</mo><mi mathvariant="normal">尽</mi><mi mathvariant="normal">可</mi><mi mathvariant="normal">能</mi><mi mathvariant="normal">接</mi><mi mathvariant="normal">近</mi><mo>∗</mo><mo>∗</mo></mrow><annotation encoding="application/x-tex">** 尽可能接近 **</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord cjk_fallback">尽</span><span class="mord cjk_fallback">可</span><span class="mord cjk_fallback">能</span><span class="mord cjk_fallback">接</span><span class="mord cjk_fallback">近</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span> y_i <span class="katex"><span class="katex-mathml"><math><semantics><mrow><mo>∗</mo><mo>∗</mo><mi mathvariant="normal">，</mi><mi mathvariant="normal">并</mi><mi mathvariant="normal">期</mi><mi mathvariant="normal">望</mi><mi mathvariant="normal">对</mi><mi mathvariant="normal">新</mi><mi mathvariant="normal">的</mi><mo>∗</mo><mo>∗</mo></mrow><annotation encoding="application/x-tex">**，并期望对新的 **</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord cjk_fallback">，</span><span class="mord cjk_fallback">并</span><span class="mord cjk_fallback">期</span><span class="mord cjk_fallback">望</span><span class="mord cjk_fallback">对</span><span class="mord cjk_fallback">新</span><span class="mord cjk_fallback">的</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">∗</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:0.46528em;vertical-align:0em;"></span><span class="mord">∗</span></span></span></span> x $</strong> 也能给出准确的预测。</strong></p>
+<h4 id="12-损失函数拟合程度的标尺">1.2 损失函数：拟合程度的标尺</h4>
+<p>如何衡量“接近”？我们使用一个<strong>损失函数（Loss Function）</strong>，最经典的是均方误差（MSE）：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi mathvariant="normal">训</mi><mi mathvariant="normal">练</mi><mi mathvariant="normal">误</mi><mi mathvariant="normal">差</mi><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>(</mo><mi>f</mi><mo>(</mo><msub><mi>x</mi><mi>i</mi></msub><mo>)</mo><mo>−</mo><msub><mi>y</mi><mi>i</mi></msub><msup><mo>)</mo><mn>2</mn></msup></mrow><annotation encoding="application/x-tex">训练误差 = \frac{1}{n} \sum_{i=1}^{n} (f(x_i) - y_i)^2
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.36687em;vertical-align:0em;"></span><span class="mord cjk_fallback">训</span><span class="mord cjk_fallback">练</span><span class="mord cjk_fallback">误</span><span class="mord cjk_fallback">差</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.929066em;vertical-align:-1.277669em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.32144em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">n</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000002em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.10764em;">f</span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault">x</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:0em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.1141079999999999em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641079999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span></span></span></span></span></p>
+<p>训练的目标是让这个误差尽量小。但<strong>训练误差小不等于模型真的好</strong>，因为学生可能用错误的方法记住了所有题目。</p>
+<h3 id="第二章欠拟合有心无力的初学者">第二章：欠拟合——有心无力的初学者</h3>
+<h4 id="21-什么是欠拟合">2.1 什么是欠拟合？</h4>
+<p><strong>欠拟合</strong>指的是模型<strong>复杂度不足</strong>，连训练数据中的基本规律都无法捕捉。它不仅对新数据预测不准，对训练数据本身也预测不准。</p>
+<h4 id="22-可视化解释">2.2 可视化解释</h4>
+<p>假设真实数据遵循一个开口向上的二次曲线。如果我们用一个线性模型 $ y = wx + b $（一条直线）去拟合：</p>
+<ul>
+<li>无论怎么调整 $ w $ 和 $ b $，这条直线都无法同时穿过曲线两侧的点，总有一大片点远离直线。</li>
+<li>训练误差很高，测试误差同样高。</li>
+</ul>
+<p>这个模型就是<strong>欠拟合</strong>的——它只掌握了一个太简单的“偏见”，无法看到数据的真实形状。</p>
+<h4 id="23-欠拟合的典型信号">2.3 欠拟合的典型信号</h4>
+<ul>
+<li><strong>训练误差很高</strong>。</li>
+<li><strong>验证/测试误差也很高</strong>，且与训练误差差距不大。</li>
+<li><strong>学习曲线</strong>：训练误差和验证误差都维持在高位，两条曲线几乎紧贴在一起平行前进。</li>
+</ul>
+<h4 id="24-欠拟合的常见原因及解决">2.4 欠拟合的常见原因及解决</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">原因</th>
+<th style="text-align:left">解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">模型复杂度过低（如线性模型拟合非线性数据）</td>
+<td style="text-align:left">增加模型复杂度：使用多项式特征、更深的网络、更多的树</td>
+</tr>
+<tr>
+<td style="text-align:left">特征太少或质量太差</td>
+<td style="text-align:left">增加更多有意义的特征，或做更好的特征工程</td>
+</tr>
+<tr>
+<td style="text-align:left">训练不充分（迭代次数不足、学习率过小）</td>
+<td style="text-align:left">增加训练轮次，调整学习率</td>
+</tr>
+<tr>
+<td style="text-align:left">数据含有太多噪声且规律本身极弱</td>
+<td style="text-align:left">清洗数据，或考虑是否这个任务本身不适合机器学习</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心原则</strong>：如果你发现模型连训练集都“学不会”，那一定是模型太弱了，先解决欠拟合。</p>
+<h3 id="第三章过拟合走火入魔的记忆大师">第三章：过拟合——走火入魔的记忆大师</h3>
+<h4 id="31-什么是过拟合">3.1 什么是过拟合？</h4>
+<p><strong>过拟合</strong>指的是模型的复杂度远远超过了数据的内在复杂度。它不仅学会了数据背后的真实规律，还<strong>把训练数据中的随机噪声和特例当作规律牢牢记住</strong>。</p>
+<h4 id="32-可视化解释">3.2 可视化解释</h4>
+<p>还是那批二次曲线数据，这次我们用15次多项式去拟合。这条曲线会剧烈震荡，完美穿过每一个训练点，训练误差几乎为0。但它在训练点之间疯狂跳跃，完全脱离了真实的平滑曲线。当你用这条曲线预测新数据时，误差会爆炸。</p>
+<h4 id="33-过拟合的典型信号">3.3 过拟合的典型信号</h4>
+<ul>
+<li><strong>训练误差极低</strong>（甚至接近0）。</li>
+<li><strong>验证/测试误差远高于训练误差</strong>。</li>
+<li><strong>学习曲线</strong>：训练误差持续下降，但验证误差下降到某个点后<strong>反而开始上升</strong>，两条线之间出现一个巨大的“鸿沟”。</li>
+</ul>
+<h4 id="34-过拟合的常见原因及解决">3.4 过拟合的常见原因及解决</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">原因</th>
+<th style="text-align:left">解决方案</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">模型复杂度过高（如深度过大、多项式次数过高）</td>
+<td style="text-align:left">降低模型复杂度：减少多项式次数、树的深度或神经元数</td>
+</tr>
+<tr>
+<td style="text-align:left">训练数据量太小</td>
+<td style="text-align:left">增加更多数据（最有效的办法）</td>
+</tr>
+<tr>
+<td style="text-align:left">特征数量过多，甚至多于样本数</td>
+<td style="text-align:left">特征选择、降维、使用L1正则化</td>
+</tr>
+<tr>
+<td style="text-align:left">训练时间过长</td>
+<td style="text-align:left"><strong>早停法（Early Stopping）</strong>：在验证误差开始上升时停止训练</td>
+</tr>
+<tr>
+<td style="text-align:left">数据中噪声很大</td>
+<td style="text-align:left">增强数据清洗，或使用更鲁棒的损失函数</td>
+</tr>
+</tbody>
+</table>
+<p><strong>核心原则</strong>：如果训练误差极低而验证误差极高，就是过拟合，需要“约束”模型。</p>
+<h3 id="第四章偏差与方差过拟合的数学本质">第四章：偏差与方差——过拟合的数学本质</h3>
+<h4 id="41-泛化误差的分解">4.1 泛化误差的分解</h4>
+<p>机器学习模型的<strong>期望泛化误差</strong>可以分解为三个部分（在回归平方损失下）：</p>
+<p>$ 期望预测误差 = 偏差^2 + 方差 + 不可约噪声 $</p>
+<ul>
+<li><strong>偏差（Bias）</strong>：模型预测的期望值与真实值之间的差距。偏差大意味着模型对问题的基本假设就错了，属于<strong>先天不足</strong>。</li>
+<li><strong>方差（Variance）</strong>：当训练集发生微小变化时，模型预测值的变化程度。方差大意味着模型对训练数据极度敏感，<strong>见风就是雨</strong>。</li>
+<li><strong>不可约噪声</strong>：数据本身的随机性，任何模型都无法消除。</li>
+</ul>
+<h4 id="42-偏差与方差的对立关系">4.2 偏差与方差的对立关系</h4>
+<ul>
+<li><strong>简单模型（如线性回归）</strong>：高偏差、低方差。它有一个很强的先入之见（数据是线性的），因此预测稳定但可能不准，<strong>容易欠拟合</strong>。</li>
+<li><strong>复杂模型（如深度神经网络）</strong>：低偏差、高方差。它能拟合各种复杂形状，但换一批训练数据得出的结论可能完全不同，<strong>容易过拟合</strong>。</li>
+</ul>
+<h4 id="43-用打靶图理解">4.3 用打靶图理解</h4>
+<p>想象你在射箭，靶心是真实规律，每一箭是某一批训练数据训练出的模型预测：</p>
+<ul>
+<li><strong>高偏差、低方差（欠拟合）</strong>：所有箭都密集地射在了远离靶心的同一个位置。预测高度一致但全都脱靶。</li>
+<li><strong>低偏差、高方差（过拟合）</strong>：箭散布在靶心的四面八方，有的正中靶心，有的脱靶很远。平均位置可能接近靶心，但单次结果极不可靠。</li>
+<li><strong>低偏差、低方差（良好拟合）</strong>：箭全都密集地分布在靶心周围。</li>
+</ul>
+<p><strong>目标</strong>：找到偏差与方差的最佳平衡点，使总误差最小。</p>
+<h3 id="第五章诊断工具箱如何发现拟合问题">第五章：诊断工具箱——如何发现拟合问题</h3>
+<h4 id="51-学习曲线learning-curves">5.1 学习曲线（Learning Curves）</h4>
+<p><strong>学习曲线</strong>的横轴是训练样本数量，纵轴是误差，同时画出训练误差和验证误差两条线。</p>
+<ul>
+<li><strong>欠拟合</strong>：两条线都很高且几乎重合，增加样本数也不能降低误差。说明模型能力不够。</li>
+<li><strong>过拟合</strong>：训练误差很低，验证误差高，两者之间存在巨大且难以缩小的间距。不过增加样本量会使验证误差逐渐下降，向训练误差靠拢。</li>
+<li><strong>良好拟合</strong>：两条线比较接近，且都在可接受的误差范围内。</li>
+</ul>
+<p>Python绘制学习曲线的代码将在本章最后统一给出。</p>
+<h4 id="52-验证曲线validation-curves">5.2 验证曲线（Validation Curves）</h4>
+<p><strong>验证曲线</strong>的横轴是模型复杂度的某个超参数（如多项式次数、决策树深度），纵轴是交叉验证误差。通常在某个中间值达到最低点，左侧是欠拟合区域，右侧是过拟合区域。</p>
+<h4 id="53-交叉验证更稳健的泛化评估">5.3 交叉验证：更稳健的泛化评估</h4>
+<p>单次划分训练/测试集有偶然性。<strong>K折交叉验证</strong>将数据分成K份，轮流用K-1份训练、1份验证，取平均误差，能更稳健地估计模型泛化能力，帮助选择合适的超参数。</p>
+<h3 id="第六章实战演示用python亲手制造欠拟合和过拟合">第六章：实战演示——用Python亲手制造欠拟合和过拟合</h3>
+<p>本段代码生成一个二维正弦曲线数据集，并展示多项式回归在1次、4次、15次下的表现，输出学习曲线和验证曲线。</p>
+<pre><code class="language-python">import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.linear_model import LinearRegression
+from sklearn.model_selection import train_test_split, learning_curve, validation_curve
+from sklearn.metrics import mean_squared_error
+
+# 设置随机种子
+np.random.seed(42)
+plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS']
+plt.rcParams['axes.unicode_minus'] = False
+
+# 生成模拟数据：正弦曲线 + 噪声
+def true_function(x):
+    return np.sin(2 * np.pi * x)
+
+X_all = np.sort(np.random.rand(60))
+y_all = true_function(X_all) + 0.25 * np.random.randn(60)
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X_all.reshape(-1,1), y_all, test_size=0.4, random_state=42)
+
+# 绘制欠拟合、良好拟合、过拟合的对比图
+degrees = [1, 4, 15]
+plt.figure(figsize=(18, 5))
+
+for i, d in enumerate(degrees, 1):
+    model = make_pipeline(PolynomialFeatures(d), LinearRegression())
+    model.fit(X_train, y_train)
+    
+    y_train_pred = model.predict(X_train)
+    y_test_pred = model.predict(X_test)
+    
+    train_mse = mean_squared_error(y_train, y_train_pred)
+    test_mse = mean_squared_error(y_test, y_test_pred)
+    
+    X_plot = np.linspace(0, 1, 200).reshape(-1,1)
+    y_plot = model.predict(X_plot)
+    
+    plt.subplot(1, 3, i)
+    plt.scatter(X_train, y_train, c='blue', s=30, alpha=0.7, label='训练集')
+    plt.scatter(X_test, y_test, c='green', s=30, alpha=0.7, label='测试集')
+    plt.plot(X_plot, y_plot, 'r-', lw=3, label=f'{d}次多项式')
+    plt.plot(X_plot, true_function(X_plot), 'k--', alpha=0.5, label='真实曲线')
+    plt.ylim(-1.8, 1.8)
+    plt.title(f'次数={d}\n训练MSE={train_mse:.3f}, 测试MSE={test_mse:.3f}')
+    plt.legend()
+    if d == 1:
+        plt.text(0.5, -1.4, '欠拟合', ha='center', fontsize=14, color='red', weight='bold')
+    elif d == 15:
+        plt.text(0.5, -1.4, '过拟合', ha='center', fontsize=14, color='red', weight='bold')
+    else:
+        plt.text(0.5, -1.4, '良好拟合', ha='center', fontsize=14, color='green', weight='bold')
+
+plt.tight_layout()
+plt.show()
+</code></pre>
+<figure data-type="image" tabindex="1"><img src="https://files.seeusercontent.com/2026/04/28/Fi2k/image-20260428213428587.png" alt="image-20260428213428587" loading="lazy"></figure>
+<p><strong>结果分析</strong>：</p>
+<ul>
+<li>1次多项式（直线）完全无法捕捉数据波动，训练误差和测试误差都很大——<strong>欠拟合</strong>。</li>
+<li>4次多项式较好地跟随了数据趋势，没有过度纠结个别点的波动——<strong>良好拟合</strong>。</li>
+<li>15次多项式剧烈抖动，精确穿过几乎每个训练点，但在测试点之间表现荒诞，测试MSE反而升高——<strong>过拟合</strong>。</li>
+</ul>
+<h4 id="61-绘制学习曲线">6.1 绘制学习曲线</h4>
+<pre><code class="language-python">def plot_learning_curve(model, X, y):
+    train_sizes, train_scores, valid_scores = learning_curve(
+        model, X, y, train_sizes=np.linspace(0.1, 1.0, 10),
+        cv=5, scoring='neg_mean_squared_error')
+    train_errors = -train_scores.mean(axis=1)
+    valid_errors = -valid_scores.mean(axis=1)
+    
+    plt.plot(train_sizes, train_errors, 'o-', label='训练误差')
+    plt.plot(train_sizes, valid_errors, 'o-', label='验证误差')
+    plt.xlabel('训练样本数')
+    plt.ylabel('MSE')
+    plt.legend()
+    plt.grid(True, alpha=0.3)
+
+plt.figure(figsize=(15, 5))
+
+# 欠拟合模型的学习曲线
+plt.subplot(1, 3, 1)
+model_under = make_pipeline(PolynomialFeatures(1), LinearRegression())
+plot_learning_curve(model_under, X_all.reshape(-1,1), y_all)
+plt.title('欠拟合模型 (1次)')
+
+# 良好拟合模型的学习曲线
+plt.subplot(1, 3, 2)
+model_good = make_pipeline(PolynomialFeatures(4), LinearRegression())
+plot_learning_curve(model_good, X_all.reshape(-1,1), y_all)
+plt.title('良好拟合模型 (4次)')
+
+# 过拟合模型的学习曲线
+plt.subplot(1, 3, 3)
+model_over = make_pipeline(PolynomialFeatures(15), LinearRegression())
+plot_learning_curve(model_over, X_all.reshape(-1,1), y_all)
+plt.title('过拟合模型 (15次)')
+
+plt.tight_layout()
+plt.show()
+</code></pre>
+<figure data-type="image" tabindex="2"><img src="https://files.seeusercontent.com/2026/04/28/laQ2/image-20260428213503220.png" alt="image-20260428213503220" loading="lazy"></figure>
+<p><strong>学习曲线解读</strong>：</p>
+<ul>
+<li><strong>欠拟合</strong>：两条线都很高且靠近，增加样本无法降低误差。</li>
+<li><strong>过拟合</strong>：训练误差极低，验证误差高高在上，两条线间距很大，但随样本增多间隙逐渐缩小。</li>
+<li><strong>良好拟合</strong>：训练误差和验证误差相对接近，且最终收敛到较低水平。</li>
+</ul>
+<h3 id="第七章正则化给模型戴上紧箍咒">第七章：正则化——给模型戴上“紧箍咒”</h3>
+<p>正则化是解决过拟合的最经典手段，通过在损失函数中添加对模型权重的惩罚项，抑制模型过度自由地拟合噪声。</p>
+<h4 id="71-l2正则化岭回归">7.1 L2正则化（岭回归）</h4>
+<p>在损失函数后添加权重平方和的惩罚：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>J</mi><mo>(</mo><mi>w</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub><msup><mo>)</mo><mn>2</mn></msup><mo>+</mo><mi>λ</mi><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>p</mi></munderover><msubsup><mi>w</mi><mi>j</mi><mn>2</mn></msubsup></mrow><annotation encoding="application/x-tex">J(w) = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 + \lambda \sum_{j=1}^{p} w_j^2
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.09618em;">J</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.929066em;vertical-align:-1.277669em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.32144em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">n</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000002em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.1141079999999999em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"><span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641079999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:3.1122820000000004em;vertical-align:-1.4137769999999998em;"></span><span class="mord mathdefault">λ</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6985050000000006em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.347113em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.4137769999999998em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.864108em;"><span style="top:-2.4530000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span><span style="top:-3.1130000000000004em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.383108em;"><span></span></span></span></span></span></span></span></span></span></span></p>
+<ul>
+<li>效果：压缩所有权重，让模型更加“平滑”。</li>
+<li>$ \lambda $ 越大，惩罚越强，模型越简单。</li>
+</ul>
+<h4 id="72-l1正则化lasso">7.2 L1正则化（Lasso）</h4>
+<p>添加权重绝对值之和的惩罚：</p>
+<p class='katex-block'><span class="katex-display"><span class="katex"><span class="katex-mathml"><math><semantics><mrow><mi>J</mi><mo>(</mo><mi>w</mi><mo>)</mo><mo>=</mo><mfrac><mn>1</mn><mi>n</mi></mfrac><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>(</mo><msub><mi>y</mi><mi>i</mi></msub><mo>−</mo><msub><mover accent="true"><mi>y</mi><mo>^</mo></mover><mi>i</mi></msub><msup><mo>)</mo><mn>2</mn></msup><mo>+</mo><mi>λ</mi><munderover><mo>∑</mo><mrow><mi>j</mi><mo>=</mo><mn>1</mn></mrow><mi>p</mi></munderover><mi mathvariant="normal">∣</mi><msub><mi>w</mi><mi>j</mi></msub><mi mathvariant="normal">∣</mi></mrow><annotation encoding="application/x-tex">J(w) = \frac{1}{n} \sum_{i=1}^{n} (y_i - \hat{y}_i)^2 + \lambda \sum_{j=1}^{p} |w_j|
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mord mathdefault" style="margin-right:0.09618em;">J</span><span class="mopen">(</span><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="mclose">)</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2777777777777778em;"></span></span><span class="base"><span class="strut" style="height:2.929066em;vertical-align:-1.277669em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.32144em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault">n</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6513970000000002em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">i</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.3000050000000005em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">n</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.277669em;"><span></span></span></span></span></span><span class="mopen">(</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-left:-0.03588em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">−</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:1.1141079999999999em;vertical-align:-0.25em;"></span><span class="mord"><span class="mord accent"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.69444em;"><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathdefault" style="margin-right:0.03588em;">y</span></span></span><span style="top:-3em;"><span class="pstrut" style="height:3em;"></span><span class="accent-body" style="left:-0.19444em;">^</span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.19444em;"><span></span></span></span></span></span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.31166399999999994em;"><span style="top:-2.5500000000000003em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight">i</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.15em;"><span></span></span></span></span></span></span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8641079999999999em;"><span style="top:-3.113em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight">2</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222222222222222em;"></span><span class="mbin">+</span><span class="mspace" style="margin-right:0.2222222222222222em;"></span></span><span class="base"><span class="strut" style="height:3.1122820000000004em;vertical-align:-1.4137769999999998em;"></span><span class="mord mathdefault">λ</span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mop op-limits"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.6985050000000006em;"><span style="top:-1.872331em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span><span class="mrel mtight">=</span><span class="mord mtight">1</span></span></span></span><span style="top:-3.050005em;"><span class="pstrut" style="height:3.05em;"></span><span><span class="mop op-symbol large-op">∑</span></span></span><span style="top:-4.347113em;margin-left:0em;"><span class="pstrut" style="height:3.05em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathdefault mtight">p</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:1.4137769999999998em;"><span></span></span></span></span></span><span class="mspace" style="margin-right:0.16666666666666666em;"></span><span class="mord">∣</span><span class="mord"><span class="mord mathdefault" style="margin-right:0.02691em;">w</span><span class="msupsub"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.311664em;"><span style="top:-2.5500000000000003em;margin-left:-0.02691em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathdefault mtight" style="margin-right:0.05724em;">j</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.286108em;"><span></span></span></span></span></span></span><span class="mord">∣</span></span></span></span></span></p>
+<ul>
+<li>效果：能将不重要特征的权重直接压缩到0，实现<strong>自动特征选择</strong>。</li>
+</ul>
+<h4 id="73-dropout深度学习专属">7.3 Dropout（深度学习专属）</h4>
+<p>在训练时随机丢弃一部分神经元，强迫网络不能过度依赖某些特定路径，等价于训练大量子网络的平均，是深度学习中最广泛使用的正则化技术。</p>
+<h4 id="74-早停法early-stopping">7.4 早停法（Early Stopping）</h4>
+<p>在训练过程中监控验证集误差，当验证误差不再下降甚至开始上升时，立即停止训练，防止模型开始拟合噪声。</p>
+<h4 id="75-数据增强data-augmentation">7.5 数据增强（Data Augmentation）</h4>
+<p>在不改变标签的情况下对训练数据进行细微的变换（如图像的旋转、平移、翻转），凭空创造出“新”样本，是缓解图像任务过拟合的神器。</p>
+<h3 id="第八章完整应对策略速查表">第八章：完整应对策略速查表</h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">问题诊断</th>
+<th style="text-align:left">应对策略</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">训练误差很高</td>
+<td style="text-align:left">①增加模型复杂度 ②添加更多特征 ③延长训练时间 ④更换更强模型</td>
+</tr>
+<tr>
+<td style="text-align:left">训练误差低，验证误差高</td>
+<td style="text-align:left">①增加训练数据 ②正则化(L1/L2/Dropout) ③降低模型复杂度 ④早停法 ⑤数据增强 ⑥特征选择 ⑦集成学习(Bagging)</td>
+</tr>
+<tr>
+<td style="text-align:left">训练误差和验证误差接近且都较高</td>
+<td style="text-align:left">很可能欠拟合，先尝试增加模型复杂度</td>
+</tr>
+<tr>
+<td style="text-align:left">训练误差和验证误差接近且都较低</td>
+<td style="text-align:left">模型工作良好，可以考虑继续微调或部署</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="总结拟合是一门平衡的艺术">总结：拟合是一门平衡的艺术</h3>
+<p>拟合的世界没有绝对的黑与白，一切都是偏差与方差之间的博弈。一个成功的机器学习工程师，懂得根据<strong>学习曲线、验证曲线和交叉验证</strong>来诊断模型的健康状况，并熟练使用<strong>正则化、早停、数据增强</strong>等工具来调教模型。</p>
+<p>记住这三句话：</p>
+<ul>
+<li><strong>学习误差高，先治“欠拟合”（加复杂度）</strong></li>
+<li><strong>学习误差低、验证误差高，立刻治“过拟合”（加约束）</strong></li>
+<li><strong>永远不要用训练误差来评判模型，要用验证集和交叉验证</strong></li>
+</ul>
+<p>掌握拟合的哲学，你就掌握了机器学习中最核心的思维方式。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                    机器学习
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 智能物化视图 SQL 手册</div>
+                        <div class="related-meta">2026-06-25</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png" alt="StarRocks 智能物化视图 SQL 手册" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUPRC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUPRC 只盯着正样本看——这不是傲慢，是诚实</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/5wwG/AUPRC.png" alt="AUPRC 只盯着正样本看——这不是傲慢，是诚实" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUROC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUROC：从 ROC 曲线到概率解释的完全指南</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/9Wok/AUROC.png" alt="AUROC：从 ROC 曲线到概率解释的完全指南" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/ridge-regression/">
+                      <div class="related-left">
+                        <div class="related-post-title">岭回归：宁可有偏，不可失控</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/sAl6/c76b2a6.png" alt="岭回归：宁可有偏，不可失控" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/feature-engineering/">
+                  <h3 class="post-title">
+                    特征工程：决定模型上限的隐形艺术家
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

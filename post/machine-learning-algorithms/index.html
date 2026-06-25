@@ -1,0 +1,1991 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>机器学习算法全景图：一口气看完50种核心算法 | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/machine-learning-algorithms/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="机器学习算法全景图：一口气看完50种核心算法 | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="机器学习算法百科全书：分类、回归、聚类、强化一网打尽 引言：算法不是用来背的，是用来查的 初学者面对机器学习时，最头疼的事情莫过于——算法太多了。 线性回归、逻辑回归、决策树、随机森林、SVM、KNN、K-Means、DBSCAN、PCA...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/machine-learning-algorithms/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/04/26/2Gte/175e88f.jpg">
+
+<meta name="keywords" content="机器学习">
+
+
+<meta property="article:published_time" content="2026-04-11T21:18:11+08:00">
+<meta property="article:modified_time" content="2026-04-11T21:18:11+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="机器学习">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="机器学习算法全景图：一口气看完50种核心算法 | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="机器学习算法百科全书：分类、回归、聚类、强化一网打尽 引言：算法不是用来背的，是用来查的 初学者面对机器学习时，最头疼的事情莫过于——算法太多了。 线性回归、逻辑回归、决策树、随机森林、SVM、KNN、K-Means、DBSCAN、PCA...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/04/26/2Gte/175e88f.jpg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/machine-learning-algorithms/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/machine-learning-algorithms/"
+      },
+      "headline": "机器学习算法全景图：一口气看完50种核心算法",
+      "description": "机器学习算法百科全书：分类、回归、聚类、强化一网打尽 引言：算法不是用来背的，是用来查的 初学者面对机器学习时，最头疼的事情莫过于——算法太多了。 线性回归、逻辑回归、决策树、随机森林、SVM、KNN、K-Means、DBSCAN、PCA...",
+      "image": "https://files.seeusercontent.com/2026/04/26/2Gte/175e88f.jpg",
+      "url": "https://zhangjunjie00323.github.io/post/machine-learning-algorithms/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-04-11T21:18:11+08:00",
+      "dateModified": "2026-04-11T21:18:11+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "机器学习"
+      ],
+      "keywords": "机器学习",
+      "wordCount": 7360
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/machine-learning-algorithms/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "机器学习",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "机器学习算法全景图：一口气看完50种核心算法",
+          "item": "https://zhangjunjie00323.github.io/post/machine-learning-algorithms/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li>
+<ul>
+<li>
+<ul>
+<li><a href="#%E5%BC%95%E8%A8%80%E7%AE%97%E6%B3%95%E4%B8%8D%E6%98%AF%E7%94%A8%E6%9D%A5%E8%83%8C%E7%9A%84%E6%98%AF%E7%94%A8%E6%9D%A5%E6%9F%A5%E7%9A%84">引言：算法不是用来背的，是用来查的</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%80%E7%AB%A0%E7%AE%97%E6%B3%95%E5%88%86%E7%B1%BB%E7%9A%84%E6%80%BB%E6%A1%86%E6%9E%B6">第一章：算法分类的总框架</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%8C%E7%AB%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E6%9C%89%E7%AD%94%E6%A1%88%E7%9A%84%E5%AD%A6%E4%B9%A0">第二章：监督学习算法——有答案的学习</a>
+<ul>
+<li><a href="#21-%E7%BA%BF%E6%80%A7%E6%A8%A1%E5%9E%8B%E5%AE%B6%E6%97%8F">2.1 线性模型家族</a></li>
+<li><a href="#22-%E5%9F%BA%E4%BA%8E%E8%B7%9D%E7%A6%BB%E5%AE%9E%E4%BE%8B%E7%9A%84%E6%A8%A1%E5%9E%8B">2.2 基于距离/实例的模型</a></li>
+<li><a href="#23-%E6%94%AF%E6%8C%81%E5%90%91%E9%87%8F%E6%9C%BA%E5%AE%B6%E6%97%8F">2.3 支持向量机家族</a></li>
+<li><a href="#24-%E5%86%B3%E7%AD%96%E6%A0%91%E4%B8%8E%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0%E5%AE%B6%E6%97%8F">2.4 决策树与集成学习家族</a></li>
+<li><a href="#25-%E6%9C%B4%E7%B4%A0%E8%B4%9D%E5%8F%B6%E6%96%AF%E5%AE%B6%E6%97%8F">2.5 朴素贝叶斯家族</a></li>
+<li><a href="#26-%E5%85%B6%E4%BB%96%E7%BB%8F%E5%85%B8%E7%9B%91%E7%9D%A3%E7%AE%97%E6%B3%95">2.6 其他经典监督算法</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B8%89%E7%AB%A0%E6%97%A0%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E6%B2%A1%E6%9C%89%E7%AD%94%E6%A1%88%E7%9A%84%E6%8E%A2%E7%B4%A2">第三章：无监督学习算法——没有答案的探索</a>
+<ul>
+<li><a href="#31-%E8%81%9A%E7%B1%BB%E7%AE%97%E6%B3%95%E5%AE%B6%E6%97%8F">3.1 聚类算法家族</a></li>
+<li><a href="#32-%E9%99%8D%E7%BB%B4%E7%AE%97%E6%B3%95%E5%AE%B6%E6%97%8F">3.2 降维算法家族</a></li>
+<li><a href="#33-%E5%BC%82%E5%B8%B8%E6%A3%80%E6%B5%8B%E7%AE%97%E6%B3%95%E5%AE%B6%E6%97%8F">3.3 异常检测算法家族</a></li>
+<li><a href="#34-%E5%85%B3%E8%81%94%E8%A7%84%E5%88%99%E4%B8%8E%E9%A2%91%E7%B9%81%E6%A8%A1%E5%BC%8F%E6%8C%96%E6%8E%98">3.4 关联规则与频繁模式挖掘</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%9B%9B%E7%AB%A0%E9%9B%86%E6%88%90%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E4%B8%89%E4%B8%AA%E8%87%AD%E7%9A%AE%E5%8C%A0%E9%A1%B6%E4%B8%AA%E8%AF%B8%E8%91%9B%E4%BA%AE">第四章：集成学习算法——三个臭皮匠，顶个诸葛亮</a></li>
+<li><a href="#%E7%AC%AC%E4%BA%94%E7%AB%A0%E7%A5%9E%E7%BB%8F%E7%BD%91%E7%BB%9C%E4%B8%8E%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E5%A4%9A%E5%B1%82%E6%8A%BD%E8%B1%A1%E7%9A%84%E8%89%BA%E6%9C%AF">第五章：神经网络与深度学习算法——多层抽象的艺术</a>
+<ul>
+<li><a href="#51-%E5%9F%BA%E7%A1%80%E7%BD%91%E7%BB%9C%E6%9E%B6%E6%9E%84">5.1 基础网络架构</a></li>
+<li><a href="#52-%E9%AB%98%E7%BA%A7%E4%B8%8E%E4%B8%93%E7%94%A8%E6%9E%B6%E6%9E%84">5.2 高级与专用架构</a></li>
+<li><a href="#53-%E8%AE%AD%E7%BB%83%E6%8A%80%E5%B7%A7%E4%B8%8E%E4%BC%98%E5%8C%96%E7%AE%97%E6%B3%95">5.3 训练技巧与优化算法</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E5%85%AD%E7%AB%A0%E5%BC%BA%E5%8C%96%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95%E5%9C%A8%E8%AF%95%E9%94%99%E4%B8%AD%E6%88%90%E9%95%BF">第六章：强化学习算法——在试错中成长</a></li>
+<li><a href="#%E7%AC%AC%E4%B8%83%E7%AB%A0%E6%A6%82%E7%8E%87%E5%9B%BE%E6%A8%A1%E5%9E%8B%E7%94%A8%E5%9B%BE%E8%A1%A8%E7%A4%BA%E5%8F%98%E9%87%8F%E4%BE%9D%E8%B5%96%E5%85%B3%E7%B3%BB">第七章：概率图模型——用图表示变量依赖关系</a></li>
+<li><a href="#%E7%AC%AC%E5%85%AB%E7%AB%A0%E5%85%B6%E4%BB%96%E9%87%8D%E8%A6%81%E7%AE%97%E6%B3%95%E4%B8%8E%E6%A6%82%E5%BF%B5%E8%A1%A5%E5%85%85">第八章：其他重要算法与概念补充</a>
+<ul>
+<li><a href="#81-%E7%89%B9%E5%BE%81%E5%B7%A5%E7%A8%8B%E7%9B%B8%E5%85%B3%E7%AE%97%E6%B3%95">8.1 特征工程相关算法</a></li>
+<li><a href="#82-%E7%89%B9%E5%BE%81%E9%80%89%E6%8B%A9%E7%AE%97%E6%B3%95">8.2 特征选择算法</a></li>
+<li><a href="#83-%E6%A8%A1%E5%9E%8B%E8%A7%A3%E9%87%8A%E6%80%A7%E7%AE%97%E6%B3%95">8.3 模型解释性算法</a></li>
+<li><a href="#84-%E5%8D%8A%E7%9B%91%E7%9D%A3%E5%AD%A6%E4%B9%A0%E7%AE%97%E6%B3%95">8.4 半监督学习算法</a></li>
+</ul>
+</li>
+<li><a href="#%E7%AC%AC%E4%B9%9D%E7%AB%A0%E7%AE%97%E6%B3%95%E9%80%89%E5%9E%8B%E9%80%9F%E6%9F%A5%E6%8C%87%E5%8D%97">第九章：算法选型速查指南</a></li>
+<li><a href="#%E7%BB%93%E8%AF%AD%E7%AE%97%E6%B3%95%E6%98%AF%E5%B7%A5%E5%85%B7%E7%AE%B1%E4%B8%8D%E6%98%AF%E6%AF%95%E4%B8%9A%E8%AF%81">结语：算法是工具箱，不是毕业证</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">机器学习算法全景图：一口气看完50种核心算法</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-04-11 21:18
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                76 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/04/26/2Gte/175e88f.jpg" alt="机器学习算法全景图：一口气看完50种核心算法">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <p><strong>机器学习算法百科全书：分类、回归、聚类、强化一网打尽</strong></p>
+<!-- more -->
+<h4 id="引言算法不是用来背的是用来查的">引言：算法不是用来背的，是用来查的</h4>
+<p>初学者面对机器学习时，最头疼的事情莫过于——<strong>算法太多了。</strong></p>
+<p>线性回归、逻辑回归、决策树、随机森林、SVM、KNN、K-Means、DBSCAN、PCA、LDA、XGBoost、LightGBM、CatBoost、RNN、LSTM、GRU、CNN、Transformer、GAN、VAE、DQN、PPO……</p>
+<p>光是看到这一串名字，很多人就已经想关掉页面了。</p>
+<p>但请先别跑。这篇文章的目的，<strong>不是让你记住每一个算法的细节</strong>，而是给你一张<strong>地图</strong>。你只需要知道：</p>
+<ul>
+<li>这个算法属于哪一类？</li>
+<li>它主要解决什么问题？</li>
+<li>什么时候该考虑用它？</li>
+</ul>
+<p>至于每个算法内部的数学原理和代码实现，后续我会逐一单独写文章深度拆解。今天，我们先把<strong>整个家族的族谱</strong>理清楚。</p>
+<hr>
+<h3 id="第一章算法分类的总框架">第一章：算法分类的总框架</h3>
+<p>在深入具体算法之前，先用一张思维导图建立全局视角：</p>
+<pre><code class="language-text">机器学习算法
+│
+├── 按学习方式分
+│   ├── 监督学习（有标签）
+│   ├── 无监督学习（无标签）
+│   ├── 半监督学习（少量标签）
+│   ├── 自监督学习（从数据内部生成标签）
+│   └── 强化学习（与环境交互，有奖励）
+│
+├── 按模型类型分
+│   ├── 线性模型
+│   ├── 树模型与集成学习
+│   ├── 神经网络与深度学习
+│   ├── 概率图模型
+│   ├── 基于实例的模型
+│   └── 降维与特征工程方法
+│
+└── 按任务类型分
+    ├── 回归（预测连续值）
+    ├── 分类（预测离散类别）
+    ├── 聚类（无监督分组）
+    ├── 降维（数据压缩）
+    ├── 异常检测（找异常点）
+    ├── 关联规则（找频繁模式）
+    └── 序列决策（强化学习）
+</code></pre>
+<p>接下来的内容，将按照<strong>学习方式</strong>为主线，<strong>模型类型</strong>为辅线，把主流的、次主流的、经典的、前沿的算法全部梳理一遍。</p>
+<hr>
+<h3 id="第二章监督学习算法有答案的学习">第二章：监督学习算法——有答案的学习</h3>
+<p>监督学习是机器学习中最成熟、应用最广的领域。根据任务类型，分为<strong>回归</strong>和<strong>分类</strong>两大类，但很多算法可以同时处理两者。</p>
+<h4 id="21-线性模型家族">2.1 线性模型家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>线性回归</strong></td>
+<td style="text-align:left">回归任务的“Hello World”</td>
+<td style="text-align:left">假设目标与特征呈线性关系，用最小二乘法拟合一条直线</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>多项式回归</strong></td>
+<td style="text-align:left">线性回归的曲线扩展版</td>
+<td style="text-align:left">将特征做多项式变换后再套线性回归，能拟合曲线</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>岭回归</strong></td>
+<td style="text-align:left">带L2正则化的线性回归</td>
+<td style="text-align:left">防止过拟合，收缩系数但不归零</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Lasso回归</strong></td>
+<td style="text-align:left">带L1正则化的线性回归</td>
+<td style="text-align:left">能把不重要特征的系数压到零，自带特征选择</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>弹性网络</strong></td>
+<td style="text-align:left">岭回归+Lasso的混合体</td>
+<td style="text-align:left">同时使用L1和L2正则化，取两者之长</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>逻辑回归</strong></td>
+<td style="text-align:left">分类任务的“Hello World”（尽管名字叫回归）</td>
+<td style="text-align:left">在线性组合外套一层Sigmoid函数，输出类别概率</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>线性判别分析</strong></td>
+<td style="text-align:left">有监督的降维+分类器</td>
+<td style="text-align:left">寻找能把不同类别最大程度分开的投影方向</td>
+</tr>
+</tbody>
+</table>
+<h4 id="22-基于距离实例的模型">2.2 基于距离/实例的模型</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>K近邻（KNN）</strong></td>
+<td style="text-align:left">最懒惰的算法，几乎不训练</td>
+<td style="text-align:left">新样本的类别由最近的K个邻居投票决定</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>半径近邻</strong></td>
+<td style="text-align:left">KNN的变体</td>
+<td style="text-align:left">以新样本为中心画一个半径，圈内所有邻居投票</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>最近质心分类器</strong></td>
+<td style="text-align:left">比KNN更懒的分类器</td>
+<td style="text-align:left">每个类别只算一个质心，新样本归到最近的质心</td>
+</tr>
+</tbody>
+</table>
+<h4 id="23-支持向量机家族">2.3 支持向量机家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>线性SVM</strong></td>
+<td style="text-align:left">找一条最宽的“隔离带”分开两类</td>
+<td style="text-align:left">最大化分类间隔，只关心边界上的支持向量</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核SVM</strong></td>
+<td style="text-align:left">用“核技巧”把非线性问题变线性</td>
+<td style="text-align:left">通过核函数将数据映射到高维空间再切分</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SVR</strong></td>
+<td style="text-align:left">SVM的回归版本</td>
+<td style="text-align:left">找一个“管道”，让尽可能多的点落在管道内</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>One-Class SVM</strong></td>
+<td style="text-align:left">单类分类，用于异常检测</td>
+<td style="text-align:left">只学“正常数据”的边界，边界外即为异常</td>
+</tr>
+</tbody>
+</table>
+<h4 id="24-决策树与集成学习家族">2.4 决策树与集成学习家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>ID3 / C4.5 / CART</strong></td>
+<td style="text-align:left">决策树的三个经典版本</td>
+<td style="text-align:left">通过不断选择最优特征进行分裂，构建树结构</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>随机森林</strong></td>
+<td style="text-align:left">种一片树，投票决定结果</td>
+<td style="text-align:left">并行训练多棵决策树，每棵树看不同的样本和特征</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>AdaBoost</strong></td>
+<td style="text-align:left">错题重做，越错越重视</td>
+<td style="text-align:left">串行训练弱分类器，每次加大上一轮分错样本的权重</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GBDT（梯度提升决策树）</strong></td>
+<td style="text-align:left">每一棵树都在拟合前一棵的残差</td>
+<td style="text-align:left">串行集成，用梯度下降思想优化损失函数</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>XGBoost</strong></td>
+<td style="text-align:left">GBDT的工业级加强版</td>
+<td style="text-align:left">二阶导数近似、正则化、并行化、缺失值处理</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LightGBM</strong></td>
+<td style="text-align:left">微软出品，速度狂魔</td>
+<td style="text-align:left">基于直方图的算法，单边梯度采样，Leaf-wise生长</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>CatBoost</strong></td>
+<td style="text-align:left">俄罗斯搜索巨头出品</td>
+<td style="text-align:left">天然支持类别特征，无需手动编码，对过拟合鲁棒</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>NGBoost</strong></td>
+<td style="text-align:left">概率预测版梯度提升</td>
+<td style="text-align:left">输出预测值的同时输出预测的不确定性</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>HistGradientBoosting</strong></td>
+<td style="text-align:left">sklearn内置的快速梯度提升</td>
+<td style="text-align:left">受LightGBM启发，sklearn原生实现，性能优异</td>
+</tr>
+</tbody>
+</table>
+<h4 id="25-朴素贝叶斯家族">2.5 朴素贝叶斯家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>高斯朴素贝叶斯</strong></td>
+<td style="text-align:left">假设特征服从正态分布</td>
+<td style="text-align:left">适合连续型特征</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>多项式朴素贝叶斯</strong></td>
+<td style="text-align:left">假设特征是离散计数</td>
+<td style="text-align:left">文本分类经典选择，适合词频特征</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>伯努利朴素贝叶斯</strong></td>
+<td style="text-align:left">假设特征是二值变量</td>
+<td style="text-align:left">适合“出现/不出现”的二值特征</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>补集朴素贝叶斯</strong></td>
+<td style="text-align:left">多项式贝叶斯的改进版</td>
+<td style="text-align:left">专门处理类别不平衡问题</td>
+</tr>
+</tbody>
+</table>
+<h4 id="26-其他经典监督算法">2.6 其他经典监督算法</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>感知机</strong></td>
+<td style="text-align:left">神经网络的单细胞祖先</td>
+<td style="text-align:left">线性二分类器，Minsky和Papert的经典模型</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>神经网络（多层感知机）</strong></td>
+<td style="text-align:left">万能函数逼近器</td>
+<td style="text-align:left">由多个神经元层堆叠而成，深度学习的基础</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>高斯过程回归</strong></td>
+<td style="text-align:left">带不确定性度量的回归</td>
+<td style="text-align:left">输出一个概率分布而非一个点估计</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>保序回归</strong></td>
+<td style="text-align:left">保持顺序约束的回归</td>
+<td style="text-align:left">预测值必须保持与某个变量单调关系的约束</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>分位数回归</strong></td>
+<td style="text-align:left">不只预测均值，可预测任意分位数</td>
+<td style="text-align:left">用于风险评估和区间预测</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>贝叶斯回归</strong></td>
+<td style="text-align:left">把贝叶斯推断引入线性回归</td>
+<td style="text-align:left">对模型参数引入先验分布，输出后验分布</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第三章无监督学习算法没有答案的探索">第三章：无监督学习算法——没有答案的探索</h3>
+<p>无监督学习不依赖标签，试图从数据本身发现隐藏的结构。</p>
+<h4 id="31-聚类算法家族">3.1 聚类算法家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>K-Means</strong></td>
+<td style="text-align:left">最经典的划分式聚类</td>
+<td style="text-align:left">选K个中心，迭代分配样本到最近中心，更新中心</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>K-Medoids</strong></td>
+<td style="text-align:left">K-Means的鲁棒升级版</td>
+<td style="text-align:left">用实际样本点作为中心，对异常值更鲁棒</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Mini-Batch K-Means</strong></td>
+<td style="text-align:left">大数据版K-Means</td>
+<td style="text-align:left">每次用小批量样本更新中心，大幅加速</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>层次聚类</strong></td>
+<td style="text-align:left">自底向上或自顶向下构建树状结构</td>
+<td style="text-align:left">不需要预设K值，结果可呈现为树状图</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DBSCAN</strong></td>
+<td style="text-align:left">基于密度的聚类，能识别任意形状</td>
+<td style="text-align:left">通过密度相连的点聚成簇，自动识别噪声</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>OPTICS</strong></td>
+<td style="text-align:left">DBSCAN的改进版</td>
+<td style="text-align:left">对密度不均匀的数据适应更好</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>HDBSCAN</strong></td>
+<td style="text-align:left">DBSCAN的进一步升级</td>
+<td style="text-align:left">自适应密度阈值，更稳定，更少参数</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>均值漂移</strong></td>
+<td style="text-align:left">往密度高的地方“漂移”</td>
+<td style="text-align:left">通过迭代找到数据密度中心，自动确定簇数</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>高斯混合模型（GMM）</strong></td>
+<td style="text-align:left">用多个高斯分布混合拟合数据</td>
+<td style="text-align:left">软聚类，输出样本属于每个簇的概率</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>谱聚类</strong></td>
+<td style="text-align:left">在图拉普拉斯矩阵上做聚类</td>
+<td style="text-align:left">适合非凸形状的簇，但计算代价高</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>BIRCH</strong></td>
+<td style="text-align:left">专为超大数据库设计的聚类</td>
+<td style="text-align:left">用CF Tree压缩数据再聚类</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Affinity Propagation</strong></td>
+<td style="text-align:left">样本之间互相“推举”代表点</td>
+<td style="text-align:left">不需要预设K值，由偏好参数控制</td>
+</tr>
+</tbody>
+</table>
+<h4 id="32-降维算法家族">3.2 降维算法家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>PCA（主成分分析）</strong></td>
+<td style="text-align:left">降维界的第一工具</td>
+<td style="text-align:left">寻找方差最大的投影方向，线性降维</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>核PCA</strong></td>
+<td style="text-align:left">PCA的非线性版本</td>
+<td style="text-align:left">用核技巧处理非线性结构</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SVD（奇异值分解）</strong></td>
+<td style="text-align:left">矩阵分解的基础工具</td>
+<td style="text-align:left">PCA的底层数学实现，也用于推荐系统</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LDA（线性判别分析）</strong></td>
+<td style="text-align:left">有监督降维</td>
+<td style="text-align:left">投影后同类靠近，异类远离</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>t-SNE</strong></td>
+<td style="text-align:left">可视化神器</td>
+<td style="text-align:left">专门将高维数据映射到2D/3D，保持局部结构</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>UMAP</strong></td>
+<td style="text-align:left">t-SNE的强力竞争者</td>
+<td style="text-align:left">速度更快，保留更多全局结构</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Isomap</strong></td>
+<td style="text-align:left">测地线距离降维</td>
+<td style="text-align:left">保持数据点在流形上的测地距离</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LLE（局部线性嵌入）</strong></td>
+<td style="text-align:left">保持局部线性关系</td>
+<td style="text-align:left">假设每个点可由邻居线性重构</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MDS（多维缩放）</strong></td>
+<td style="text-align:left">保持样本间距离的降维</td>
+<td style="text-align:left">输入距离矩阵，输出低维坐标</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>因子分析</strong></td>
+<td style="text-align:left">寻找隐变量</td>
+<td style="text-align:left">假设观测变量由少数潜在因子生成</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>独立成分分析（ICA）</strong></td>
+<td style="text-align:left">分离混合信号</td>
+<td style="text-align:left">假设信号源相互独立，用于盲源分离</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>非负矩阵分解（NMF）</strong></td>
+<td style="text-align:left">分解为非负矩阵乘积</td>
+<td style="text-align:left">常用于文本主题建模和推荐系统</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>自编码器</strong></td>
+<td style="text-align:left">神经网络做非线性降维</td>
+<td style="text-align:left">通过重构瓶颈层学习压缩表示</td>
+</tr>
+</tbody>
+</table>
+<h4 id="33-异常检测算法家族">3.3 异常检测算法家族</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>孤立森林</strong></td>
+<td style="text-align:left">用树分离孤立点</td>
+<td style="text-align:left">异常点更容易被随机划分快速孤立</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>局部异常因子（LOF）</strong></td>
+<td style="text-align:left">基于密度的局部异常检测</td>
+<td style="text-align:left">比较一个点与邻居的局部密度</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>单类SVM</strong></td>
+<td style="text-align:left">SVM做异常检测</td>
+<td style="text-align:left">学习正常数据的边界，边界外判为异常</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>椭圆包络</strong></td>
+<td style="text-align:left">假设数据服从高斯分布</td>
+<td style="text-align:left">用马氏距离度量异常程度</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>COPOD</strong></td>
+<td style="text-align:left">基于Copula的异常检测</td>
+<td style="text-align:left">无需调参，计算高效</td>
+</tr>
+</tbody>
+</table>
+<h4 id="34-关联规则与频繁模式挖掘">3.4 关联规则与频繁模式挖掘</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Apriori</strong></td>
+<td style="text-align:left">关联规则挖掘鼻祖</td>
+<td style="text-align:left">利用“频繁项集的子集也频繁”剪枝</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>FP-Growth</strong></td>
+<td style="text-align:left">比Apriori快得多</td>
+<td style="text-align:left">用FP树压缩数据，不生成候选集</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Eclat</strong></td>
+<td style="text-align:left">深度优先搜索频繁项集</td>
+<td style="text-align:left">使用垂直数据格式，交集操作快速</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第四章集成学习算法三个臭皮匠顶个诸葛亮">第四章：集成学习算法——三个臭皮匠，顶个诸葛亮</h3>
+<p>集成学习本身是一种<strong>策略</strong>而非单一算法，但因其极端重要，单独成章。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Bagging</strong></td>
+<td style="text-align:left">并行训练同质弱学习器，投票/平均</td>
+<td style="text-align:left">随机森林是其代表</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Boosting</strong></td>
+<td style="text-align:left">串行训练，后一个纠正前一个的错误</td>
+<td style="text-align:left">AdaBoost、GBDT系列均属此类</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Stacking</strong></td>
+<td style="text-align:left">用另一个模型融合多个模型的输出</td>
+<td style="text-align:left">多层模型堆叠，第二层学习第一层的最佳组合</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Blending</strong></td>
+<td style="text-align:left">Stacking的简化版</td>
+<td style="text-align:left">只用留出集训练元模型，防止过拟合</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Voting</strong></td>
+<td style="text-align:left">最朴素的集成：硬投票/软投票</td>
+<td style="text-align:left">多个模型投票决定最终结果</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第五章神经网络与深度学习算法多层抽象的艺术">第五章：神经网络与深度学习算法——多层抽象的艺术</h3>
+<p>深度学习是机器学习的子领域，近年来几乎主导了CV、NLP和语音等非结构化数据任务。</p>
+<h4 id="51-基础网络架构">5.1 基础网络架构</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>多层感知机</strong></td>
+<td style="text-align:left">全连接神经网络</td>
+<td style="text-align:left">层与层之间所有神经元互相连接</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>卷积神经网络</strong></td>
+<td style="text-align:left">图像处理的标配</td>
+<td style="text-align:left">局部连接、权值共享、池化下采样</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>循环神经网络</strong></td>
+<td style="text-align:left">处理序列数据的基础</td>
+<td style="text-align:left">隐状态在时间步之间传递信息</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LSTM</strong></td>
+<td style="text-align:left">长短期记忆网络</td>
+<td style="text-align:left">引入门控机制解决RNN的梯度消失</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GRU</strong></td>
+<td style="text-align:left">LSTM的简化高效版</td>
+<td style="text-align:left">合并遗忘门和输入门，参数更少</td>
+</tr>
+</tbody>
+</table>
+<h4 id="52-高级与专用架构">5.2 高级与专用架构</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>ResNet</strong></td>
+<td style="text-align:left">残差网络，让深层网络可训练</td>
+<td style="text-align:left">跳跃连接，恒等映射，解决梯度消失</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DenseNet</strong></td>
+<td style="text-align:left">密集连接网络</td>
+<td style="text-align:left">每一层都连接到后面所有层</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Inception / GoogLeNet</strong></td>
+<td style="text-align:left">多尺度并行卷积</td>
+<td style="text-align:left">同一层用不同尺寸卷积核</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MobileNet</strong></td>
+<td style="text-align:left">轻量级移动端CNN</td>
+<td style="text-align:left">深度可分离卷积大幅减少参数</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>EfficientNet</strong></td>
+<td style="text-align:left">用神经架构搜索找到的最优缩放</td>
+<td style="text-align:left">在深度、宽度、分辨率三者间平衡</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>U-Net</strong></td>
+<td style="text-align:left">图像分割专用架构</td>
+<td style="text-align:left">对称编解码结构，跳跃连接保留细节</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>YOLO / SSD / Faster R-CNN</strong></td>
+<td style="text-align:left">目标检测经典系列</td>
+<td style="text-align:left">端到端检测，速度与精度的不同取舍</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Transformer</strong></td>
+<td style="text-align:left">颠覆NLP乃至整个深度学习的架构</td>
+<td style="text-align:left">自注意力机制，并行处理序列</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>BERT</strong></td>
+<td style="text-align:left">预训练语言模型的里程碑</td>
+<td style="text-align:left">双向Transformer编码器，MLM预训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GPT系列</strong></td>
+<td style="text-align:left">自回归语言模型</td>
+<td style="text-align:left">单向Transformer解码器，预测下一个词</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>ViT</strong></td>
+<td style="text-align:left">把Transformer用于图像</td>
+<td style="text-align:left">将图像切块当作序列输入</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>GAN</strong></td>
+<td style="text-align:left">生成对抗网络</td>
+<td style="text-align:left">生成器与判别器博弈，生成逼真样本</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>VAE</strong></td>
+<td style="text-align:left">变分自编码器</td>
+<td style="text-align:left">学习隐空间概率分布，可控生成</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>扩散模型</strong></td>
+<td style="text-align:left">当前最强的图像生成模型</td>
+<td style="text-align:left">逐步加噪再学习去噪，Stable Diffusion的基础</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>图神经网络</strong></td>
+<td style="text-align:left">处理图结构数据的神经网络</td>
+<td style="text-align:left">节点信息沿图边传播更新</td>
+</tr>
+</tbody>
+</table>
+<h4 id="53-训练技巧与优化算法">5.3 训练技巧与优化算法</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>SGD</strong></td>
+<td style="text-align:left">最基础的梯度下降优化器</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Momentum</strong></td>
+<td style="text-align:left">引入动量，加速SGD，减少震荡</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Adam</strong></td>
+<td style="text-align:left">自适应学习率，最常用的优化器</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>AdamW</strong></td>
+<td style="text-align:left">Adam + 权重衰减解耦，效果更好</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>RMSprop</strong></td>
+<td style="text-align:left">适合非平稳目标和RNN</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Batch Normalization</strong></td>
+<td style="text-align:left">对每一层输入归一化，加速训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Layer Normalization</strong></td>
+<td style="text-align:left">Transformer标配归一化方法</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Dropout</strong></td>
+<td style="text-align:left">随机丢弃神经元，防过拟合</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Early Stopping</strong></td>
+<td style="text-align:left">验证集性能不再提升时停止训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Learning Rate Scheduling</strong></td>
+<td style="text-align:left">动态调整学习率</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Gradient Clipping</strong></td>
+<td style="text-align:left">梯度截断，防止梯度爆炸</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第六章强化学习算法在试错中成长">第六章：强化学习算法——在试错中成长</h3>
+<p>强化学习让智能体通过与环境交互学习最优策略。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>Q-Learning</strong></td>
+<td style="text-align:left">基于表格的价值学习鼻祖</td>
+<td style="text-align:left">学习状态-动作价值函数Q，离线策略</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SARSA</strong></td>
+<td style="text-align:left">Q-Learning的在线策略版</td>
+<td style="text-align:left">行动策略与更新策略一致</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DQN</strong></td>
+<td style="text-align:left">深度Q网络</td>
+<td style="text-align:left">用神经网络拟合Q函数，引入经验回放和目标网络</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Double DQN</strong></td>
+<td style="text-align:left">解决DQN高估问题</td>
+<td style="text-align:left">用当前网络选动作，目标网络评估价值</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Dueling DQN</strong></td>
+<td style="text-align:left">分离状态价值和动作优势</td>
+<td style="text-align:left">网络输出分为V和A两部分再合并</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Policy Gradient</strong></td>
+<td style="text-align:left">直接优化策略函数</td>
+<td style="text-align:left">输出动作的概率分布而非价值</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>REINFORCE</strong></td>
+<td style="text-align:left">最基础的策略梯度算法</td>
+<td style="text-align:left">蒙特卡洛采样计算梯度</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Actor-Critic</strong></td>
+<td style="text-align:left">价值网络+策略网络结合</td>
+<td style="text-align:left">Actor输出动作，Critic评估好坏</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>A2C / A3C</strong></td>
+<td style="text-align:left">优势Actor-Critic，同步/异步</td>
+<td style="text-align:left">用优势函数代替原始回报减少方差</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>PPO</strong></td>
+<td style="text-align:left">当前最流行的策略梯度算法</td>
+<td style="text-align:left">限制策略更新幅度，稳定训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>TRPO</strong></td>
+<td style="text-align:left">信任域策略优化</td>
+<td style="text-align:left">PPO的前身，数学更严谨但实现更复杂</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>DDPG</strong></td>
+<td style="text-align:left">深度确定性策略梯度</td>
+<td style="text-align:left">将DQN思想扩展到连续动作空间</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>TD3</strong></td>
+<td style="text-align:left">DDPG改进版</td>
+<td style="text-align:left">双Q网络、延迟策略更新、目标策略平滑</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>SAC</strong></td>
+<td style="text-align:left">软Actor-Critic</td>
+<td style="text-align:left">引入最大熵，鼓励探索，样本效率高</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>IMPALA</strong></td>
+<td style="text-align:left">大规模分布式强化学习</td>
+<td style="text-align:left">分离学习器和执行器，高吞吐量</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>AlphaGo / AlphaZero</strong></td>
+<td style="text-align:left">围棋AI的巅峰</td>
+<td style="text-align:left">蒙特卡洛树搜索+深度神经网络</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第七章概率图模型用图表示变量依赖关系">第七章：概率图模型——用图表示变量依赖关系</h3>
+<p>这类算法在结构化预测、因果推断中扮演重要角色。</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+<th style="text-align:left">核心特点</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>朴素贝叶斯</strong></td>
+<td style="text-align:left">最简单的有向图模型</td>
+<td style="text-align:left">假设特征条件独立</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>隐马尔可夫模型（HMM）</strong></td>
+<td style="text-align:left">序列标注经典模型</td>
+<td style="text-align:left">观测序列+隐藏状态链，状态转移满足马尔可夫性</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>最大熵马尔可夫模型（MEMM）</strong></td>
+<td style="text-align:left">HMM改进版</td>
+<td style="text-align:left">允许非独立特征，但有标注偏置问题</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>条件随机场（CRF）</strong></td>
+<td style="text-align:left">序列标注的统计学习基石</td>
+<td style="text-align:left">全局归一化，解决标注偏置</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>贝叶斯网络</strong></td>
+<td style="text-align:left">有向无环图表示变量依赖</td>
+<td style="text-align:left">可用于推理、预测、因果发现</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>马尔可夫随机场</strong></td>
+<td style="text-align:left">无向图模型</td>
+<td style="text-align:left">图像分割、去噪常用</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第八章其他重要算法与概念补充">第八章：其他重要算法与概念补充</h3>
+<h4 id="81-特征工程相关算法">8.1 特征工程相关算法</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>One-Hot Encoding</strong></td>
+<td style="text-align:left">将类别特征转为二值向量</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Label Encoding</strong></td>
+<td style="text-align:left">将类别映射为整数</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Target Encoding</strong></td>
+<td style="text-align:left">用目标变量的统计量替换类别</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>特征哈希</strong></td>
+<td style="text-align:left">将高基数特征映射到固定维度</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>分箱/离散化</strong></td>
+<td style="text-align:left">将连续值分段转为类别</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>多项式特征生成</strong></td>
+<td style="text-align:left">生成特征的交互项和高次项</td>
+</tr>
+</tbody>
+</table>
+<h4 id="82-特征选择算法">8.2 特征选择算法</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>方差阈值法</strong></td>
+<td style="text-align:left">移除方差过低的特征</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>卡方检验</strong></td>
+<td style="text-align:left">检验特征与目标变量的相关性</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>互信息</strong></td>
+<td style="text-align:left">衡量特征与目标的非线性依赖</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>递归特征消除（RFE）</strong></td>
+<td style="text-align:left">递归训练模型剔除最不重要特征</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>基于L1正则化的选择</strong></td>
+<td style="text-align:left">Lasso自带特征选择</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>基于树模型的特征重要性</strong></td>
+<td style="text-align:left">用随机森林或XGBoost输出的特征重要性筛选</td>
+</tr>
+</tbody>
+</table>
+<h4 id="83-模型解释性算法">8.3 模型解释性算法</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>SHAP</strong></td>
+<td style="text-align:left">基于博弈论的模型解释框架</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>LIME</strong></td>
+<td style="text-align:left">在预测点附近用简单模型局部近似</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Partial Dependence Plot</strong></td>
+<td style="text-align:left">展示单个特征对预测结果的边际效应</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Permutation Importance</strong></td>
+<td style="text-align:left">打乱特征看模型性能下降程度</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>Integrated Gradients</strong></td>
+<td style="text-align:left">深度模型的归因方法</td>
+</tr>
+</tbody>
+</table>
+<h4 id="84-半监督学习算法">8.4 半监督学习算法</h4>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">算法名称</th>
+<th style="text-align:left">一句话定位</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left"><strong>自训练</strong></td>
+<td style="text-align:left">用有标签数据训练模型，给无标签数据打伪标签再训练</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>协同训练</strong></td>
+<td style="text-align:left">两个视图/两个模型互相给对方提供伪标签</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>标签传播</strong></td>
+<td style="text-align:left">基于图将标签从有标签节点传播到无标签节点</td>
+</tr>
+<tr>
+<td style="text-align:left"><strong>MixMatch / FixMatch</strong></td>
+<td style="text-align:left">现代半监督深度学习技巧</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h3 id="第九章算法选型速查指南">第九章：算法选型速查指南</h3>
+<p>面对一个具体问题，如何快速缩小算法选择范围？</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:left">你的问题描述</th>
+<th style="text-align:left">优先考虑的算法方向</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:left">数据有标签，预测连续值</td>
+<td style="text-align:left">线性回归 → 岭回归/Lasso → XGBoost/LightGBM → 神经网络</td>
+</tr>
+<tr>
+<td style="text-align:left">数据有标签，预测类别</td>
+<td style="text-align:left">逻辑回归 → 随机森林 → XGBoost/LightGBM → 神经网络</td>
+</tr>
+<tr>
+<td style="text-align:left">数据有标签，但数据量巨大（百万级）</td>
+<td style="text-align:left">LightGBM → 深度学习</td>
+</tr>
+<tr>
+<td style="text-align:left">数据无标签，想分组</td>
+<td style="text-align:left">K-Means → DBSCAN/HDBSCAN → 高斯混合模型</td>
+</tr>
+<tr>
+<td style="text-align:left">数据无标签，想压缩到2D/3D可视化</td>
+<td style="text-align:left">t-SNE → UMAP</td>
+</tr>
+<tr>
+<td style="text-align:left">数据无标签，想发现异常</td>
+<td style="text-align:left">孤立森林 → 局部异常因子</td>
+</tr>
+<tr>
+<td style="text-align:left">数据是图片</td>
+<td style="text-align:left">CNN（ResNet / EfficientNet） → ViT</td>
+</tr>
+<tr>
+<td style="text-align:left">数据是文本</td>
+<td style="text-align:left">TF-IDF+朴素贝叶斯/逻辑回归 → BERT/GPT</td>
+</tr>
+<tr>
+<td style="text-align:left">数据是时间序列</td>
+<td style="text-align:left">ARIMA/Prophet → LSTM/GRU → Transformer</td>
+</tr>
+<tr>
+<td style="text-align:left">数据是图/关系网络</td>
+<td style="text-align:left">图神经网络（GCN/GAT）</td>
+</tr>
+<tr>
+<td style="text-align:left">需要决策/控制（如下棋、自动驾驶）</td>
+<td style="text-align:left">强化学习（PPO / SAC / DQN）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<figure data-type="image" tabindex="1"><img src="https://zhangjunjie00323.github.io/post-images/1776591948641.png" alt="" loading="lazy"></figure>
+<h3 id="结语算法是工具箱不是毕业证">结语：算法是工具箱，不是毕业证</h3>
+<p>这篇文章罗列了超过100种机器学习相关算法，但请你务必记住一句话：</p>
+<blockquote>
+<p><strong>算法是工具箱里的工具，你的价值不在于记住所有工具的名字，而在于知道什么时候该用扳手，什么时候该用螺丝刀。</strong></p>
+</blockquote>
+<p>每个算法背后的数学原理、优缺点分析、代码实现细节，我会在后续的文章中逐一深入展开。现在，你可以把这篇当作<strong>算法地图</strong>收藏起来——需要的时候回来查一查，就够了。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E6%9C%BA%E5%99%A8%E5%AD%A6%E4%B9%A0" class="tag js-tag-link" data-tag-name="机器学习">
+                    机器学习
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/starrocks_MV_SQL/">
+                      <div class="related-left">
+                        <div class="related-post-title">StarRocks 智能物化视图 SQL 手册</div>
+                        <div class="related-meta">2026-06-25</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/06/25/Zsn6/StarRocks-SQL.png" alt="StarRocks 智能物化视图 SQL 手册" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUPRC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUPRC 只盯着正样本看——这不是傲慢，是诚实</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/5wwG/AUPRC.png" alt="AUPRC 只盯着正样本看——这不是傲慢，是诚实" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/AUROC/">
+                      <div class="related-left">
+                        <div class="related-post-title">AUROC：从 ROC 曲线到概率解释的完全指南</div>
+                        <div class="related-meta">2026-05-08</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/08/9Wok/AUROC.png" alt="AUROC：从 ROC 曲线到概率解释的完全指南" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/ridge-regression/">
+                      <div class="related-left">
+                        <div class="related-post-title">岭回归：宁可有偏，不可失控</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/sAl6/c76b2a6.png" alt="岭回归：宁可有偏，不可失控" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/supervised-unsupervised-rl/">
+                  <h3 class="post-title">
+                    机器学习的三条岔路口：监督、无监督与强化学习
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>

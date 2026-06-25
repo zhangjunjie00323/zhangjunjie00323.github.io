@@ -1,0 +1,1222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" >
+
+<title>AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP | Zhang Junjie&#39;s Personal Blog</title>
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/">
+<meta property="og:site_name" content="Zhang Junjie&#39;s Personal Blog">
+<meta property="og:type" content="article">
+<meta property="og:title" content="AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP | Zhang Junjie&#39;s Personal Blog">
+<meta property="og:description" content="一份梳理「AI Agent 如何连接、修改 Power BI」的完整笔记，讲清每种方式的本质、优缺点与选型逻辑（截至 2026 年中） 一、先纠正一个常见的认知偏差 很多人最初接触这个话题时，会把 Agent 操作 Power BI ...">
+<meta property="og:url" content="https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/">
+<meta property="og:image" content="https://files.seeusercontent.com/2026/06/21/vCt7/PowerBI.png">
+
+<meta name="keywords" content="AI,工具">
+
+
+<meta property="article:published_time" content="2026-06-21T15:15:35+08:00">
+<meta property="article:modified_time" content="2026-06-21T15:15:35+08:00">
+<meta property="article:author" content="Zhang Junjie">
+
+<meta property="article:tag" content="AI">
+
+<meta property="article:tag" content="工具">
+
+
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP | Zhang Junjie&#39;s Personal Blog">
+<meta name="twitter:description" content="一份梳理「AI Agent 如何连接、修改 Power BI」的完整笔记，讲清每种方式的本质、优缺点与选型逻辑（截至 2026 年中） 一、先纠正一个常见的认知偏差 很多人最初接触这个话题时，会把 Agent 操作 Power BI ...">
+<meta name="twitter:image" content="https://files.seeusercontent.com/2026/06/21/vCt7/PowerBI.png">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "BlogPosting",
+      "@id": "https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/#article",
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": "https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/"
+      },
+      "headline": "AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP",
+      "description": "一份梳理「AI Agent 如何连接、修改 Power BI」的完整笔记，讲清每种方式的本质、优缺点与选型逻辑（截至 2026 年中） 一、先纠正一个常见的认知偏差 很多人最初接触这个话题时，会把 Agent 操作 Power BI ...",
+      "image": "https://files.seeusercontent.com/2026/06/21/vCt7/PowerBI.png",
+      "url": "https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/",
+      "inLanguage": "zh-CN",
+      "datePublished": "2026-06-21T15:15:35+08:00",
+      "dateModified": "2026-06-21T15:15:35+08:00",
+      "author": {
+        "@type": "Person",
+        "name": "Zhang Junjie",
+        "url": "https://zhangjunjie00323.github.io/about/"
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "Zhang Junjie's Personal Blog",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://zhangjunjie00323.github.io/images/avatar.png"
+        }
+      },
+      "articleSection": [
+        "AI",
+        "工具"
+      ],
+      "keywords": "AI,工具",
+      "wordCount": 5769
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": "https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/#breadcrumb",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "首页",
+          "item": "https://zhangjunjie00323.github.io/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "AI",
+          "item": "https://zhangjunjie00323.github.io/search/?tag=AI"
+        },
+        {
+          "@type": "ListItem",
+          "position": 3,
+          "name": "AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP",
+          "item": "https://zhangjunjie00323.github.io/post/powerbi-agent-mcp-pbip/"
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@5.15.4/css/all.min.css">
+<link rel="shortcut icon" href="https://zhangjunjie00323.github.io/favicon.ico?v=1782396029225">
+<link rel="stylesheet" href="https://zhangjunjie00323.github.io/styles/main.css?v=1782396029225">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/highlight.js@11.5.1/styles/atom-one-dark.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.css">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+
+
+
+  
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.css" />
+  
+
+  
+
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.css" />
+<script src="https://cdn.jsdelivr.net/npm/vue@2.6.14/dist/vue.min.js"></script>
+
+
+
+<script charset="UTF-8" id="LA_COLLECT" src="https://sdk.51.la/js-sdk-pro.min.js"></script>
+<script>
+  (function() {
+    var laConfig = {
+      id: "3PgbPb0weaDFEpoq",
+      ck: "3PgbPb0weaDFEpoq",
+      autoTrack: true,
+      hashMode: true
+    };
+
+    function initLA() {
+      if (window.LA && typeof LA.init === 'function') {
+        LA.init(laConfig);
+      }
+    }
+
+    var script = document.getElementById('LA_COLLECT');
+    if (script) {
+      script.addEventListener('load', initLA);
+    }
+    initLA();
+  })();
+</script>
+
+  </head>
+  <body class="is-post">
+    <div id="app" class="main">
+
+      <div class="sidebar" :class="{ 'full-height': menuVisible }">
+  <div class="top-container" data-aos="fade-right">
+    <div class="top-header-container">
+      <a class="site-title-container" href="https://zhangjunjie00323.github.io">
+        <img src="https://zhangjunjie00323.github.io/images/avatar.png?v=1782396029225" class="site-logo">
+        <h1 class="site-title">Zhang Junjie&#39;s Personal Blog</h1>
+      </a>
+      <div class="menu-btn" @click="menuVisible = !menuVisible">
+        <div class="line"></div>
+      </div>
+    </div>
+    <div>
+      
+        
+          <a href="/" class="site-nav">
+            首页
+          </a>
+        
+      
+        
+          <a href="/archives" class="site-nav">
+            归档
+          </a>
+        
+      
+        
+          <a href="/tags" class="site-nav">
+            标签
+          </a>
+        
+      
+        
+          <a href="/post/about" class="site-nav">
+            关于
+          </a>
+        
+      
+        
+          <a href="https://blog.csdn.net/weixin_35353187?spm=1000.2115.3001.5343" class="site-nav">
+            CSDN
+          </a>
+        
+      
+    </div>
+  </div>
+  <div class="bottom-container" data-aos="flip-up" data-aos-offset="0">
+    <div class="social-container">
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-github"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-twitter"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-weibo"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-zhihu"></i>
+          </a>
+        
+      
+        
+          <a class="social-link" href="www.baidu.com" target="_blank">
+            <i class="fab fa-facebook"></i>
+          </a>
+        
+      
+    </div>
+    <div class="search-container">
+      <form id="gridea-search-form" action="https://zhangjunjie00323.github.io/search/">
+        <input class="search-input" name="q" placeholder="Search...">
+      </form>
+      <i class="fas fa-search"></i>
+    </div>
+    <div class="site-description">
+      数据科学成长之路
+    </div>
+    <div class="site-footer">
+      Powered by <a href="https://github.com/getgridea/gridea" target="_blank">Gridea</a> | <a class="rss" href="https://zhangjunjie00323.github.io/atom.xml" target="_blank">RSS</a>
+    </div>
+  </div>
+</div>
+
+
+      <div id="reading-progress-bar" class="reading-progress-bar"></div>
+      <div class="floating-tools">
+        <div id="progress-pct" class="progress-pct">0%</div>
+        <div id="back-to-top" class="back-to-top">
+          <i class="fa fa-arrow-up"></i>
+        </div>
+        <div id="toc-restore-btn" class="toc-restore-btn" title="显示目录">
+          <i class="fa fa-list"></i>
+        </div>
+      </div>
+      <div class="toc-container" id="toc-container">
+        <div class="toc-tools">
+          <button type="button" class="font-btn icon-btn" id="sidebar-toggle" aria-label="Toggle sidebar">
+            <i class="fa fa-bars"></i>
+          </button>
+          <button type="button" class="font-btn" id="font-smaller" aria-label="Decrease font size">A-</button>
+          <button type="button" class="font-btn" id="font-larger" aria-label="Increase font size">A+</button>
+          <button type="button" class="font-btn" id="width-toggle" aria-label="Toggle article width">标准</button>
+          <button type="button" class="font-btn" id="toc-hide-btn" aria-label="Toggle immersive reading">沉浸</button>
+        </div>
+        
+          <div class="toc-header">
+            <div class="toc-title">CONTENTS</div>
+            <button type="button" class="toc-toggle" id="toc-toggle" aria-label="Toggle table of contents">
+              <i class="fa fa-angle-up"></i>
+            </button>
+          </div>
+          <div class="toc-body">
+            <ul class="markdownIt-TOC">
+<li>
+<ul>
+<li><a href="#%E4%B8%80-%E5%85%88%E7%BA%A0%E6%AD%A3%E4%B8%80%E4%B8%AA%E5%B8%B8%E8%A7%81%E7%9A%84%E8%AE%A4%E7%9F%A5%E5%81%8F%E5%B7%AE">一、先纠正一个常见的认知偏差</a></li>
+<li><a href="#%E4%BA%8C-%E6%96%B9%E5%BC%8F-a%E9%80%9A%E8%BF%87-mcp-%E8%BF%9E%E6%8E%A5%E8%B7%9F%E5%BC%95%E6%93%8E%E5%AF%B9%E8%AF%9D">二、方式 A：通过 MCP 连接（跟引擎对话）</a>
+<ul>
+<li><a href="#%E5%AE%83%E4%B8%8D%E5%8F%AA%E6%98%AF%E8%BF%9E-pbix">它不只是「连 PBIX」</a></li>
+<li><a href="#%E5%AE%83%E7%9A%84%E5%BA%95%E5%B1%82%E5%8E%9F%E7%90%86">它的底层原理</a></li>
+<li><a href="#mcp-%E8%83%BD%E5%81%9A%E4%BB%80%E4%B9%88">MCP 能做什么</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%89-%E6%96%B9%E5%BC%8F-b%E7%9B%B4%E6%8E%A5%E4%BF%AE%E6%94%B9%E6%9C%AC%E5%9C%B0-pbip%E6%94%B9%E6%96%87%E6%9C%AC">三、方式 B：直接修改本地 PBIP（改文本）</a></li>
+<li><a href="#%E5%9B%9B-%E4%B8%A4%E7%A7%8D%E6%96%B9%E5%BC%8F%E7%9A%84%E6%9C%AC%E8%B4%A8%E5%8C%BA%E5%88%AB">四、两种方式的本质区别</a></li>
+<li><a href="#%E4%BA%94-%E9%99%A4%E4%BA%86%E8%BF%99%E4%B8%A4%E7%A7%8D%E8%BF%98%E6%9C%89%E5%93%AA%E4%BA%9B%E6%96%B9%E5%BC%8F">五、除了这两种，还有哪些方式</a>
+<ul>
+<li><a href="#1-xmla-endpoint-tomc-net-%E7%BC%96%E7%A8%8B">1. XMLA Endpoint + TOM（C# / .NET 编程）</a></li>
+<li><a href="#2-tabular-editorgui-cli">2. Tabular Editor（GUI + CLI）</a></li>
+<li><a href="#3-power-bi-fabric-rest-api">3. Power BI / Fabric REST API</a></li>
+<li><a href="#4-semantic-link-sempyfabric-notebook-%E9%87%8C%E7%9A%84-python">4. Semantic Link / <code>sempy</code>（Fabric Notebook 里的 Python）</a></li>
+<li><a href="#5-%E8%BF%9C%E7%A8%8B-mcp-serverquerying-%E7%89%88">5. 远程 MCP Server（querying 版）</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AD-%E7%BB%BC%E5%90%88%E4%BC%98%E7%BC%BA%E7%82%B9%E5%AF%B9%E6%AF%94">六、综合优缺点对比</a>
+<ul>
+<li><a href="#mcp-%E6%96%B9%E5%BC%8F%E5%B0%8F%E7%BB%93">MCP 方式小结</a></li>
+<li><a href="#%E7%9B%B4%E6%8E%A5%E6%94%B9-pbip-%E5%B0%8F%E7%BB%93">直接改 PBIP 小结</a></li>
+</ul>
+</li>
+<li><a href="#%E4%B8%83-%E4%B8%80%E4%B8%AA%E9%87%8D%E7%82%B9mcp-%E5%8F%AA%E8%83%BD%E6%94%B9%E6%A8%A1%E5%9E%8B%E5%B1%82%E7%A2%B0%E4%B8%8D%E5%88%B0%E5%9B%BE%E8%A1%A8%E5%B1%82">七、一个重点：MCP 只能改模型层，碰不到图表层</a>
+<ul>
+<li><a href="#%E4%B8%BA%E4%BB%80%E4%B9%88">为什么</a></li>
+<li><a href="#%E9%82%A3%E5%9B%BE%E8%A1%A8%E5%B1%82%E6%80%8E%E4%B9%88%E7%94%A8-agent-%E6%94%B9">那图表层怎么用 Agent 改</a></li>
+<li><a href="#%E4%B8%80%E5%BC%A0%E8%A1%A8%E8%AF%B4%E6%B8%85%E5%B1%82%E7%BA%A7%E8%BE%B9%E7%95%8C">一张表说清层级边界</a></li>
+</ul>
+</li>
+<li><a href="#%E5%85%AB-%E9%80%89%E5%9E%8B%E5%BB%BA%E8%AE%AE">八、选型建议</a></li>
+<li><a href="#%E4%B9%9D-%E6%80%BB%E7%BB%93">九、总结</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        
+      </div>
+
+      <div class="main-container">
+        <div class="content-container" data-aos="fade-up">
+          <div class="post-detail">
+            <h2 class="post-title">AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP</h2>
+            <div class="post-date">
+              <span class="meta-item meta-date">
+                <i class="fa fa-calendar-o"></i>
+                2026-06-21 15:15
+              </span>
+              <span class="meta-item meta-read-time">
+                <i class="fa fa-clock-o"></i>
+                25 min read
+              </span>
+              <span id="busuanzi_container_page_pv" class="meta-item meta-read-count">
+                <i class="fa fa-eye"></i>
+                <span id="busuanzi_value_page_pv"></span> 人阅读
+              </span>
+            </div>
+            
+              <div class="feature-container">
+                <img class="post-feature-image" src="https://files.seeusercontent.com/2026/06/21/vCt7/PowerBI.png" alt="AI Agent 操作 Power BI 的方式全解析：从 MCP 到 PBIP">
+              </div>
+            
+            <div class="post-content" v-pre>
+              <blockquote>
+<p>一份梳理「AI Agent 如何连接、修改 Power BI」的完整笔记，讲清每种方式的本质、优缺点与选型逻辑（截至 2026 年中）</p>
+</blockquote>
+<!-- more -->
+<h2 id="一-先纠正一个常见的认知偏差">一、先纠正一个常见的认知偏差</h2>
+<p>很多人最初接触这个话题时，会把 Agent 操作 Power BI 的方式理解成两个并列的选项：</p>
+<ul>
+<li>一种是「通过 MCP 连接 PBIX」；</li>
+<li>一种是「直接修改本地的 PBIP」。</li>
+</ul>
+<p>这个划分能用，但不够准确，容易让你在后面被各种说法绕进去。<strong>更本质的划分维度是这一句话</strong>：</p>
+<blockquote>
+<p>Agent 到底是在跟「<strong>正在运行的模型引擎</strong>」对话，还是在「<strong>编辑磁盘上的文本文件</strong>」？</p>
+</blockquote>
+<p>想清楚这条主线，后面所有方式都能顺理成章地归位——包括 MCP、PBIP、XMLA、Tabular Editor、REST API。因为它们要么属于「跟引擎对话」，要么属于「改文本」，要么属于「管理运维」这三大类。</p>
+<p>下面先把这两种最常被提到的方式讲透，再扩展到其他方式。</p>
+<h2 id="二-方式-a通过-mcp-连接跟引擎对话">二、方式 A：通过 MCP 连接（跟引擎对话）</h2>
+<p>这里指的是微软官方的 <strong>Power BI Modeling MCP Server</strong>（npm 包名 <code>@microsoft/powerbi-modeling-mcp</code>，目前处于 Public Preview 阶段，接口在正式发布前可能仍有较大变化）。</p>
+<h3 id="它不只是连-pbix">它不只是「连 PBIX」</h3>
+<p>一个关键的事实：这个 MCP <strong>本身就支持三种连接目标</strong>，远不止「PBIX」一种：</p>
+<ol>
+<li>连接<strong>正在运行的 Power BI Desktop 实例</strong>（也就是你当前打开的那个 <code>.pbix</code>）；</li>
+<li>连接 <strong>Fabric 工作区里已发布的语义模型</strong>；</li>
+<li>打开<strong>本地 PBIP 文件夹里的 TMDL 定义</strong>。</li>
+</ol>
+<p>对应的自然语言连接指令大致是：</p>
+<pre><code>Connect to '[文件名]' in Power BI Desktop
+Connect to semantic model '[模型名]' in Fabric Workspace '[工作区名]'
+Open semantic model from PBIP folder '[PBIP 里 definition / TMDL 文件夹路径]'
+</code></pre>
+<h3 id="它的底层原理">它的底层原理</h3>
+<p>MCP 底层是通过 <strong>TOM（Tabular Object Model）</strong> 去操作模型对象的。TOM 是一套 .NET 的对象模型抽象，它把数据模型表达成 <code>Model</code>、<code>Table</code>、<code>Column</code>、<code>Measure</code> 这样的类。所以 Agent 说「帮我加一个度量值」，MCP 就翻译成 TOM 的写操作，作用到引擎上。</p>
+<p>这里要破除一个误区：<strong>「MCP」和「PBIP」不是对立关系</strong>。MCP 完全可以操作 PBIP（上面第 3 种连接方式）。所以真正对立的不是「MCP vs PBIP」，而是「连引擎 vs 改文本」。</p>
+<h3 id="mcp-能做什么">MCP 能做什么</h3>
+<ul>
+<li>用自然语言创建/修改表、列、度量值、关系；</li>
+<li>批量操作（支持事务，可一次性改几百个对象并带错误处理）；</li>
+<li>应用建模最佳实践（Best Practice）；</li>
+<li>执行并校验 DAX 查询，调试度量值。</li>
+</ul>
+<hr>
+<h2 id="三-方式-b直接修改本地-pbip改文本">三、方式 B：直接修改本地 PBIP（改文本）</h2>
+<p><strong>PBIP（Power BI Project）</strong> 把一个原本是二进制的 <code>.pbix</code>，拆成了一组<strong>纯文本文件</strong>：</p>
+<ul>
+<li>数据模型部分 → <strong>TMDL</strong> 文件（<code>.tmdl</code>），描述表、度量值、关系等；</li>
+<li>报表部分 → <strong>PBIR</strong>（report 定义，早期形态是 <code>report.json</code>），描述图表、页面、布局。</li>
+</ul>
+<p>既然是文本，Agent 就可以像改普通代码一样，用文件读写工具<strong>直接编辑这些文件</strong>。这个过程<strong>不需要 MCP、不需要 Power BI 在运行</strong>，纯粹就是改文本，改完保存。</p>
+<p>它最大的价值在于：文本天然适合 <strong>Git 版本控制</strong>，可以 diff、可以 code review、可以多人协作合并。</p>
+<hr>
+<h2 id="四-两种方式的本质区别">四、两种方式的本质区别</h2>
+<p>把 A 和 B 放在一起对比，区别就非常清晰了：</p>
+<table>
+<thead>
+<tr>
+<th>对比项</th>
+<th>方式 A（MCP / 引擎）</th>
+<th>方式 B（改 PBIP 文本）</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Agent 对话的对象</td>
+<td>运行中的 AS 引擎（通过 TOM）</td>
+<td>磁盘上的文本文件</td>
+</tr>
+<tr>
+<td>是否需要 Power BI 运行</td>
+<td>是（Desktop 模式）/ 否（PBIP 模式）</td>
+<td>否</td>
+</tr>
+<tr>
+<td>改完是否立即生效</td>
+<td>是，实时写回引擎</td>
+<td>否，要重新打开 / 部署才生效</td>
+</tr>
+<tr>
+<td>是否校验语法 / DAX</td>
+<td>会（引擎直接拒绝非法操作）</td>
+<td>不会，写错了也照样存盘</td>
+</tr>
+<tr>
+<td>Git 版本控制友好度</td>
+<td>一般（Desktop 模式难 diff）</td>
+<td>优秀（文本天然友好）</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="五-除了这两种还有哪些方式">五、除了这两种，还有哪些方式</h2>
+<p>Agent 操作 Power BI 远不止上面两条路。按「面向开发者」到「面向自动化运维」排列，还有这些：</p>
+<h3 id="1-xmla-endpoint-tomc-net-编程">1. XMLA Endpoint + TOM（C# / .NET 编程）</h3>
+<p>直接用 <code>Microsoft.AnalysisServices.Tabular</code> 命名空间写代码，连接已发布模型的 <strong>XMLA 端点</strong>进行增删改。这是<strong>最底层、最强大</strong>的方式——MCP 和 Tabular Editor 本质上都是它的封装。</p>
+<p>典型连接串形如：</p>
+<pre><code class="language-csharp">string connectionString =
+    &quot;powerbi://api.powerbi.com/v1.0/myorg/{WorkspaceName};initial catalog={ModelName}&quot;;
+Server server = new Server();
+server.Connect(connectionString);
+// 修改模型对象
+server.Databases[&quot;{ModelName}&quot;].Model.SaveChanges();
+</code></pre>
+<p><strong>限制</strong>：XMLA 端点只支持 Fabric / Premium / Embedded / PPU 这类<strong>专属容量</strong>，共享容量用不了；服务主体（Service Principal）在 PPU 下不可用。另外 TOM 本身不能设置数据源凭据，刷新凭据要配合 Power BI REST API。微软已于 2025 年 6 月在所有 Fabric 与 Power BI 容量上<strong>默认开启 XMLA 读写</strong>。</p>
+<h3 id="2-tabular-editorgui-cli">2. Tabular Editor（GUI + CLI）</h3>
+<p>社区里采用率最高的第三方建模工具。它的 <strong>CLI（命令 <code>te</code>，目前 Limited Public Preview）</strong> 跨平台（Windows / macOS / Linux），支持一整套命令：</p>
+<table>
+<thead>
+<tr>
+<th>命令族</th>
+<th>作用</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>te load / save / init</code></td>
+<td>模型读写、转换、初始化</td>
+</tr>
+<tr>
+<td><code>te set / add / rm / mv</code></td>
+<td>增删改移对象属性</td>
+</tr>
+<tr>
+<td><code>te ls / find / diff / deps</code></td>
+<td>列举、搜索、对比、依赖分析</td>
+</tr>
+<tr>
+<td><code>te validate / bpa run / format</code></td>
+<td>校验、最佳实践检查、DAX 格式化</td>
+</tr>
+<tr>
+<td><code>te query / script / macro</code></td>
+<td>跑 DAX、C# 脚本、宏</td>
+</tr>
+<tr>
+<td><code>te deploy / refresh</code></td>
+<td>部署到工作区、触发刷新、增量刷新</td>
+</tr>
+<tr>
+<td><code>te test run</code></td>
+<td>断言测试、快照、A/B 对比</td>
+</tr>
+</tbody>
+</table>
+<p>Agent 完全可以通过命令行调用它来<strong>批量改模型、接 CI/CD</strong>，这是「Agent 工程化操作 Power BI」很现实的一条路。注意 CLI 预览版有时限（预览构建在 2026-09-30 后停用），不建议直接用于生产流水线。</p>
+<h3 id="3-power-bi-fabric-rest-api">3. Power BI / Fabric REST API</h3>
+<p>负责的是<strong>管理运维面</strong>：发布报告、触发刷新、管理语义模型 / 网关 / 权限。它<strong>不做细粒度建模</strong>（不能直接加一个度量值），但「日更新、自动刷新、部署流水线」全靠它。</p>
+<h3 id="4-semantic-link-sempyfabric-notebook-里的-python">4. Semantic Link / <code>sempy</code>（Fabric Notebook 里的 Python）</h3>
+<p>在 Fabric 笔记本里用 Python 读写语义模型、执行 DAX。适合数据科学 / ML 场景的程序化操作。</p>
+<h3 id="5-远程-mcp-serverquerying-版">5. 远程 MCP Server（querying 版）</h3>
+<p>微软除了上面那个本地的「Modeling MCP」，还有一个<strong>远程 MCP</strong>，定位完全不同——它是用来<strong>查数据、生成洞察（读）</strong>，而不是改模型（写）。如果 Agent 的任务是「问数据」而非「改模型」，应该用这个。</p>
+<hr>
+<h2 id="六-综合优缺点对比">六、综合优缺点对比</h2>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>MCP（连引擎）</th>
+<th>直接改 PBIP 文本</th>
+<th>XMLA + TOM 编程</th>
+<th>Tabular Editor CLI</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>上手难度</td>
+<td>低（自然语言）</td>
+<td>低（就是改文本）</td>
+<td>高（要写 C#）</td>
+<td>中（学命令）</td>
+</tr>
+<tr>
+<td>是否实时生效</td>
+<td>✅ 立即</td>
+<td>❌ 要重开 / 部署</td>
+<td>✅ 立即</td>
+<td>✅ 部署后</td>
+</tr>
+<tr>
+<td>语法 / DAX 校验</td>
+<td>✅ 引擎拦截非法操作</td>
+<td>❌ 写错也不报错</td>
+<td>✅</td>
+<td>✅ 含 BPA</td>
+</tr>
+<tr>
+<td>版本控制（Git）</td>
+<td>△ Desktop 模式难 diff</td>
+<td>✅ 文本天然友好</td>
+<td>△</td>
+<td>✅</td>
+</tr>
+<tr>
+<td>批量操作</td>
+<td>✅ 支持事务批处理</td>
+<td>△ 手工逐文件</td>
+<td>✅ 最强</td>
+<td>✅ 强</td>
+</tr>
+<tr>
+<td>报表视觉层（图表）</td>
+<td>❌ 基本只管模型</td>
+<td>✅ 可改 PBIR，但易出错</td>
+<td>❌ 只管模型</td>
+<td>❌ 只管模型</td>
+</tr>
+<tr>
+<td>依赖环境</td>
+<td>需 Node / MCP host</td>
+<td>几乎无依赖</td>
+<td>需 .NET + 专属容量</td>
+<td>需 CLI</td>
+</tr>
+<tr>
+<td>适合 CI/CD 自动化</td>
+<td>△</td>
+<td>✅</td>
+<td>✅</td>
+<td>✅</td>
+</tr>
+</tbody>
+</table>
+<h3 id="mcp-方式小结">MCP 方式小结</h3>
+<p><strong>优点</strong>：自然语言驱动，最适合「边聊边改」的交互式建模；引擎<strong>实时校验</strong>，DAX 写错、关系冲突会被直接拒绝，不会留下坏模型；支持事务批处理，适合一次性改大量对象。</p>
+<p><strong>缺点</strong>：仍处 Preview，接口可能变；连 Desktop 实例时<strong>不利于 Git diff</strong>（改动直接进了二进制 <code>.pbix</code>）；强依赖 MCP host 环境；<strong>几乎只覆盖语义模型，不管报表视觉层</strong>。</p>
+<h3 id="直接改-pbip-小结">直接改 PBIP 小结</h3>
+<p><strong>优点</strong>：<strong>Git 友好</strong>是最大杀器——TMDL 是文本，能 diff、能 review、能合并；零运行时依赖；是唯一<strong>能碰报表视觉层（PBIR）</strong> 的常规方式。</p>
+<p><strong>缺点</strong>：<strong>没有任何校验</strong>——写错 DAX 语法、写错引用、漏个括号，文件照样存盘，要重新打开 Power BI 才发现报错，调试反馈慢；复杂改动（改关系、改分区）手工编辑文本繁琐易错；改完<strong>不会实时生效</strong>。</p>
+<hr>
+<h2 id="七-一个重点mcp-只能改模型层碰不到图表层">七、一个重点：MCP 只能改模型层，碰不到图表层</h2>
+<p>这是一个非常容易踩的认知点，单独拎出来讲。</p>
+<p><strong>结论先行：官方的 Modeling MCP 只能修改数据模型层，不能修改图表（报表视觉）层。</strong></p>
+<h3 id="为什么">为什么</h3>
+<p>微软官方那个 MCP 的全名就叫 <strong>Power BI <em>Modeling</em> MCP Server</strong>——名字里的 &quot;Modeling&quot; 已经划定了边界。它底层走 <strong>TOM</strong>，而 <strong>TOM 这套对象模型本身只包含数据模型的东西</strong>：</p>
+<ul>
+<li>表（Table）、列（Column）</li>
+<li>度量值（Measure）、计算列</li>
+<li>关系（Relationship）</li>
+<li>角色与行级安全（RLS Role）</li>
+<li>计算组、分区等</li>
+</ul>
+<p>这些统称<strong>语义模型 / 数据模型层</strong>。而图表、页面、布局、配色、切片器属于<strong>报表层（Report layer）</strong>，在 PBIP 里存放在单独的 <strong>PBIR</strong> 文件中，<strong>完全不在 TOM 的管辖范围内</strong>。</p>
+<p>所以 MCP 碰不到图表，<strong>不是「故意不让改」，而是它操作的引擎层级里根本没有「图表」这个概念</strong>。</p>
+<h3 id="那图表层怎么用-agent-改">那图表层怎么用 Agent 改</h3>
+<p>目前只有一条常规路径：<strong>直接编辑 PBIP 里的 PBIR 文本文件</strong>（也就是方式 B）。报表的视觉对象、页面、布局都是 JSON / 文本，Agent 用文件读写工具能改。</p>
+<p>但有两个坑：</p>
+<ol>
+<li><strong>没有校验、容错极差</strong>。PBIR 的 JSON 结构复杂且对格式敏感，Agent 手改很容易写出打不开的报表，而且要重新打开 Power BI 才知道坏没坏，反馈慢。</li>
+<li><strong>PBIR 仍在演进</strong>。这个增强报表格式微软还在迭代，结构可能变，自动化稳定性不如模型层的 TMDL。</li>
+</ol>
+<h3 id="一张表说清层级边界">一张表说清层级边界</h3>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>MCP（Modeling）能改吗</th>
+<th>怎么让 Agent 改</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>数据模型层（表 / 度量值 / 关系 / RLS）</td>
+<td>✅ 能，且有校验</td>
+<td>MCP 最合适</td>
+</tr>
+<tr>
+<td>报表图表层（视觉对象 / 页面 / 布局）</td>
+<td>❌ 不能</td>
+<td>只能直接改 PBIP 的 PBIR 文本，风险高</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<h2 id="八-选型建议">八、选型建议</h2>
+<p>结合不同用途，给一条决策路径：</p>
+<ul>
+<li><strong>交互式探索、边问边改模型</strong> → 用 <strong>MCP（Desktop 模式）</strong>，反馈快、有校验。</li>
+<li><strong>要进 Git、做 code review、团队协作、CI/CD</strong> → 用 <strong>PBIP 文本编辑</strong>；更优解是 <strong>MCP 连 PBIP</strong>，既有引擎校验、又落成可 diff 的文本，两者优点兼得。</li>
+<li><strong>企业级批量治理、自动化部署、最佳实践检查</strong> → <strong>Tabular Editor CLI</strong> 或 <strong>XMLA + TOM</strong>。</li>
+<li><strong>只是发布、刷新、管权限（运维面）</strong> → <strong>REST API</strong>。</li>
+<li><strong>只是查数、出洞察，不改模型</strong> → <strong>远程 MCP</strong>。</li>
+<li><strong>要改图表 / 报表布局</strong> → 目前只能<strong>直接改 PBIR 文本</strong>，且需谨慎校验。</li>
+</ul>
+<hr>
+<h2 id="九-总结">九、总结</h2>
+<p>把整件事压缩成几句话：</p>
+<ol>
+<li>Agent 操作 Power BI 的本质分三类：<strong>跟引擎对话</strong>（MCP、XMLA+TOM、Tabular Editor）、<strong>改文本文件</strong>（PBIP 的 TMDL / PBIR）、<strong>管理运维</strong>（REST API）。</li>
+<li><strong>MCP 胜在交互与实时校验，PBIP 胜在版本控制与覆盖报表层</strong>，而且两者可以叠加——<strong>MCP 操作 PBIP</strong> 往往是最佳实践。</li>
+<li>再往工程化、自动化走，就上 <strong>Tabular Editor CLI</strong> 或直接 <strong>XMLA + TOM</strong>。</li>
+<li><strong>MCP 只管模型层，不管图表层</strong>；图表目前没有像模型那样成熟、带校验的 Agent 操作方式，只能退回到「直接改 PBIR 文本」，风险较高。</li>
+</ol>
+<p>这套生态变化很快（MCP 还在 Preview，PBIR 还在演进，Tabular Editor CLI 还在预览）。如果未来微软推出专门的「报表层 MCP」或 PBIR 趋于稳定，「MCP 碰不到图表」这条结论可能会被改写——但截至 2026 年中，以上就是全貌。</p>
+
+            </div>
+            
+              <div class="tag-container">
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=AI" class="tag js-tag-link" data-tag-name="AI">
+                    AI
+                  </a>
+                
+                  <a href="https://zhangjunjie00323.github.io/search/?tag=%E5%B7%A5%E5%85%B7" class="tag js-tag-link" data-tag-name="工具">
+                    工具
+                  </a>
+                
+              </div>
+            
+
+            
+            
+              <div class="related-posts">
+                <div class="related-title">相关文章</div>
+                <div class="related-grid">
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/ai-agent-it-architecture/">
+                      <div class="related-left">
+                        <div class="related-post-title">AI Agent 时代的 IT 系统重构</div>
+                        <div class="related-meta">2026-05-19</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/19/nLs3/101f500.png" alt="AI Agent 时代的 IT 系统重构" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/mcp/">
+                      <div class="related-left">
+                        <div class="related-post-title">一文读懂 MCP：大模型与外部工具的&#34;通用语言&#34;</div>
+                        <div class="related-meta">2026-05-11</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/11/1rNh/MCP.png" alt="一文读懂 MCP：大模型与外部工具的&#34;通用语言&#34;" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/tailscale/">
+                      <div class="related-left">
+                        <div class="related-post-title">Tailscale 深度解析：当每一台机器都成为网络的一部分</div>
+                        <div class="related-meta">2026-05-06</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/aQm6/Tailscale.png" alt="Tailscale 深度解析：当每一台机器都成为网络的一部分" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                    <a class="related-card" href="https://zhangjunjie00323.github.io/post/image-hosting/">
+                      <div class="related-left">
+                        <div class="related-post-title">图床完全指南：从入门到自建</div>
+                        <div class="related-meta">2026-05-05</div>
+                      </div>
+                      
+                        <div class="related-right">
+                          <img class="related-image" src="https://files.seeusercontent.com/2026/05/06/qC9x/Image-Hosting.png" alt="图床完全指南：从入门到自建" loading="lazy">
+                        </div>
+                      
+                    </a>
+                  
+                </div>
+              </div>
+            
+
+            
+              <div class="next-post">
+                <div class="next">下一篇</div>
+                <a href="https://zhangjunjie00323.github.io/post/hash/">
+                  <h3 class="post-title">
+                    哈希：从数学原理到工程应用完全指南
+                  </h3>
+                </a>
+              </div>
+            
+
+            
+              
+                <div id="gitalk-container" data-aos="fade-in"></div>
+              
+
+              
+            
+
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/aos@2.3.4/dist/aos.min.js"></script>
+<script type="application/javascript">
+
+AOS.init();
+
+var app = new Vue({
+  el: '#app',
+  data: {
+    menuVisible: false,
+  },
+})
+
+var fontSizeKey = 'postFontSizePx';
+var tocCollapsedKey = 'tocCollapsed';
+var postWidthKey = 'postWidthMode';
+
+function clampNumber(value, min, max) {
+  return Math.min(max, Math.max(min, value));
+}
+
+function initPostTools() {
+  var postDetail = document.querySelector('.post-detail');
+  var postContent = document.querySelector('.post-detail .post-content');
+  var btnSmaller = document.getElementById('font-smaller');
+  var btnLarger = document.getElementById('font-larger');
+  var widthToggle = document.getElementById('width-toggle');
+  var sidebarToggle = document.getElementById('sidebar-toggle');
+  var sidebar = document.querySelector('.sidebar');
+
+  if (postContent && (btnSmaller || btnLarger)) {
+    var computed = window.getComputedStyle(postContent);
+    var currentSize = parseFloat(computed.fontSize) || 18;
+    var saved = parseFloat(localStorage.getItem(fontSizeKey));
+    if (!Number.isNaN(saved)) {
+      currentSize = saved;
+      postContent.style.fontSize = currentSize + 'px';
+    }
+
+    if (btnSmaller) {
+      btnSmaller.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize - 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+
+    if (btnLarger) {
+      btnLarger.addEventListener('click', function() {
+        currentSize = clampNumber(currentSize + 1, 16, 22);
+        postContent.style.fontSize = currentSize + 'px';
+        localStorage.setItem(fontSizeKey, String(currentSize));
+      });
+    }
+  }
+
+  if (postDetail && widthToggle) {
+    var mode = localStorage.getItem(postWidthKey) || 'normal';
+    if (mode === 'narrow') postDetail.classList.add('width-narrow');
+    if (mode === 'wide') postDetail.classList.add('width-wide');
+    widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+
+    widthToggle.addEventListener('click', function() {
+      postDetail.classList.remove('width-narrow', 'width-wide');
+      mode = mode === 'normal' ? 'wide' : (mode === 'wide' ? 'narrow' : 'normal');
+      if (mode === 'narrow') postDetail.classList.add('width-narrow');
+      if (mode === 'wide') postDetail.classList.add('width-wide');
+      widthToggle.textContent = mode === 'narrow' ? '窄' : (mode === 'wide' ? '宽' : '标准');
+      localStorage.setItem(postWidthKey, mode);
+    });
+  }
+
+  var tocContainer = document.getElementById('toc-container');
+  var tocToggle = document.getElementById('toc-toggle');
+  if (tocContainer && tocToggle) {
+    var savedCollapsed = localStorage.getItem(tocCollapsedKey) === '1';
+    if (savedCollapsed) {
+      tocContainer.classList.add('collapsed');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = 'fa fa-angle-down';
+    }
+
+    tocToggle.addEventListener('click', function() {
+      tocContainer.classList.toggle('collapsed');
+      var collapsed = tocContainer.classList.contains('collapsed');
+      localStorage.setItem(tocCollapsedKey, collapsed ? '1' : '0');
+      var icon = tocToggle.querySelector('i');
+      if (icon) icon.className = collapsed ? 'fa fa-angle-down' : 'fa fa-angle-up';
+    });
+  }
+
+  var tocHideBtn = document.getElementById('toc-hide-btn');
+  var tocRestoreBtn = document.getElementById('toc-restore-btn');
+  var tocHiddenKey = 'tocHiddenV2';
+  if (tocHideBtn) {
+    var savedHidden = localStorage.getItem(tocHiddenKey) === '1';
+    if (savedHidden) {
+      document.body.classList.add('toc-hidden');
+      tocHideBtn.textContent = '退出沉浸';
+    }
+
+    tocHideBtn.addEventListener('click', function() {
+      document.body.classList.toggle('toc-hidden');
+      var hidden = document.body.classList.contains('toc-hidden');
+      localStorage.setItem(tocHiddenKey, hidden ? '1' : '0');
+      tocHideBtn.textContent = hidden ? '退出沉浸' : '沉浸';
+    });
+  }
+  if (tocRestoreBtn) {
+    tocRestoreBtn.addEventListener('click', function() {
+      document.body.classList.remove('toc-hidden');
+      localStorage.setItem(tocHiddenKey, '0');
+      if (tocHideBtn) tocHideBtn.textContent = '沉浸';
+    });
+  }
+
+  if (sidebar && sidebarToggle) {
+    var setSidebarWidthVar = function() {
+      var w = sidebar.getBoundingClientRect().width;
+      if (w) document.documentElement.style.setProperty('--sidebar-width', w + 'px');
+    };
+    setSidebarWidthVar();
+    window.addEventListener('resize', setSidebarWidthVar);
+
+    sidebarToggle.addEventListener('click', function() {
+      if (window.innerWidth <= 800) {
+        if (app && typeof app.menuVisible !== 'undefined') {
+          app.menuVisible = !app.menuVisible;
+        }
+        return;
+      }
+      document.body.classList.toggle('sidebar-hidden');
+    });
+  }
+}
+
+function initHeadingCopy() {
+  var container = document.querySelector('.post-detail .post-content');
+  if (!container) return;
+  var headings = container.querySelectorAll('h2[id], h3[id], h4[id], h5[id], h6[id]');
+  if (!headings || headings.length === 0) return;
+
+  headings.forEach(function(h) {
+    if (h.querySelector('.heading-copy-btn')) return;
+    h.classList.add('has-heading-copy');
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'heading-copy-btn';
+    btn.setAttribute('aria-label', 'Copy section link');
+    btn.innerHTML = '<i class="fa fa-link"></i>';
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      var url = window.location.origin + window.location.pathname + '#' + h.id;
+      var done = function() {
+        btn.classList.add('copied');
+        setTimeout(function() { btn.classList.remove('copied'); }, 1200);
+      };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(done).catch(function() {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          document.body.appendChild(ta);
+          ta.select();
+          try { document.execCommand('copy'); } catch (err) {}
+          document.body.removeChild(ta);
+          done();
+        });
+      } else {
+        var ta2 = document.createElement('textarea');
+        ta2.value = url;
+        document.body.appendChild(ta2);
+        ta2.select();
+        try { document.execCommand('copy'); } catch (err2) {}
+        document.body.removeChild(ta2);
+        done();
+      }
+    });
+    h.appendChild(btn);
+  });
+}
+
+// 监听滚动事件，更新阅读进度条和回到顶部按钮
+window.addEventListener('scroll', function() {
+  var progressBar = document.getElementById('reading-progress-bar');
+  var progressPct = document.getElementById('progress-pct');
+  var backToTop = document.getElementById('back-to-top');
+  var winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+  var height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+  var scrolled = (winScroll / height) * 100;
+
+  if (progressBar) {
+    progressBar.style.width = scrolled + "%";
+  }
+
+  if (progressPct) {
+    progressPct.innerText = Math.round(scrolled) + "%";
+    if (winScroll > 100) {
+      progressPct.classList.add('show');
+    } else {
+      progressPct.classList.remove('show');
+    }
+  }
+
+  if (backToTop) {
+    if (winScroll > 300) {
+      backToTop.classList.add('show');
+    } else {
+      backToTop.classList.remove('show');
+    }
+  }
+
+  // TOC 激活状态同步
+  var tocLinks = document.querySelectorAll('.markdownIt-TOC a');
+  if (tocLinks.length > 0) {
+    var sections = Array.from(tocLinks).map(link => {
+      var id = decodeURIComponent(link.getAttribute('href').substring(1));
+      return document.getElementById(id);
+    }).filter(section => section !== null);
+
+    var currentSection = "";
+    sections.forEach(section => {
+      var sectionTop = section.offsetTop;
+      if (winScroll >= sectionTop - 150) {
+        currentSection = section.getAttribute('id');
+      }
+    });
+
+    tocLinks.forEach(link => {
+      link.classList.remove('active');
+      if (decodeURIComponent(link.getAttribute('href').substring(1)) === currentSection) {
+        link.classList.add('active');
+      }
+    });
+  }
+});
+
+// 回到顶部点击事件
+document.getElementById('back-to-top')?.addEventListener('click', function() {
+  window.scrollTo({
+    top: 0,
+    behavior: 'smooth'
+  });
+});
+
+// 代码块复制功能
+document.querySelectorAll('pre').forEach(function(pre) {
+  var btn = document.createElement('button');
+  btn.className = 'copy-code-btn';
+  btn.innerHTML = 'Copy';
+  pre.appendChild(btn);
+
+  btn.addEventListener('click', function() {
+    var code = pre.querySelector('code');
+    var text = code.innerText;
+    var textArea = document.createElement("textarea");
+    textArea.value = text;
+    document.body.appendChild(textArea);
+    textArea.select();
+    try {
+      document.execCommand('copy');
+      btn.innerHTML = 'Copied!';
+      setTimeout(function() {
+        btn.innerHTML = 'Copy';
+      }, 2000);
+    } catch (err) {
+      btn.innerHTML = 'Error';
+    }
+    document.body.removeChild(textArea);
+  });
+});
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/medium-zoom@1.0.6/dist/medium-zoom.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@highlightjs/cdn-assets@11.5.1/highlight.min.js"></script>
+
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"></script>
+
+<script>
+  // 统一初始化逻辑
+  document.addEventListener('DOMContentLoaded', (event) => {
+    initPostTools();
+    initHeadingCopy();
+
+    // 初始化代码高亮
+    if (typeof hljs !== 'undefined') {
+      hljs.highlightAll();
+    }
+    
+    // 初始化图片放大功能
+    if (typeof mediumZoom !== 'undefined') {
+      mediumZoom('.post-content img, .post-feature-image', {
+        margin: 24,
+        background: 'rgba(15, 23, 42, 0.95)',
+        scrollOffset: 0,
+        zIndex: 10000,
+      });
+    }
+
+    // 图片懒加载
+    document.querySelectorAll('.post-content img').forEach(img => {
+      img.setAttribute('loading', 'lazy');
+    });
+
+    // KaTeX 公式渲染
+    if (typeof renderMathInElement !== 'undefined') {
+      renderMathInElement(document.body, {
+        delimiters: [
+          { left: "$$", right: "$$", display: true },
+          { left: "\\\\[", right: "\\\\]", display: true },
+          { left: "$", right: "$", display: false },
+          { left: "\\\\(", right: "\\\\)", display: false },
+        ],
+        throwOnError: false,
+      });
+    }
+
+    initReadCountCache();
+    initLAEngagementTracking();
+  });
+</script>
+
+<script>
+function normalizeReadCountPath(url) {
+  try {
+    var pathname = new URL(url, window.location.origin).pathname;
+    return pathname.replace(/\/+$/, '') || '/';
+  } catch (err) {
+    return String(url || '').replace(/\/+$/, '') || '/';
+  }
+}
+
+function readCountStorageKey(pathname) {
+  return 'gridea:post-pv:' + pathname;
+}
+
+function initReadCountCache() {
+  var cachedNodes = document.querySelectorAll('.js-post-pv-cache[data-url]');
+  cachedNodes.forEach(function(el) {
+    var path = normalizeReadCountPath(el.getAttribute('data-url'));
+    var value = '';
+    try {
+      value = localStorage.getItem(readCountStorageKey(path)) || '';
+    } catch (err) {}
+    if (value) el.textContent = value;
+  });
+
+  var pageValue = document.getElementById('busuanzi_value_page_pv');
+  if (!pageValue || typeof MutationObserver === 'undefined') return;
+
+  var saveCurrentPagePv = function() {
+    var value = (pageValue.textContent || '').trim();
+    if (!value || value === '--') return;
+    try {
+      localStorage.setItem(readCountStorageKey(normalizeReadCountPath(window.location.pathname)), value);
+    } catch (err) {}
+  };
+
+  saveCurrentPagePv();
+  var observer = new MutationObserver(saveCurrentPagePv);
+  observer.observe(pageValue, { childList: true, characterData: true, subtree: true });
+  setTimeout(saveCurrentPagePv, 1500);
+}
+
+function initLAEngagementTracking() {
+  var activeMs = 0;
+  var activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  var sent = {};
+  var milestones = [15000, 30000, 60000, 120000];
+
+  function updateActiveMs() {
+    if (!activeStartedAt) return;
+    activeMs += Date.now() - activeStartedAt;
+    activeStartedAt = document.visibilityState === 'visible' ? Date.now() : 0;
+  }
+
+  function trackLA(name, extra) {
+    if (!window.LA || typeof window.LA.track !== 'function') return;
+    var payload = {
+      event: name,
+      path: window.location.pathname,
+      title: document.title,
+      duration_seconds: Math.round(activeMs / 1000)
+    };
+    for (var key in extra || {}) {
+      if (Object.prototype.hasOwnProperty.call(extra, key)) payload[key] = extra[key];
+    }
+    try {
+      window.LA.track(name, payload);
+    } catch (err) {}
+  }
+
+  function checkMilestones() {
+    updateActiveMs();
+    milestones.forEach(function(ms) {
+      if (activeMs >= ms && !sent[ms]) {
+        sent[ms] = true;
+        trackLA('blog_engaged_' + Math.round(ms / 1000) + 's', {
+          milestone_seconds: Math.round(ms / 1000)
+        });
+      }
+    });
+  }
+
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState === 'hidden') {
+      updateActiveMs();
+      trackLA('blog_page_hide', { final: false });
+      return;
+    }
+    activeStartedAt = Date.now();
+  });
+
+  window.addEventListener('pagehide', function() {
+    updateActiveMs();
+    trackLA('blog_page_leave', { final: true });
+  });
+
+  setInterval(checkMilestones, 5000);
+}
+</script>
+
+
+
+  
+    <script src="https://cdn.jsdelivr.net/npm/gitalk@1.7.2/dist/gitalk.min.js"></script>
+    <script>
+
+      var gitalk = new Gitalk({
+        clientID: 'Ov23lib2InGg1SFtnIUI',
+        clientSecret: 'd817d9d66ed26db7a6894015a8fc76bfd2eb97a5',
+        repo: 'zhangjunjie00323.github.io',
+        owner: 'zhangjunjie00323',
+        admin: ['zhangjunjie00323'],
+        id: (location.pathname).substring(0, 49),      // Ensure uniqueness and length less than 50
+        distractionFreeMode: false  // Facebook-like distraction free mode
+      })
+
+      gitalk.render('gitalk-container')
+
+    </script>
+  
+
+  
+
+
+
+<!-- 文章页阅读人数：只统计当前页面，避免列表页批量请求造成阅读数失真 -->
+<script async src="https://busuanzi.ibruce.info/busuanzi/2.3/busuanzi.pure.mini.js"></script>
+
+<!-- 打字机效果 - 滚动到区域才开始 -->
+<script>
+(function() {
+  var text = "毛泽东思想：在对的方向，坚持长期主义，藐视一切暂时性的困难，要像建设新中国一样建设自己。";
+  var element = document.getElementById('typing-text');
+  if (!element) return;
+
+  var index = 0;
+  var speed = 50;
+  var started = false;
+
+  function type() {
+    if (index < text.length) {
+      element.textContent += text.charAt(index);
+      index++;
+      setTimeout(type, speed);
+    }
+  }
+
+  function checkVisible() {
+    if (started) return;
+    var rect = element.getBoundingClientRect();
+    var wh = window.innerHeight || document.documentElement.clientHeight;
+    if (rect.top < wh && rect.bottom > 0) {
+      started = true;
+      setTimeout(type, 200);
+    }
+  }
+
+  window.addEventListener('scroll', checkVisible, { passive: true });
+  checkVisible();
+})();
+</script>
+
+  </body>
+</html>
